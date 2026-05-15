@@ -1,0 +1,226 @@
+{% extends "base.html" %}
+{% block title %}Document Library — LegalMind{% endblock %}
+{% block content %}
+
+<!-- ── Header row ───────────────────────────────────────────────────── -->
+<div style="display:flex;align-items:center;justify-content:space-between;
+            flex-wrap:wrap;gap:10px;margin-bottom:20px;">
+    <div style="display:flex;align-items:center;gap:10px;">
+        <h1 style="font-size:20px;font-weight:700;color:rgb(var(--body-primary));margin:0;">
+            Document Library
+        </h1>
+        <span class="badge badge-muted" id="doc-count-badge">
+            {{ documents | length }} document{% if documents | length != 1 %}s{% endif %}
+        </span>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;">
+        <input id="lib-search"
+               type="text"
+               placeholder="Filter by filename…"
+               class="input"
+               style="width:224px;"
+               oninput="filterDocs(this.value)">
+        <a href="/panel/pipeline" class="btn btn-primary btn-sm">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+            </svg>
+            Upload new
+        </a>
+    </div>
+</div>
+
+<!-- ── 2-column layout ──────────────────────────────────────────────── -->
+<div style="display:grid;grid-template-columns:1fr minmax(0,320px);gap:16px;align-items:start;">
+
+    <!-- ── Left: Document table ─────────────────────────────────────── -->
+    <div class="card" style="overflow:hidden;padding:0;">
+
+        {% if not documents %}
+        <!-- Empty state -->
+        <div class="empty-state">
+            <svg class="empty-icon" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="1.4"
+                 stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414A1 1 0 0119 9.414V19a2 2 0 01-2 2z"/>
+            </svg>
+            <p style="font-size:14px;font-weight:500;color:rgb(var(--body-secondary));margin:0 0 4px;">
+                No documents yet
+            </p>
+            <p style="font-size:12px;color:rgb(var(--body-muted));margin:0;">
+                Upload a document from the
+                <a href="/panel/pipeline" style="color:rgb(var(--gold));text-decoration:none;">Pipeline</a>
+                panel to get started.
+            </p>
+        </div>
+        {% else %}
+        <div style="overflow-x:auto;">
+            <table class="data-table" id="lib-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Type</th>
+                        <th>Pages</th>
+                        <th>Confidence</th>
+                        <th>Uploaded</th>
+                        <th style="text-align:right;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="lib-tbody">
+                    {% for doc in documents %}
+                    <tr class="lib-row"
+                        data-filename="{{ doc.filename | lower }}"
+                        hx-get="/api/v1/documents/{{ doc.document_id }}/detail"
+                        hx-target="#detail-panel"
+                        hx-swap="innerHTML"
+                        hx-trigger="click">
+                        <td style="color:rgb(var(--body-primary));font-family:'JetBrains Mono',monospace;
+                                   max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"
+                            title="{{ doc.filename }}">
+                            {{ doc.filename | truncate(38) }}
+                        </td>
+                        <td>{{ doc.draft_type | default('—') }}</td>
+                        <td style="font-family:'JetBrains Mono',monospace;color:rgb(var(--body-muted));">
+                            {{ doc.page_count | default('—') }}
+                        </td>
+                        <td>
+                            {% set c = doc.confidence | default(0) | float %}
+                            {% if c %}
+                            <div style="display:flex;align-items:center;gap:8px;">
+                                <span style="font-size:11px;font-family:'JetBrains Mono',monospace;
+                                             color:{% if c >= 0.8 %}rgb(var(--signal-ok))
+                                                    {% elif c >= 0.5 %}rgb(var(--signal-warn))
+                                                    {% else %}rgb(var(--signal-fail)){% endif %};">
+                                    {{ (c * 100) | round(0) | int }}%
+                                </span>
+                                <div class="conf-track" style="width:64px;">
+                                    <div class="conf-fill"
+                                         style="width:{{ [c*100, 100]|min|round(0)|int }}%;
+                                                background:{% if c >= 0.8 %}rgb(var(--signal-ok))
+                                                            {% elif c >= 0.5 %}rgb(var(--signal-warn))
+                                                            {% else %}rgb(var(--signal-fail)){% endif %};">
+                                    </div>
+                                </div>
+                            </div>
+                            {% else %}
+                            <span style="color:rgb(var(--body-muted));">—</span>
+                            {% endif %}
+                        </td>
+                        <td style="font-family:'JetBrains Mono',monospace;color:rgb(var(--body-muted));">
+                            {% if doc.created_at %}{{ doc.created_at[:10] }}{% else %}—{% endif %}
+                        </td>
+                        <td style="text-align:right;">
+                            <div style="display:flex;align-items:center;justify-content:flex-end;gap:6px;">
+                                <a href="/documents/{{ doc.document_id }}/draft"
+                                   onclick="event.stopPropagation()"
+                                   class="btn btn-ghost btn-sm">
+                                    Draft
+                                </a>
+                                <button class="btn btn-primary btn-sm"
+                                        onclick="event.stopPropagation(); generateDraft('{{ doc.document_id }}', '{{ doc.draft_type | default('') }}')">
+                                    &#9889; Generate
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+
+    </div><!-- /left -->
+
+    <!-- ── Right: Detail panel ──────────────────────────────────────── -->
+    <div class="card" id="detail-panel"
+         style="position:sticky;top:16px;min-height:160px;">
+        <!-- Placeholder; replaced by htmx partial on row click -->
+        <div class="empty-state" style="padding:40px 16px;">
+            <svg class="empty-icon" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="1.4"
+                 stroke-linecap="round" stroke-linejoin="round">
+                <path d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <p style="font-size:12px;color:rgb(var(--body-muted));margin:0;">
+                Select a document to view details
+            </p>
+        </div>
+    </div>
+
+</div><!-- /grid -->
+
+<script>
+(function () {
+    'use strict';
+
+    /* ── Client-side filter ─────────────────────────────────────────── */
+    window.filterDocs = function(q) {
+        const lq   = (q || '').toLowerCase().trim();
+        const rows = document.querySelectorAll('#lib-tbody .lib-row');
+        let visible = 0;
+        rows.forEach(row => {
+            const fn   = (row.dataset.filename || '').toLowerCase();
+            const show = !lq || fn.includes(lq);
+            row.style.display = show ? '' : 'none';
+            if (show) visible++;
+        });
+        const badge = document.getElementById('doc-count-badge');
+        if (badge) {
+            const total = rows.length;
+            badge.textContent = lq
+                ? visible + ' / ' + total
+                : total + ' document' + (total !== 1 ? 's' : '');
+        }
+    };
+
+    /* ── Active row highlight ───────────────────────────────────────── */
+    document.querySelectorAll('.lib-row').forEach(row => {
+        row.addEventListener('click', function() {
+            document.querySelectorAll('.lib-row').forEach(r =>
+                r.style.background = '');
+            this.style.background = 'rgb(var(--gold-dim))';
+        });
+    });
+
+    /* ── Generate draft ─────────────────────────────────────────────── */
+    window.generateDraft = async function(docId, draftType) {
+        try {
+            showToast('Generating draft…', 'info');
+            const res  = await fetch('/api/v1/drafts/generate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ document_id: docId, draft_type: draftType }),
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'HTTP ' + res.status);
+
+            showToast('Draft generated successfully.', 'ok');
+
+            const draftId = data.draft_id || data.id || null;
+            if (draftId) {
+                legalModal({
+                    title: 'Draft Ready',
+                    body: 'Your draft has been generated and is ready to review.',
+                    confirmLabel: 'View Draft',
+                }).then(confirmed => {
+                    if (confirmed) {
+                        window.location.href = '/documents/' + docId + '/draft';
+                    }
+                });
+            }
+        } catch (err) {
+            showToast('Generation failed: ' + err.message, 'error');
+        }
+    };
+
+    /* ── Confidence bar color helper (used in dynamic content) ─────── */
+    window.confColor = function(c) {
+        c = parseFloat(c) || 0;
+        if (c >= 0.8) return 'rgb(var(--signal-ok))';
+        if (c >= 0.5) return 'rgb(var(--signal-warn))';
+        return 'rgb(var(--signal-fail))';
+    };
+
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,67 @@
+# LegalMind model configuration
+# All models are GGUF format, loaded via llama-cpp-python
+# GPU: NVIDIA RTX 3080 10GB — only ONE large model loaded at a time
+# Model cache: F:/Research_Paper_Projects/LLMs/ (flat directory)
+
+mode: live
+
+model_cache_dir: "F:/Research_Paper_Projects/LLMs"
+
+local_models:
+  ocr:
+    name: lightonocr-1b
+    backend: llama_cpp
+    gguf_model: LightOnOCR-1B-1025-Q8_0.gguf
+    gguf_mmproj: mmproj-LightOnOCR-1B-1025-Q8_0.gguf
+    chat_handler: qwen25vl
+    vram_gb: 1.5
+    max_context: 8192
+    max_output_tokens: 2048
+    temperature: 0.2
+    repeat_penalty: 1.0
+    quantization: Q8_0
+    role: "OCR for scanned documents, handwritten notes, degraded PDFs"
+
+  extraction:
+    name: qwen3-vl-8b
+    backend: llama_cpp
+    gguf_model: Qwen3VL-8B-Instruct-Q4_K_M.gguf
+    gguf_mmproj: mmproj-Qwen3VL-8B-Instruct-F16.gguf
+    chat_handler: qwen25vl
+    vram_gb: 6.1
+    max_context: 4096
+    max_output_tokens: 2048
+    temperature: 0.3
+    quantization: Q4_K_M
+    role: "Structured field extraction, draft generation, evidence grounding"
+
+  reasoning:
+    name: gemma4-e4b
+    backend: llama_cpp
+    gguf_model: gemma-4-E4B-it-Q4_K_M.gguf
+    vram_gb: 3.5
+    max_context: 4096
+    max_output_tokens: 1500
+    temperature: 0.1
+    quantization: Q4_K_M
+    role: "Verification, pattern extraction from edits, rule consolidation"
+
+  embeddings:
+    name: bge-m3
+    backend: sentence_transformers
+    model_id: BAAI/bge-m3
+    device: cuda
+    vram_gb: 0.6
+
+# GPU swap strategy:
+# - OCR (1.5GB) + embeddings (0.6GB) = 2.1GB — can coexist
+# - Extraction (6.1GB) + embeddings (0.6GB) = 6.7GB — can coexist
+# - Reasoning (3.5GB) + embeddings (0.6GB) = 4.1GB — can coexist
+# - NEVER load extraction + reasoning simultaneously (9.6GB > 10GB)
+# - OCR + extraction = 7.6GB — tight but possible, avoid
+#
+# Preferred swap order for full pipeline:
+# 1. Load OCR → process all scanned pages → unload OCR
+# 2. Load extraction → extract all fields + generate draft → unload extraction
+# 3. Load reasoning → verify + extract patterns → unload reasoning
+# Embeddings stay loaded throughout (only 0.6GB)

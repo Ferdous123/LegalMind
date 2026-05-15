@@ -1,0 +1,37 @@
+{
+  "source_document": "doc_2_court_filing",
+  "image_file": "img_2_level_3.png",
+  "pdf_file": "img_2_level_3.pdf",
+  "difficulty_level": 3,
+  "difficulty_label": "hard",
+  "degradations_applied": [
+    "heavy_noise",
+    "specks",
+    "vignette",
+    "faded_regions",
+    "margin_cutoff",
+    "significant_rotation",
+    "blur"
+  ],
+  "expected_extracted_fields": {
+    "document_type": "court_filing",
+    "case_number": "CV-2024-08847",
+    "court": "District Court of Caldwell County, State of Thornfield, Civil Division",
+    "parties": {
+      "plaintiff": "Synthex Industrial Partners, Inc.",
+      "defendants": [
+        "Norwood Fabrication Group LLC",
+        "Gerald P. Norwood"
+      ]
+    },
+    "filing_date": "2024-03-14",
+    "claims": [
+      "Breach of Contract",
+      "Fraud",
+      "Unjust Enrichment"
+    ],
+    "damages_sought": "$680,000.00 compensatory plus punitive damages",
+    "contract_at_issue": "Manufacturing Services Agreement dated 2023-01-15",
+    "attorneys_for_plaintiff": "Kavanaugh & Ashworth LLP"
+  }
+}

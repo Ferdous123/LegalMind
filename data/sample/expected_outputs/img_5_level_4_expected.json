@@ -1,0 +1,36 @@
+{
+  "source_document": "doc_5_document_checklist",
+  "image_file": "img_5_level_4.png",
+  "pdf_file": "img_5_level_4.pdf",
+  "difficulty_level": 4,
+  "difficulty_label": "very_hard",
+  "degradations_applied": [
+    "handwritten_font",
+    "noise",
+    "ink_smudges",
+    "partial_blur",
+    "torn_page",
+    "specks",
+    "rotation"
+  ],
+  "expected_extracted_fields": {
+    "document_type": "document_checklist",
+    "transaction_reference": "ACQ-2024-PSL-0087",
+    "property": "88 Westbrook Plaza, Caldwell City, TX 77036",
+    "buyer": "Westbrook Commercial Holdings LLC",
+    "seller": "Alcott-Meridian Properties Inc.",
+    "escrow_officer": "Howard V. Kincaid, Jr.",
+    "expected_closing_date": "2024-11-30",
+    "total_items": 32,
+    "items_received": 16,
+    "items_pending": 13,
+    "items_missing": 2,
+    "critical_path_items": [
+      "Buyer resolution authorising purchase (due 2024-10-25)",
+      "Final loan agreement (expected 2024-10-20)",
+      "Deed of Trust (expected 2024-10-25)",
+      "Remaining tenant estoppel certificates (due 2024-10-28)",
+      "Grant deed draft (due 2024-11-01)"
+    ]
+  }
+}

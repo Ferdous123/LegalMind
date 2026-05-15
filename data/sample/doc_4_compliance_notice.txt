@@ -1,0 +1,99 @@
+THORNFIELD DEPARTMENT OF ENVIRONMENTAL QUALITY
+OFFICE OF REGULATORY COMPLIANCE
+
+NOTICE OF VIOLATION AND ORDER TO COMPLY
+
+Notice No.: TEQ-NOV-2024-1187
+Date Issued: August 5, 2024
+
+TO:
+Pinnacle Chemical Manufacturing Co.
+Attention: Mr. Stewart G. Albrecht, Chief Compliance Officer
+3300 Refinery Road
+Port Caldwell, TX 77530
+
+RE: NOTICE OF VIOLATION — THORNFIELD CLEAN AIR ACT, CHAPTER 382
+    FACILITY PERMIT NO. AIR-2019-4422
+
+FINDINGS OF VIOLATION
+
+Pursuant to an inspection conducted on July 18, 2024, by Compliance Officer
+Renata Okonkwo (Inspector ID: TEQ-CO-0091), the Thornfield Department of
+Environmental Quality ("Department") has determined that Pinnacle Chemical
+Manufacturing Co. ("Facility" or "Respondent") has committed the following
+violations at the above-referenced facility:
+
+VIOLATION 1: Excess Volatile Organic Compound (VOC) Emissions
+During the inspection period of July 14–18, 2024, continuous emissions monitoring
+data recorded VOC emissions from Stack 4-B of 148 parts per million (ppm) on
+a rolling 24-hour average basis. This exceeds the permitted limit of 85 ppm
+established in Permit Condition 3.4.1 by 74.1%. This constitutes a violation of
+Thornfield Clean Air Act Section 382.085(b).
+
+VIOLATION 2: Incomplete Quarterly Emissions Report
+Respondent failed to submit the Quarterly Emissions Report for Q2 2024 (April–June
+2024), which was due on July 31, 2024. This constitutes a violation of Thornfield
+Clean Air Act Section 382.141(a) and Permit Condition 6.1.2.
+
+VIOLATION 3: Deficient Stack Monitoring Equipment
+Portable opacity monitor OM-7 was found to be operating with a calibration
+certificate expired on March 31, 2024. Data collected by OM-7 since that date is
+presumed unreliable. This constitutes a violation of Thornfield Clean Air Act
+Section 382.162 and Permit Condition 5.3.1.
+
+REQUIRED CORRECTIVE ACTIONS AND DEADLINES
+
+The Department hereby orders Respondent to:
+
+ACTION 1: IMMEDIATE — Within 48 hours of receipt of this Notice
+Reduce VOC emissions from Stack 4-B to at or below the permitted limit of 85 ppm.
+Provide written confirmation of corrective action to the Department by email to
+compliance@teq.thornfield.gov, Attention: NOV Case Manager.
+
+ACTION 2: WITHIN 14 DAYS — By August 19, 2024
+Submit the overdue Q2 2024 Quarterly Emissions Report in full compliance with
+Section 382.141(a) using the Department's eDEQ online reporting portal
+(portal.teq.thornfield.gov). Late submission penalties may apply pursuant to
+Thornfield Administrative Code Section 7.048.
+
+ACTION 3: WITHIN 30 DAYS — By September 4, 2024
+(a) Recalibrate or replace portable opacity monitor OM-7 and provide to the
+    Department a copy of the new calibration certificate from an accredited
+    laboratory.
+(b) Submit a Data Quality Assessment Report covering the period April 1 –
+    August 5, 2024, identifying any monitoring data affected by the deficient
+    instrument and proposing substitute data or conservative estimates in
+    accordance with Thornfield Air Monitoring Guidelines, Chapter 6.
+
+ACTION 4: WITHIN 60 DAYS — By October 4, 2024
+Submit a Root Cause Analysis and Corrective Action Plan ("RCA/CAP") addressing
+all three violations. The RCA/CAP must include:
+- Root cause identification for each violation
+- Corrective measures implemented or planned
+- Preventive measures to ensure future compliance
+- A compliance schedule with milestone dates
+
+PENALTY NOTICE
+
+The Department is authorised to assess administrative penalties of up to $10,000
+per day per violation under Thornfield Clean Air Act Section 382.352. A penalty
+determination will be made following review of Respondent's corrective actions.
+Timely and complete compliance will be considered as a mitigating factor.
+
+RESPONSE AND HEARING RIGHTS
+
+Respondent may request a conference with the Department within 20 calendar days
+of receipt of this Notice (by August 25, 2024) by submitting a written request to:
+
+Office of Regulatory Compliance
+Thornfield Department of Environmental Quality
+P.O. Box 13087
+Caldwell City, TX 77711-3087
+
+Questions regarding this Notice should be directed to Compliance Officer
+Renata Okonkwo at (512) 555-0294 or r.okonkwo@teq.thornfield.gov.
+
+/s/ Commissioner Raymond T. Bledsoe
+RAYMOND T. BLEDSOE
+Commissioner, Thornfield Department of Environmental Quality
+Date: August 5, 2024

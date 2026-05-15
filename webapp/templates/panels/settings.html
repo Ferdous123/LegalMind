@@ -1,0 +1,354 @@
+{% extends "base.html" %}
+{% block title %}Settings — LegalMind{% endblock %}
+{% block content %}
+<div style="display:flex;flex-direction:column;gap:24px;max-width:960px;">
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         SECTION 1 — GPU & Inference
+    ═══════════════════════════════════════════════════════════════════ -->
+    <div class="card">
+        <div class="card-head">GPU &amp; Inference</div>
+
+        {% if gpu_info is defined and gpu_info %}
+            {% if gpu_info.available %}
+            <!-- GPU available -->
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;">
+                <span class="badge badge-ok">
+                    <span style="width:6px;height:6px;border-radius:50%;background:rgb(var(--signal-ok));display:inline-block;margin-right:5px;"></span>
+                    GPU Available
+                </span>
+                {% if gpu_info.name %}
+                <span style="font-size:13px;font-weight:600;color:rgb(var(--body-primary));">{{ gpu_info.name }}</span>
+                {% endif %}
+            </div>
+
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px;">
+
+                {% if gpu_info.cuda_version %}
+                <div class="stat-card">
+                    <span class="stat-label">CUDA Version</span>
+                    <span class="stat-value" style="font-size:18px;font-family:'JetBrains Mono',monospace;">{{ gpu_info.cuda_version }}</span>
+                </div>
+                {% endif %}
+
+                {% if gpu_info.vram_free is defined and gpu_info.vram_total is defined %}
+                {% set _used = gpu_info.vram_total - gpu_info.vram_free %}
+                {% set _pct  = ((_used / gpu_info.vram_total) * 100) | round(0) | int %}
+                <div class="stat-card">
+                    <span class="stat-label">VRAM</span>
+                    <span class="stat-value" style="font-size:18px;font-family:'JetBrains Mono',monospace;">
+                        {{ gpu_info.vram_free }}<span style="font-size:13px;color:rgb(var(--body-muted));font-weight:400;"> / {{ gpu_info.vram_total }} GB free</span>
+                    </span>
+                    <div style="margin-top:8px;">
+                        <div class="conf-track" style="height:5px;margin-bottom:4px;">
+                            <div class="conf-fill" style="width:{{ _pct }}%;background:{% if _pct >= 90 %}rgb(var(--signal-fail)){% elif _pct >= 70 %}rgb(var(--signal-warn)){% else %}rgb(var(--signal-ok)){% endif %};"></div>
+                        </div>
+                        <span style="font-size:10px;color:rgb(var(--body-muted));">{{ _pct }}% used</span>
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if gpu_info.utilization is defined %}
+                <div class="stat-card">
+                    <span class="stat-label">GPU Utilization</span>
+                    <span class="stat-value" style="font-size:18px;font-family:'JetBrains Mono',monospace;">{{ gpu_info.utilization }}<span style="font-size:13px;color:rgb(var(--body-muted));font-weight:400;">%</span></span>
+                    <div style="margin-top:8px;">
+                        <div class="conf-track" style="height:5px;">
+                            <div class="conf-fill" style="width:{{ gpu_info.utilization }}%;background:rgb(var(--gold));"></div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if gpu_info.driver_version is defined %}
+                <div class="stat-card">
+                    <span class="stat-label">Driver</span>
+                    <span class="stat-value" style="font-size:18px;font-family:'JetBrains Mono',monospace;">{{ gpu_info.driver_version }}</span>
+                </div>
+                {% endif %}
+
+            </div>
+
+            {% else %}
+            <!-- No GPU -->
+            <div style="display:flex;align-items:flex-start;gap:14px;padding:16px;background:rgb(var(--signal-fail)/0.06);border:1px solid rgb(var(--signal-fail)/0.25);border-radius:8px;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgb(var(--signal-fail))" stroke-width="1.8" stroke-linecap="round" style="flex-shrink:0;margin-top:1px;">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+                <div>
+                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+                        <span class="badge badge-fail">No GPU Detected</span>
+                    </div>
+                    <p style="font-size:13px;color:rgb(var(--body-secondary));margin:0;">
+                        No CUDA-capable GPU was found. The pipeline will run in CPU fallback mode, which is significantly slower.
+                        Ensure CUDA drivers are installed and the GPU is accessible.
+                    </p>
+                </div>
+            </div>
+            {% endif %}
+
+        {% else %}
+        <!-- No gpu_info context at all -->
+        <p style="font-size:13px;color:rgb(var(--body-muted));">GPU information is not available.</p>
+        {% endif %}
+    </div>
+
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         SECTION 2 — Model Registry
+    ═══════════════════════════════════════════════════════════════════ -->
+    <div class="card">
+        <div class="card-head">Model Registry</div>
+
+        {% if models is defined and models %}
+        <div style="overflow-x:auto;">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Model</th>
+                        <th>Role</th>
+                        <th>VRAM Est.</th>
+                        <th>File</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for model in models %}
+                <tr>
+                    <td style="color:rgb(var(--body-primary));font-weight:500;">{{ model.name | default('—') }}</td>
+                    <td>
+                        <span class="badge badge-muted">{{ model.role | default('—') }}</span>
+                    </td>
+                    <td style="font-family:'JetBrains Mono',monospace;font-size:12px;">
+                        {% if model.vram_gb is defined and model.vram_gb %}{{ model.vram_gb }} GB{% else %}—{% endif %}
+                    </td>
+                    <td style="font-family:'JetBrains Mono',monospace;font-size:11px;color:rgb(var(--body-muted));max-width:260px;"
+                        title="{{ model.file_path | default('') }}">
+                        {% if model.file_path %}
+                        <span style="display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ model.file_path }}</span>
+                        {% else %}
+                        <span style="color:rgb(var(--body-muted));">—</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if model.file_exists %}
+                        <span style="display:inline-flex;align-items:center;gap:5px;color:rgb(var(--signal-ok));font-size:12px;font-weight:500;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                            Found
+                        </span>
+                        {% else %}
+                        <span style="display:inline-flex;align-items:center;gap:5px;color:rgb(var(--signal-fail));font-size:12px;font-weight:500;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                            </svg>
+                            Missing
+                        </span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state" style="padding:32px;">
+            <p style="font-size:13px;">No model configuration found.</p>
+        </div>
+        {% endif %}
+    </div>
+
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         SECTION 3 — Data Directories
+    ═══════════════════════════════════════════════════════════════════ -->
+    <div class="card">
+        <div class="card-head">Data Directories</div>
+
+        {% if dir_stats is defined and dir_stats %}
+        <div style="overflow-x:auto;">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Directory</th>
+                        <th>Path</th>
+                        <th>Files</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for d in dir_stats %}
+                <tr>
+                    <td style="color:rgb(var(--body-primary));font-weight:500;white-space:nowrap;">{{ d.name | default('—') }}</td>
+                    <td style="font-family:'JetBrains Mono',monospace;font-size:11px;color:rgb(var(--body-muted));max-width:320px;"
+                        title="{{ d.path | default('') }}">
+                        {% if d.path %}
+                        <span style="display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ d.path }}</span>
+                        {% else %}—{% endif %}
+                    </td>
+                    <td style="font-family:'JetBrains Mono',monospace;font-size:12px;">
+                        {% if d.file_count is defined %}{{ d.file_count }}{% else %}—{% endif %}
+                    </td>
+                    <td>
+                        {% if d.exists %}
+                        <span class="badge badge-ok">Ready</span>
+                        {% else %}
+                        <span class="badge badge-warn">Not created</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state" style="padding:32px;">
+            <p style="font-size:13px;">No directory information available.</p>
+        </div>
+        {% endif %}
+    </div>
+
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         SECTION 4 — System Actions
+    ═══════════════════════════════════════════════════════════════════ -->
+    <div class="card">
+        <div class="card-head">System Actions</div>
+        <div style="display:flex;flex-wrap:wrap;gap:24px;align-items:flex-start;">
+
+            <!-- Run Evaluation Script -->
+            <div style="display:flex;flex-direction:column;gap:8px;max-width:300px;">
+                <button id="btn-eval" class="btn btn-primary" onclick="runEvaluation()">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="5 3 19 12 5 21 5 3"/>
+                    </svg>
+                    Run Evaluation Script
+                </button>
+                <p style="font-size:11px;color:rgb(var(--body-muted));line-height:1.5;margin:0;">
+                    Runs the end-to-end evaluation suite against the current document corpus.
+                    Results are printed to the server log. A confirmation is shown before executing.
+                </p>
+            </div>
+
+            <div style="width:1px;align-self:stretch;background:rgb(var(--ink-700));flex-shrink:0;"></div>
+
+            <!-- Rebuild Index -->
+            <div style="display:flex;flex-direction:column;gap:8px;max-width:300px;">
+                <button id="btn-reindex" class="btn btn-ghost" onclick="rebuildIndex()">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/>
+                    </svg>
+                    Rebuild Index
+                </button>
+                <p style="font-size:11px;color:rgb(var(--body-muted));line-height:1.5;margin:0;">
+                    Triggers a full reindex of all documents in the vector store.
+                    Existing embeddings are replaced. Retrieval remains unavailable until the process completes.
+                </p>
+            </div>
+
+        </div>
+    </div>
+
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         SECTION 5 — About
+    ═══════════════════════════════════════════════════════════════════ -->
+    <div class="card">
+        <div class="card-head">About</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;">
+
+            <div>
+                <p style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:rgb(var(--body-muted));margin:0 0 4px;">Version</p>
+                <p style="font-size:13px;color:rgb(var(--body-primary));font-family:'JetBrains Mono',monospace;margin:0;">v1.0</p>
+            </div>
+
+            <div>
+                <p style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:rgb(var(--body-muted));margin:0 0 4px;">Model Mode</p>
+                <p style="font-size:13px;color:rgb(var(--body-primary));margin:0;">
+                    {% if gpu_info is defined and gpu_info and gpu_info.available %}
+                        <span class="badge badge-ok">Local GPU Inference</span>
+                    {% elif gpu_info is defined and gpu_info %}
+                        <span class="badge badge-warn">CPU Fallback</span>
+                    {% else %}
+                        <span class="badge badge-muted">Unknown</span>
+                    {% endif %}
+                </p>
+            </div>
+
+            <div>
+                <p style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:rgb(var(--body-muted));margin:0 0 4px;">Inference</p>
+                <p style="font-size:13px;color:rgb(var(--body-secondary));margin:0;">All models run locally. No data is sent to external services.</p>
+            </div>
+
+            <div>
+                <p style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:rgb(var(--body-muted));margin:0 0 4px;">Platform</p>
+                <p style="font-size:13px;color:rgb(var(--body-primary));font-family:'JetBrains Mono',monospace;margin:0;">PSL LegalMind</p>
+            </div>
+
+        </div>
+    </div>
+
+</div><!-- /sections -->
+
+<script>
+(function () {
+    'use strict';
+
+    /* ─── Run Evaluation Script ───────────────────────────────────── */
+    window.runEvaluation = async function () {
+        const confirmed = await legalModal({
+            title: 'Run Evaluation Script',
+            body: 'This will execute the evaluation pipeline against the full document corpus.\n\nProgress will be logged to the server console. This may take several minutes depending on corpus size.',
+            confirmLabel: 'Run Evaluation',
+        });
+        if (!confirmed) return;
+
+        const btn = document.getElementById('btn-eval');
+        btn.disabled    = true;
+        btn.innerHTML   = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> Running…';
+        try {
+            const r = await fetch('/scripts/run_evaluation.py');
+            const d = await r.json().catch(() => ({}));
+            if (!r.ok) throw new Error(d.error || 'HTTP ' + r.status);
+            showToast('Evaluation started. ' + (d.message || ''), 'ok');
+        } catch (e) {
+            showToast('Evaluation failed: ' + e.message, 'error');
+        } finally {
+            btn.disabled  = false;
+            btn.innerHTML =
+                '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>' +
+                ' Run Evaluation Script';
+        }
+    };
+
+    /* ─── Rebuild Index ───────────────────────────────────────────── */
+    window.rebuildIndex = async function () {
+        const confirmed = await legalModal({
+            title: 'Rebuild Vector Index',
+            body: 'This will delete the existing vector index and re-embed all documents from scratch.\n\nRetrieval will be unavailable during the process. Depending on corpus size this may take a significant amount of time.',
+            confirmLabel: 'Rebuild Index',
+            danger: true,
+        });
+        if (!confirmed) return;
+
+        const btn = document.getElementById('btn-reindex');
+        btn.disabled    = true;
+        btn.innerHTML   = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> Reindexing…';
+        try {
+            const r = await fetch('/api/v1/retrieval/reindex', { method: 'POST' });
+            const d = await r.json().catch(() => ({}));
+            if (!r.ok) throw new Error(d.error || 'HTTP ' + r.status);
+            showToast('Reindex started. ' + (d.message || ''), 'ok');
+        } catch (e) {
+            showToast('Reindex failed: ' + e.message, 'error');
+        } finally {
+            btn.disabled  = false;
+            btn.innerHTML =
+                '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>' +
+                ' Rebuild Index';
+        }
+    };
+})();
+</script>
+{% endblock %}

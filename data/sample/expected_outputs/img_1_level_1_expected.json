@@ -1,0 +1,29 @@
+{
+  "source_document": "doc_1_lease_agreement",
+  "image_file": "img_1_level_1.png",
+  "pdf_file": "img_1_level_1.pdf",
+  "difficulty_level": 1,
+  "difficulty_label": "easy",
+  "degradations_applied": [
+    "minor_noise",
+    "specks",
+    "slight_rotation"
+  ],
+  "expected_extracted_fields": {
+    "document_type": "lease_agreement",
+    "parties": {
+      "landlord": "Hargrove Property Holdings LLC",
+      "tenant": "Marcus Delacroix-Webb"
+    },
+    "dates": {
+      "agreement_date": "2024-03-01",
+      "lease_start": "2024-03-01",
+      "lease_end": "2025-02-28",
+      "execution_date": "2024-02-28"
+    },
+    "property": "214 Finchley Court, Apartment 7, Thornfield, TX 77031",
+    "monthly_rent": "$1,400.00",
+    "security_deposit": "$2,800.00",
+    "governing_law": "State of Thornfield"
+  }
+}

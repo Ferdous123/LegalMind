@@ -1,0 +1,352 @@
+{% extends "base.html" %}
+{% block title %}Audit &amp; Learning — LegalMind{% endblock %}
+{% block content %}
+
+<!-- ── Header ───────────────────────────────────────────────────────── -->
+<div style="margin-bottom:24px;">
+    <h1 style="font-size:20px;font-weight:700;color:rgb(var(--body-primary));margin:0;">
+        Audit &amp; Learning
+    </h1>
+</div>
+
+<!-- ── 4-stat cards ──────────────────────────────────────────────────── -->
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;">
+
+    <div class="stat-card">
+        <div class="stat-value">{{ total_corrections | default(0) }}</div>
+        <div class="stat-label">Total Corrections</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-value" style="color:rgb(var(--gold));">
+            {{ metrics.active_exemplars | default(0) }}
+        </div>
+        <div class="stat-label">Active Exemplars</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-value" style="color:rgb(var(--signal-ok));">
+            {{ learned_rules | length }}
+        </div>
+        <div class="stat-label">Learned Rules</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-value" style="font-size:16px;padding-top:4px;font-family:'JetBrains Mono',monospace;">
+            {{ metrics.last_extraction_date | default('—') }}
+        </div>
+        <div class="stat-label">Last Extraction</div>
+    </div>
+
+</div>
+
+<!-- ── 3-column grid ─────────────────────────────────────────────────── -->
+<div style="display:grid;grid-template-columns:2fr 1fr;gap:16px;align-items:start;">
+
+    <!-- ── LEFT: Corrections table + breakdown charts ──────────────── -->
+    <div style="display:flex;flex-direction:column;gap:16px;">
+
+        <!-- Corrections table card -->
+        <div class="card" style="padding:0;overflow:hidden;">
+            <div style="display:flex;align-items:center;justify-content:space-between;
+                        padding:16px 20px;border-bottom:1px solid rgb(var(--ink-800));">
+                <div class="card-head" style="margin:0;">Recent Corrections</div>
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <span style="font-size:11px;color:rgb(var(--body-muted));font-family:'JetBrains Mono',monospace;">
+                        {{ corrections | length }}
+                    </span>
+                    <button id="extract-rules-btn"
+                            class="btn btn-primary btn-sm"
+                            onclick="extractRules()">
+                        Extract Rules
+                    </button>
+                </div>
+            </div>
+
+            {% if not corrections %}
+            <div class="empty-state">
+                <svg class="empty-icon" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="1.4"
+                     stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                </svg>
+                <p style="font-size:14px;font-weight:500;color:rgb(var(--body-secondary));margin:0 0 4px;">
+                    No corrections yet
+                </p>
+                <p style="font-size:12px;color:rgb(var(--body-muted));margin:0;">
+                    Edit fields in a draft to record corrections.
+                </p>
+            </div>
+            {% else %}
+            <div style="overflow-x:auto;max-height:480px;overflow-y:auto;">
+                <table class="data-table" id="corrections-table">
+                    <thead style="position:sticky;top:0;z-index:5;background:rgb(var(--ink-900));">
+                        <tr>
+                            <th>Time</th>
+                            <th>Document</th>
+                            <th>Field</th>
+                            <th>Type</th>
+                            <th>Change</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for corr in corrections %}
+                        {% if loop.index <= 20 %}
+                        <tr>
+                            <td style="font-family:'JetBrains Mono',monospace;
+                                       color:rgb(var(--body-muted));white-space:nowrap;">
+                                <span class="corr-ts" data-iso="{{ corr.created_at or corr.timestamp or '' }}">
+                                    {{ ((corr.created_at or corr.timestamp or '')[:16]) | replace('T',' ') or '—' }}
+                                </span>
+                            </td>
+                            <td style="max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"
+                                title="{{ corr.document_filename | default('') }}">
+                                {{ (corr.document_filename | default('')) | truncate(16) }}
+                            </td>
+                            <td style="font-family:'JetBrains Mono',monospace;
+                                       max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+                                {{ (corr.field_name | default('')) | truncate(16) }}
+                            </td>
+                            <td>
+                                {% set ct = corr.correction_type | default('') %}
+                                {% if ct == 'omission' %}
+                                    <span class="badge badge-gold">omission</span>
+                                {% elif ct == 'error' %}
+                                    <span class="badge badge-fail">error</span>
+                                {% elif ct == 'style' %}
+                                    <span class="badge badge-muted">style</span>
+                                {% elif ct == 'restructure' %}
+                                    <span class="badge badge-warn">restructure</span>
+                                {% else %}
+                                    <span class="badge badge-muted">{{ ct or '—' }}</span>
+                                {% endif %}
+                            </td>
+                            <td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"
+                                title="{{ ((corr.generated_text | default('')) + ' → ' + (corr.edited_text | default(''))) }}">
+                                <span style="color:rgb(var(--body-muted));">
+                                    {{ (corr.generated_text | default(''))[:30] }}
+                                </span>
+                                {% if corr.edited_text %}
+                                <span style="color:rgb(var(--gold));margin:0 4px;">→</span>
+                                <span style="color:rgb(var(--body-secondary));">
+                                    {{ (corr.edited_text | default(''))[:30] }}
+                                </span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endif %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            {% if corrections | length > 20 %}
+            <div style="padding:10px 20px;border-top:1px solid rgb(var(--ink-800));
+                        display:flex;align-items:center;justify-content:space-between;">
+                <span style="font-size:11px;color:rgb(var(--body-muted));">
+                    Showing 20 of {{ corrections | length }} corrections
+                </span>
+                <button class="btn btn-ghost btn-sm" id="load-more-btn"
+                        onclick="loadMoreCorrections()">
+                    Load more
+                </button>
+            </div>
+            {% endif %}
+            {% endif %}
+        </div>
+
+        <!-- Breakdown charts -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+
+            <!-- By draft type -->
+            <div class="card">
+                <div class="card-head">By Draft Type</div>
+                {% if metrics.by_draft_type %}
+                    {% set max_dt = metrics.by_draft_type.values() | max | default(1) %}
+                    {% for dtype, count in metrics.by_draft_type.items() %}
+                    <div style="margin-bottom:10px;">
+                        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+                            <span style="font-size:12px;color:rgb(var(--body-secondary));
+                                         overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:140px;"
+                                  title="{{ dtype }}">{{ dtype }}</span>
+                            <span style="font-size:11px;font-family:'JetBrains Mono',monospace;
+                                         color:rgb(var(--body-muted));flex-shrink:0;margin-left:6px;">{{ count }}</span>
+                        </div>
+                        <div class="conf-track">
+                            <div class="conf-fill"
+                                 style="width:{{ ((count / max_dt) * 100) | round(0) | int }}%;
+                                        background:rgb(var(--gold));">
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                <p style="font-size:12px;color:rgb(var(--body-muted));margin:0;">No data yet.</p>
+                {% endif %}
+            </div>
+
+            <!-- By correction type -->
+            <div class="card">
+                <div class="card-head">By Correction Type</div>
+                {% if metrics.by_correction_type %}
+                    {% set max_ct = metrics.by_correction_type.values() | max | default(1) %}
+                    {% for ctype, count in metrics.by_correction_type.items() %}
+                    <div style="margin-bottom:10px;">
+                        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+                            <span style="font-size:12px;color:rgb(var(--body-secondary));">{{ ctype }}</span>
+                            <span style="font-size:11px;font-family:'JetBrains Mono',monospace;
+                                         color:rgb(var(--body-muted));">{{ count }}</span>
+                        </div>
+                        <div class="conf-track">
+                            <div class="conf-fill"
+                                 style="width:{{ ((count / max_ct) * 100) | round(0) | int }}%;
+                                        background:{% if ctype == 'omission' %}rgb(var(--gold))
+                                                    {% elif ctype == 'error' %}rgb(var(--signal-fail))
+                                                    {% elif ctype == 'style' %}rgb(var(--body-muted))
+                                                    {% elif ctype == 'restructure' %}rgb(var(--signal-warn))
+                                                    {% else %}rgb(var(--body-muted)){% endif %};">
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                <p style="font-size:12px;color:rgb(var(--body-muted));margin:0;">No data yet.</p>
+                {% endif %}
+            </div>
+
+        </div><!-- /breakdown charts -->
+
+    </div><!-- /left column -->
+
+    <!-- ── RIGHT: Learned rules ──────────────────────────────────────── -->
+    <div class="card" style="padding:0;overflow:hidden;position:sticky;top:16px;">
+
+        <div style="display:flex;align-items:center;justify-content:space-between;
+                    padding:16px 20px;border-bottom:1px solid rgb(var(--ink-800));">
+            <div class="card-head" style="margin:0;">Learned Rules</div>
+            <span style="font-size:11px;font-family:'JetBrains Mono',monospace;
+                         color:rgb(var(--body-muted));">
+                {{ learned_rules | length }}
+            </span>
+        </div>
+
+        {% if not learned_rules %}
+        <div class="empty-state" style="padding:40px 16px;">
+            <svg class="empty-icon" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="1.4"
+                 stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+            </svg>
+            <p style="font-size:13px;color:rgb(var(--body-secondary));margin:0 0 4px;">No rules extracted yet.</p>
+            <p style="font-size:11px;color:rgb(var(--body-muted));margin:0;">
+                Submit corrections and click <strong>Extract Rules</strong>.
+            </p>
+        </div>
+        {% else %}
+        <div style="overflow-y:auto;max-height:540px;padding:14px;display:flex;flex-direction:column;gap:8px;">
+            {% for rule in learned_rules %}
+            <div class="card-sm">
+                <p style="font-size:12px;color:rgb(var(--body-primary));line-height:1.5;margin:0 0 8px;">
+                    {{ rule.rule_text | default('') }}
+                </p>
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+
+                    {% set rt = rule.rule_type | default('') %}
+                    {% if rt == 'omission' %}
+                        <span class="badge badge-gold">{{ rt }}</span>
+                    {% elif rt == 'error' %}
+                        <span class="badge badge-fail">{{ rt }}</span>
+                    {% elif rt == 'style' %}
+                        <span class="badge badge-muted">{{ rt }}</span>
+                    {% elif rt == 'restructure' %}
+                        <span class="badge badge-warn">{{ rt }}</span>
+                    {% elif rt %}
+                        <span class="badge badge-muted">{{ rt }}</span>
+                    {% else %}
+                        <span></span>
+                    {% endif %}
+
+                    {% if rule.confidence is defined %}
+                    {% set rc = rule.confidence | float %}
+                    <div style="display:flex;align-items:center;gap:6px;">
+                        <div class="conf-track" style="width:48px;">
+                            <div class="conf-fill"
+                                 style="width:{{ (rc * 100) | round(0) | int }}%;
+                                        background:{% if rc >= 0.8 %}rgb(var(--signal-ok))
+                                                    {% elif rc >= 0.5 %}rgb(var(--signal-warn))
+                                                    {% else %}rgb(var(--signal-fail)){% endif %};">
+                            </div>
+                        </div>
+                        <span style="font-size:10px;font-family:'JetBrains Mono',monospace;
+                                     color:{% if rc >= 0.8 %}rgb(var(--signal-ok))
+                                            {% elif rc >= 0.5 %}rgb(var(--signal-warn))
+                                            {% else %}rgb(var(--signal-fail)){% endif %};">
+                            {{ (rc * 100) | round(0) | int }}%
+                        </span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+    </div><!-- /right: rules -->
+
+</div><!-- /3-column grid -->
+
+<script>
+(function () {
+    'use strict';
+
+    /* ── Extract rules ──────────────────────────────────────────────── */
+    window.extractRules = async function() {
+        const btn = document.getElementById('extract-rules-btn');
+        if (!btn) return;
+        const orig = btn.textContent;
+        btn.disabled = true;
+        btn.textContent = 'Extracting…';
+        try {
+            const res  = await fetch('/api/v1/learning/rules', { method: 'POST' });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'HTTP ' + res.status);
+            const n = data.count || 0;
+            showToast('Rules extracted: ' + n + ' new rule' + (n !== 1 ? 's' : '') + '.', 'ok');
+            setTimeout(() => window.location.reload(), 1400);
+        } catch (err) {
+            showToast('Extraction failed: ' + err.message, 'error');
+        } finally {
+            btn.disabled = false;
+            btn.textContent = orig;
+        }
+    };
+
+    /* ── Load more corrections (basic show/hide) ────────────────────── */
+    window.loadMoreCorrections = function() {
+        const btn   = document.getElementById('load-more-btn');
+        const tbody = document.querySelector('#corrections-table tbody');
+        if (!tbody) return;
+
+        // Re-request with no limit — simplest approach: reload with query param
+        const url = new URL(window.location.href);
+        url.searchParams.set('show_all', '1');
+        window.location.href = url.toString();
+    };
+
+    /* ── Format timestamps ──────────────────────────────────────────── */
+    document.querySelectorAll('.corr-ts').forEach(el => {
+        const iso = el.dataset.iso;
+        if (!iso) return;
+        try {
+            const d = new Date(iso);
+            if (isNaN(d)) return;
+            const pad = n => String(n).padStart(2, '0');
+            el.textContent =
+                d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate()) +
+                ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+        } catch (_) {}
+    });
+
+})();
+</script>
+{% endblock %}

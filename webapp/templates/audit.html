@@ -1,0 +1,283 @@
+{% extends "base.html" %}
+
+{% block title %}Audit &amp; Learning &mdash; LegalMind{% endblock %}
+
+{% block content %}
+<div class="max-w-screen-2xl mx-auto w-full px-6 py-8 space-y-8">
+
+  <!-- Page header -->
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 class="text-2xl font-semibold text-slate-800">Audit &amp; Learning</h1>
+      <p class="text-sm text-slate-500 mt-0.5">Correction history, learned rules, and improvement metrics</p>
+    </div>
+    <!-- Trigger pattern extraction -->
+    <button type="button"
+            hx-post="/api/v1/learning/rules"
+            hx-confirm="Run pattern extraction from correction history? This may take a few minutes."
+            hx-target="#rule-extraction-result"
+            hx-swap="innerHTML"
+            class="inline-flex items-center gap-2 px-4 py-2 bg-blue-800 text-white text-sm font-medium rounded-md hover:bg-blue-900 transition-colors">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"/>
+      </svg>
+      Trigger Pattern Extraction
+    </button>
+  </div>
+
+  <!-- Extraction result feedback area -->
+  <div id="rule-extraction-result"></div>
+
+  <!-- Stats bar -->
+  <div class="grid grid-cols-2 xl:grid-cols-4 gap-4">
+
+    <div class="bg-white rounded-lg border border-slate-200 px-5 py-4">
+      <p class="text-xs font-medium text-slate-500 uppercase tracking-wide">Total Corrections</p>
+      <p class="text-2xl font-semibold text-slate-800 mt-1">{{ total_corrections | default(0) }}</p>
+    </div>
+
+    <div class="bg-white rounded-lg border border-slate-200 px-5 py-4">
+      <p class="text-xs font-medium text-slate-500 uppercase tracking-wide">Active Exemplars</p>
+      <p class="text-2xl font-semibold text-slate-800 mt-1">{{ metrics.active_exemplars | default(0) }}</p>
+    </div>
+
+    <div class="bg-white rounded-lg border border-slate-200 px-5 py-4">
+      <p class="text-xs font-medium text-slate-500 uppercase tracking-wide">Learned Rules</p>
+      <p class="text-2xl font-semibold text-slate-800 mt-1">{{ learned_rules | length }}</p>
+    </div>
+
+    <div class="bg-white rounded-lg border border-slate-200 px-5 py-4">
+      <p class="text-xs font-medium text-slate-500 uppercase tracking-wide">Last Extraction</p>
+      <p class="text-sm font-medium text-slate-800 mt-1">
+        {% if metrics.last_extraction_date %}
+          {{ metrics.last_extraction_date[:10] }}
+        {% else %}
+          Never
+        {% endif %}
+      </p>
+    </div>
+
+  </div>
+
+  <!-- Two-column layout: Learned Rules + Improvement Metrics -->
+  <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+
+    <!-- Learned Rules (2/3 width) -->
+    <div class="xl:col-span-2 bg-white rounded-lg border border-slate-200">
+      <div class="px-6 py-4 border-b border-slate-200">
+        <h2 class="text-sm font-semibold text-slate-800">Learned Rules</h2>
+        <p class="text-xs text-slate-400 mt-0.5">Rules extracted from correction patterns and applied to future drafts</p>
+      </div>
+
+      <div class="divide-y divide-slate-100">
+        {% if not learned_rules %}
+          <div class="text-center text-slate-400 py-12 text-sm">No rules learned yet. Trigger pattern extraction after accumulating corrections.</div>
+        {% else %}
+          {% for rule in learned_rules %}
+          <div class="px-6 py-4 flex items-start gap-4">
+            <div class="flex-1 min-w-0">
+              <p class="text-sm text-slate-700 leading-relaxed">{{ rule.text | default('') }}</p>
+              <div class="flex items-center gap-3 mt-2">
+                <span class="text-xs text-slate-400 font-mono">
+                  {% if rule.created_at %}{{ rule.created_at[:10] }}{% endif %}
+                </span>
+                {% if rule.draft_type %}
+                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs bg-slate-100 text-slate-600">
+                  {{ rule.draft_type }}
+                </span>
+                {% endif %}
+                {% if rule.source_correction_count %}
+                <span class="text-xs text-slate-400">from {{ rule.source_correction_count }} correction{% if rule.source_correction_count != 1 %}s{% endif %}</span>
+                {% endif %}
+              </div>
+            </div>
+            <div class="shrink-0">
+              {% if rule.active %}
+                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700">active</span>
+              {% else %}
+                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-400">inactive</span>
+              {% endif %}
+            </div>
+          </div>
+          {% endfor %}
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Improvement Metrics (1/3 width) -->
+    <div class="bg-white rounded-lg border border-slate-200">
+      <div class="px-6 py-4 border-b border-slate-200">
+        <h2 class="text-sm font-semibold text-slate-800">Corrections by Draft Type</h2>
+        <p class="text-xs text-slate-400 mt-0.5">Distribution across output types</p>
+      </div>
+      <div class="px-6 py-5 space-y-4">
+        {% if metrics and metrics.by_draft_type %}
+          {% set max_val = metrics.by_draft_type.values() | max | default(1) %}
+          {% for dtype, count in metrics.by_draft_type.items() %}
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-xs text-slate-600 font-medium">{{ dtype | replace('_', ' ') | title }}</span>
+              <span class="text-xs text-slate-500">{{ count }}</span>
+            </div>
+            <div class="w-full bg-slate-100 rounded-full h-2">
+              <div class="h-2 rounded-full bg-blue-800"
+                   style="width: {{ ([count / (max_val or 1) * 100, 100] | min) | round(1) }}%"></div>
+            </div>
+          </div>
+          {% endfor %}
+        {% else %}
+          <p class="text-sm text-slate-400">No metrics available yet.</p>
+        {% endif %}
+
+        {% if metrics and metrics.by_correction_type %}
+        <div class="pt-4 border-t border-slate-100">
+          <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">By Correction Type</p>
+          {% for ctype, count in metrics.by_correction_type.items() %}
+          <div class="flex items-center justify-between py-1">
+            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium
+              {% if ctype == 'omission' %}bg-amber-100 text-amber-800
+              {% elif ctype == 'error' %}bg-red-100 text-red-800
+              {% elif ctype == 'style' %}bg-slate-100 text-slate-700
+              {% elif ctype == 'restructure' %}bg-blue-100 text-blue-800
+              {% else %}bg-slate-100 text-slate-600{% endif %}">
+              {{ ctype }}
+            </span>
+            <span class="text-sm font-medium text-slate-700">{{ count }}</span>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Correction History table -->
+  <div class="bg-white rounded-lg border border-slate-200">
+    <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between gap-4">
+      <div>
+        <h2 class="text-sm font-semibold text-slate-800">Correction History</h2>
+        <p class="text-xs text-slate-400 mt-0.5">All operator corrections recorded by the system</p>
+      </div>
+      <!-- Filter by draft type -->
+      <form method="get" action="/audit" class="flex items-center gap-2">
+        <label for="filter-draft-type" class="text-xs text-slate-500 whitespace-nowrap">Filter by type:</label>
+        <select id="filter-draft-type"
+                name="draft_type"
+                onchange="this.form.submit()"
+                class="text-xs border border-slate-200 rounded-md px-2.5 py-1.5 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-800 focus:border-transparent">
+          <option value="">All types</option>
+          <option value="case_fact_summary" {% if request.query_params.get('draft_type') == 'case_fact_summary' %}selected{% endif %}>Case Fact Summary</option>
+          <option value="title_review_summary" {% if request.query_params.get('draft_type') == 'title_review_summary' %}selected{% endif %}>Title Review Summary</option>
+          <option value="notice_summary" {% if request.query_params.get('draft_type') == 'notice_summary' %}selected{% endif %}>Notice Summary</option>
+          <option value="document_checklist" {% if request.query_params.get('draft_type') == 'document_checklist' %}selected{% endif %}>Document Checklist</option>
+        </select>
+      </form>
+    </div>
+
+    {% if not corrections %}
+      <div class="text-center text-slate-400 py-12 text-sm">No corrections found.</div>
+    {% else %}
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="border-b border-slate-100">
+              <th class="text-left px-6 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">ID</th>
+              <th class="text-left px-6 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">Timestamp</th>
+              <th class="text-left px-6 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">Document</th>
+              <th class="text-left px-6 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">Field</th>
+              <th class="text-left px-6 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">Type</th>
+              <th class="text-left px-6 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">Generated vs Edited</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            {% for corr in corrections %}
+            <tr class="hover:bg-slate-50 transition-colors">
+              <td class="px-6 py-3 text-xs font-mono text-slate-400 whitespace-nowrap">{{ corr.id | default('') }}</td>
+              <td class="px-6 py-3 text-xs font-mono text-slate-500 whitespace-nowrap">
+                {{ corr.timestamp[:19] | replace('T', ' ') }}
+              </td>
+              <td class="px-6 py-3 text-slate-700 max-w-[120px]">
+                <span class="block truncate text-xs" title="{{ corr.document_id | default('') }}">
+                  {{ corr.document_id | default('') | truncate(18) }}
+                </span>
+              </td>
+              <td class="px-6 py-3 text-slate-700 max-w-[140px]">
+                <span class="block truncate text-xs font-mono" title="{{ corr.field_path | default('') }}">
+                  {{ corr.field_path | default('') | truncate(22) }}
+                </span>
+              </td>
+              <td class="px-6 py-3 whitespace-nowrap">
+                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium
+                  {% if corr.correction_type == 'omission' %}bg-amber-100 text-amber-800
+                  {% elif corr.correction_type == 'error' %}bg-red-100 text-red-800
+                  {% elif corr.correction_type == 'style' %}bg-slate-100 text-slate-700
+                  {% elif corr.correction_type == 'restructure' %}bg-blue-100 text-blue-800
+                  {% else %}bg-slate-100 text-slate-600{% endif %}">
+                  {{ corr.correction_type | default('unknown') }}
+                </span>
+              </td>
+              <td class="px-6 py-3 max-w-[260px]">
+                <div class="space-y-1">
+                  <div class="flex items-start gap-1.5">
+                    <span class="shrink-0 text-xs font-medium text-red-500 w-16">Generated:</span>
+                    <span class="text-xs text-slate-500 line-through truncate" title="{{ corr.generated_text | default('') }}">
+                      {{ corr.generated_text | default('') | truncate(50) }}
+                    </span>
+                  </div>
+                  <div class="flex items-start gap-1.5">
+                    <span class="shrink-0 text-xs font-medium text-emerald-600 w-16">Edited:</span>
+                    <span class="text-xs text-slate-800 font-medium truncate" title="{{ corr.edited_text | default('') }}">
+                      {{ corr.edited_text | default('') | truncate(50) }}
+                    </span>
+                  </div>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      {% set page = request.query_params.get('page', 1) | int %}
+      {% set per_page = 20 %}
+      {% set total_pages = ((total_corrections | default(0)) / per_page) | round(0, 'ceil') | int %}
+      {% if total_pages > 1 %}
+      <div class="px-6 py-4 border-t border-slate-100 flex items-center justify-between">
+        <p class="text-xs text-slate-500">
+          Showing {{ ((page - 1) * per_page) + 1 }}–{{ [page * per_page, total_corrections] | min }} of {{ total_corrections }} corrections
+        </p>
+        <div class="flex items-center gap-1">
+          {% if page > 1 %}
+          <a href="?page={{ page - 1 }}{% if request.query_params.get('draft_type') %}&draft_type={{ request.query_params.get('draft_type') }}{% endif %}"
+             class="px-3 py-1.5 text-xs border border-slate-200 rounded-md text-slate-600 hover:bg-slate-50 transition-colors">
+            Previous
+          </a>
+          {% endif %}
+          {% for p in range(1, total_pages + 1) %}
+            {% if p == page %}
+              <span class="px-3 py-1.5 text-xs bg-blue-800 text-white rounded-md font-medium">{{ p }}</span>
+            {% elif p <= 3 or p >= total_pages - 1 or (p >= page - 1 and p <= page + 1) %}
+              <a href="?page={{ p }}{% if request.query_params.get('draft_type') %}&draft_type={{ request.query_params.get('draft_type') }}{% endif %}"
+                 class="px-3 py-1.5 text-xs border border-slate-200 rounded-md text-slate-600 hover:bg-slate-50 transition-colors">{{ p }}</a>
+            {% elif p == 4 and page > 5 %}
+              <span class="px-2 text-slate-400 text-xs">&hellip;</span>
+            {% endif %}
+          {% endfor %}
+          {% if page < total_pages %}
+          <a href="?page={{ page + 1 }}{% if request.query_params.get('draft_type') %}&draft_type={{ request.query_params.get('draft_type') }}{% endif %}"
+             class="px-3 py-1.5 text-xs border border-slate-200 rounded-md text-slate-600 hover:bg-slate-50 transition-colors">
+            Next
+          </a>
+          {% endif %}
+        </div>
+      </div>
+      {% endif %}
+
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}

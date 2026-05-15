@@ -1,0 +1,27 @@
+services:
+  legalmind:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/app/data
+      - model-cache:/models:ro
+    environment:
+      - LEGALMIND_MODEL_CACHE=/models
+      - MODEL_CACHE_PATH=${MODEL_CACHE_PATH:-F:/Research_Paper_Projects/LLMs}
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    restart: unless-stopped
+
+volumes:
+  model-cache:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${MODEL_CACHE_PATH:-F:/Research_Paper_Projects/LLMs}

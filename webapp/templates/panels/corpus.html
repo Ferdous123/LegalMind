@@ -1,0 +1,426 @@
+{% extends "base.html" %}
+{% block title %}Legal Corpus — LegalMind{% endblock %}
+{% block content %}
+<style>
+    /* Term pills */
+    .term-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 3px 10px;
+        border-radius: 9999px;
+        font-size: 11px;
+        font-weight: 500;
+        line-height: 1.5;
+        transition: all 120ms;
+    }
+    .term-chip-builtin {
+        background: rgb(var(--ink-700));
+        color: rgb(var(--body-secondary));
+        border: 1px solid rgb(var(--ink-700));
+    }
+    .term-chip-builtin:hover {
+        color: rgb(var(--body-primary));
+        border-color: rgb(var(--ink-800));
+    }
+    .term-chip-learned {
+        background: rgb(var(--gold) / 0.12);
+        color: rgb(var(--gold));
+        border: 1px solid rgb(var(--gold) / 0.35);
+    }
+    .term-chip-learned:hover {
+        background: rgb(var(--gold) / 0.2);
+    }
+    .term-chip-del {
+        cursor: pointer;
+        opacity: 0.55;
+        font-size: 13px;
+        line-height: 1;
+        transition: opacity 120ms;
+        flex-shrink: 0;
+        border: none;
+        background: none;
+        color: inherit;
+        padding: 0;
+    }
+    .term-chip-del:hover { opacity: 1; }
+
+    /* Category sidebar rows */
+    .cat-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+        padding: 7px 10px;
+        border-radius: 6px;
+        font-size: 12px;
+        color: rgb(var(--body-secondary));
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        transition: background 100ms, color 100ms;
+        text-align: left;
+        gap: 6px;
+    }
+    .cat-row:hover { background: rgb(var(--ink-800)); color: rgb(var(--body-primary)); }
+    .cat-row.active { background: rgb(var(--ink-800)); color: rgb(var(--body-primary)); border-left: 2px solid rgb(var(--gold)); padding-left: 8px; }
+    .cat-row .cat-count {
+        font-size: 10px;
+        color: rgb(var(--body-muted));
+        background: rgb(var(--ink-800));
+        padding: 1px 6px;
+        border-radius: 9999px;
+        flex-shrink: 0;
+    }
+    .cat-row.active .cat-count { background: rgb(var(--ink-700)); }
+</style>
+
+<div style="display:flex;flex-direction:column;gap:16px;">
+
+    <!-- ═══════════ TOP STATS BAR ═══════════ -->
+    <div class="card-sm" style="display:flex;align-items:center;gap:28px;flex-wrap:wrap;">
+        <div>
+            <span style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:rgb(var(--body-muted));">Built-in Terms</span>
+            <span id="stat-builtin" style="display:block;font-size:22px;font-weight:700;color:rgb(var(--body-primary));line-height:1.2;margin-top:2px;">—</span>
+        </div>
+        <div style="width:1px;height:36px;background:rgb(var(--ink-700));flex-shrink:0;"></div>
+        <div>
+            <span style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:rgb(var(--body-muted));">Categories</span>
+            <span id="stat-cats" style="display:block;font-size:22px;font-weight:700;color:rgb(var(--body-primary));line-height:1.2;margin-top:2px;">—</span>
+        </div>
+        <div style="width:1px;height:36px;background:rgb(var(--ink-700));flex-shrink:0;"></div>
+        <div>
+            <span style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:rgb(var(--body-muted));">Learned Terms</span>
+            <span id="stat-learned" style="display:block;font-size:22px;font-weight:700;color:rgb(var(--gold));line-height:1.2;margin-top:2px;">—</span>
+        </div>
+        <div style="margin-left:auto;">
+            <button class="btn btn-ghost btn-sm" onclick="loadCorpus()" title="Refresh corpus data">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/>
+                </svg>
+                Refresh
+            </button>
+        </div>
+    </div>
+
+    <!-- ═══════════ TWO-COLUMN BODY ═══════════ -->
+    <div style="display:flex;gap:16px;align-items:flex-start;">
+
+        <!-- ── LEFT: Category sidebar ── -->
+        <div style="width:256px;flex-shrink:0;display:flex;flex-direction:column;gap:0;">
+
+            <!-- Loading -->
+            <div id="corpus-loading" class="card-sm" style="font-size:12px;color:rgb(var(--body-muted));">
+                Loading categories…
+            </div>
+
+            <!-- Sidebar content -->
+            <div id="corpus-sidebar-content" style="display:none;flex-direction:column;gap:4px;">
+
+                <!-- Built-in section -->
+                <div class="card" style="padding:12px 14px;">
+                    <p class="card-head" style="margin-bottom:8px;">Built-in</p>
+                    <div id="sidebar-builtin-list" style="display:flex;flex-direction:column;gap:2px;"></div>
+                </div>
+
+                <!-- Learned section -->
+                <div class="card" style="padding:12px 14px;margin-top:8px;">
+                    <p class="card-head" style="margin-bottom:8px;">Learned</p>
+                    <div id="sidebar-learned-list" style="display:flex;flex-direction:column;gap:2px;"></div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ── RIGHT: Term viewer ── -->
+        <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:12px;">
+
+            <!-- Category header + search -->
+            <div class="card-sm" style="display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;">
+                <div>
+                    <h2 id="cat-title" style="font-size:15px;font-weight:600;color:rgb(var(--body-primary));margin:0;">Select a category</h2>
+                    <p id="cat-subtitle" style="font-size:11px;color:rgb(var(--body-muted));margin:3px 0 0;"></p>
+                </div>
+                <input id="term-search" type="text" class="input" placeholder="Filter terms…"
+                       style="width:200px;font-size:12px;padding:6px 10px;" autocomplete="off" spellcheck="false">
+            </div>
+
+            <!-- Term pills grid -->
+            <div class="card" style="min-height:180px;padding:16px 20px;">
+
+                <!-- Placeholder -->
+                <div id="terms-placeholder" class="empty-state" style="padding:40px 20px;">
+                    <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z"/>
+                    </svg>
+                    <p style="font-size:13px;color:rgb(var(--body-secondary));">Select a category to view its terms.</p>
+                </div>
+
+                <!-- Empty filtered result -->
+                <div id="terms-none" style="display:none;padding:32px;text-align:center;color:rgb(var(--body-muted));font-size:12px;">
+                    No terms match the filter.
+                </div>
+
+                <!-- Pills -->
+                <div id="terms-pills" style="display:none;flex-wrap:wrap;gap:6px;"></div>
+            </div>
+
+            <!-- Add term form — shown only when Learned is selected -->
+            <div id="add-term-panel" class="card" style="display:none;padding:16px 20px;">
+                <p class="card-head" style="margin-bottom:12px;">Add Term</p>
+                <div style="display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap;">
+                    <div style="flex:1;min-width:160px;">
+                        <label style="display:block;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:rgb(var(--body-muted));margin-bottom:5px;">Term</label>
+                        <input id="new-term-input" type="text" class="input" placeholder="New term…"
+                               autocomplete="off" spellcheck="false">
+                    </div>
+                    <div style="width:160px;">
+                        <label style="display:block;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:rgb(var(--body-muted));margin-bottom:5px;">Category</label>
+                        <select id="new-term-cat" class="input"></select>
+                    </div>
+                    <button id="add-term-btn" class="btn btn-primary btn-sm" onclick="addTerm()" style="margin-bottom:1px;">Add</button>
+                </div>
+            </div>
+
+        </div><!-- /right -->
+    </div><!-- /two-column -->
+</div>
+
+<script>
+(function () {
+    'use strict';
+
+    let _data          = null;   // full API response
+    let _activeCat     = null;   // selected category name
+    let _activeSrc     = null;   // 'builtin' | 'learned'
+    let _termFilter    = '';
+
+    /* ─── Load corpus ─────────────────────────────────────────────── */
+    async function loadCorpus() {
+        document.getElementById('corpus-loading').style.display = '';
+        document.getElementById('corpus-sidebar-content').style.display = 'none';
+        try {
+            const r = await fetch('/api/v1/corpus/terms');
+            if (!r.ok) throw new Error('HTTP ' + r.status);
+            _data = await r.json();
+        } catch (e) {
+            document.getElementById('corpus-loading').textContent = 'Failed to load corpus: ' + e.message;
+            return;
+        }
+        document.getElementById('corpus-loading').style.display = 'none';
+        document.getElementById('corpus-sidebar-content').style.display = 'flex';
+        updateStats();
+        renderSidebar();
+        if (_activeCat) renderTerms();
+    }
+
+    /* ─── Stats ───────────────────────────────────────────────────── */
+    function updateStats() {
+        if (!_data) return;
+        const builtinCount = Object.values(_data.builtin || {}).reduce((s, a) => s + a.length, 0);
+        const learnedCount = (_data.learned || []).length;
+        const catCount     = Object.keys(_data.builtin || {}).length + 1;
+        document.getElementById('stat-builtin').textContent = builtinCount.toLocaleString();
+        document.getElementById('stat-cats').textContent    = catCount.toLocaleString();
+        document.getElementById('stat-learned').textContent = learnedCount.toLocaleString();
+    }
+
+    /* ─── Sidebar ─────────────────────────────────────────────────── */
+    function renderSidebar() {
+        if (!_data) return;
+
+        // Built-in categories
+        const builtinList = document.getElementById('sidebar-builtin-list');
+        builtinList.innerHTML = '';
+        for (const cat of Object.keys(_data.builtin || {})) {
+            const count = (_data.builtin[cat] || []).length;
+            const btn   = document.createElement('button');
+            const isActive = (_activeCat === cat && _activeSrc === 'builtin');
+            btn.className = 'cat-row' + (isActive ? ' active' : '');
+            btn.innerHTML =
+                '<span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + escHtml(toSentenceCase(cat)) + '</span>' +
+                '<span class="cat-count">' + count + '</span>';
+            btn.addEventListener('click', () => selectCategory(cat, 'builtin'));
+            builtinList.appendChild(btn);
+        }
+        if (Object.keys(_data.builtin || {}).length === 0) {
+            builtinList.innerHTML = '<p style="font-size:11px;color:rgb(var(--body-muted));padding:4px 10px;">No built-in categories.</p>';
+        }
+
+        // Learned row
+        const learnedList  = document.getElementById('sidebar-learned-list');
+        learnedList.innerHTML = '';
+        const learnedCount = (_data.learned || []).length;
+        const learnedIsActive = (_activeCat === 'learned' && _activeSrc === 'learned');
+        const lb = document.createElement('button');
+        lb.className = 'cat-row' + (learnedIsActive ? ' active' : '');
+        lb.innerHTML =
+            '<span style="flex:1;">Learned Terms</span>' +
+            '<span class="badge badge-gold" style="font-size:10px;padding:1px 7px;">' + learnedCount + '</span>';
+        lb.addEventListener('click', () => selectCategory('learned', 'learned'));
+        learnedList.appendChild(lb);
+
+        // Populate category dropdown in add-term form
+        const sel = document.getElementById('new-term-cat');
+        const prev = sel.value;
+        sel.innerHTML = '';
+        const optL = document.createElement('option');
+        optL.value = 'learned'; optL.textContent = 'Learned';
+        sel.appendChild(optL);
+        for (const cat of Object.keys(_data.builtin || {})) {
+            const o = document.createElement('option');
+            o.value = cat; o.textContent = toSentenceCase(cat);
+            sel.appendChild(o);
+        }
+        if (prev) sel.value = prev;
+    }
+
+    /* ─── Select category ─────────────────────────────────────────── */
+    function selectCategory(cat, src) {
+        _activeCat    = cat;
+        _activeSrc    = src;
+        _termFilter   = '';
+        document.getElementById('term-search').value = '';
+        renderSidebar();
+        renderTerms();
+    }
+
+    /* ─── Render terms ────────────────────────────────────────────── */
+    function renderTerms() {
+        const placeholder  = document.getElementById('terms-placeholder');
+        const noneEl       = document.getElementById('terms-none');
+        const pillsEl      = document.getElementById('terms-pills');
+        const addPanel     = document.getElementById('add-term-panel');
+
+        placeholder.style.display = 'none';
+        noneEl.style.display      = 'none';
+        pillsEl.style.display     = 'none';
+        addPanel.style.display    = 'none';
+
+        if (!_activeCat || !_data) {
+            placeholder.style.display = '';
+            return;
+        }
+
+        const isLearned = (_activeSrc === 'learned');
+        let terms = [];
+        if (isLearned) {
+            terms = (_data.learned || []).map(t => (typeof t === 'string' ? t : t.term || t.text || String(t)));
+            addPanel.style.display = '';
+        } else {
+            terms = (_data.builtin || {})[_activeCat] || [];
+        }
+
+        // Apply filter
+        if (_termFilter) {
+            terms = terms.filter(t => t.toLowerCase().includes(_termFilter));
+        }
+
+        // Update header
+        const title = isLearned ? 'Learned Terms' : toSentenceCase(_activeCat);
+        document.getElementById('cat-title').textContent = title;
+        document.getElementById('cat-subtitle').textContent =
+            terms.length + ' term' + (terms.length !== 1 ? 's' : '') + (_termFilter ? ' (filtered)' : '');
+
+        if (terms.length === 0) {
+            noneEl.style.display = '';
+            return;
+        }
+
+        pillsEl.style.display = 'flex';
+        pillsEl.innerHTML = '';
+        terms.forEach(term => {
+            const chip = document.createElement('span');
+            if (isLearned) {
+                chip.className = 'term-chip term-chip-learned';
+                chip.innerHTML =
+                    escHtml(term) +
+                    '<button class="term-chip-del" title="Remove \'' + escHtml(term) + '\'" ' +
+                    'onclick="removeTerm(' + JSON.stringify(term) + ')">&#10005;</button>';
+            } else {
+                chip.className = 'term-chip term-chip-builtin';
+                chip.textContent = term;
+            }
+            pillsEl.appendChild(chip);
+        });
+    }
+
+    /* ─── Add term ────────────────────────────────────────────────── */
+    async function addTerm() {
+        const input = document.getElementById('new-term-input');
+        const sel   = document.getElementById('new-term-cat');
+        const btn   = document.getElementById('add-term-btn');
+        const term  = (input.value || '').trim();
+        if (!term) { showToast('Enter a term first.', 'warn'); input.focus(); return; }
+
+        btn.disabled    = true;
+        btn.textContent = 'Adding…';
+        try {
+            const r = await fetch('/api/v1/corpus/terms', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ term, category: sel.value }),
+            });
+            const d = await r.json().catch(() => ({}));
+            if (!r.ok) throw new Error(d.error || 'HTTP ' + r.status);
+            input.value = '';
+            showToast('Term "' + term + '" added.', 'ok');
+            await loadCorpus();
+        } catch (e) {
+            showToast('Failed to add term: ' + e.message, 'error');
+        } finally {
+            btn.disabled    = false;
+            btn.textContent = 'Add';
+        }
+    }
+
+    /* ─── Remove term ─────────────────────────────────────────────── */
+    async function removeTerm(term) {
+        const ok = await legalModal({
+            title: 'Remove Term',
+            body: 'Remove "' + term + '" from the learned corpus?\nThis cannot be undone.',
+            confirmLabel: 'Remove',
+            danger: true,
+        });
+        if (!ok) return;
+        try {
+            const r = await fetch('/api/v1/corpus/terms/' + encodeURIComponent(term), { method: 'DELETE' });
+            if (!r.ok) { const d = await r.json().catch(() => ({})); throw new Error(d.error || 'HTTP ' + r.status); }
+            showToast('Term "' + term + '" removed.', 'ok');
+            await loadCorpus();
+        } catch (e) {
+            showToast('Remove failed: ' + e.message, 'error');
+        }
+    }
+
+    /* ─── Filter ──────────────────────────────────────────────────── */
+    document.getElementById('term-search').addEventListener('input', function () {
+        _termFilter = this.value.toLowerCase().trim();
+        if (_activeCat) renderTerms();
+    });
+
+    /* ─── Enter key in add-term input ────────────────────────────── */
+    document.getElementById('new-term-input').addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') { e.preventDefault(); addTerm(); }
+    });
+
+    /* ─── Helpers ─────────────────────────────────────────────────── */
+    function toSentenceCase(s) {
+        if (!s) return s;
+        return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
+    }
+    function escHtml(s) {
+        return String(s == null ? '' : s)
+            .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    /* ─── Expose for toolbar button ───────────────────────────────── */
+    window.loadCorpus  = loadCorpus;
+    window.addTerm     = addTerm;
+    window.removeTerm  = removeTerm;
+
+    /* ─── Init ────────────────────────────────────────────────────── */
+    loadCorpus();
+})();
+</script>
+{% endblock %}

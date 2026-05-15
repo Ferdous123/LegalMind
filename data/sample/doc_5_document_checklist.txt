@@ -1,0 +1,100 @@
+DOCUMENT CHECKLIST
+COMMERCIAL REAL ESTATE ACQUISITION
+ACQUISITION OF 88 WESTBROOK PLAZA, CALDWELL CITY, TX 77036
+
+TRANSACTION REFERENCE: ACQ-2024-PSL-0087
+Prepared by: Meridian Title and Escrow Services LLC
+Date Prepared: October 15, 2024
+Buyer: Westbrook Commercial Holdings LLC
+Seller: Alcott-Meridian Properties Inc.
+Escrow Officer: Howard V. Kincaid, Jr.
+Expected Closing Date: November 30, 2024
+
+---
+
+SECTION A — TITLE AND OWNERSHIP DOCUMENTS
+
+[X] 1. Preliminary Title Report                         Received: Oct 10, 2024
+[X] 2. Current Vesting Deed (Seller)                   Received: Oct 11, 2024
+[ ] 3. Seller's Statement of Title                     PENDING — due Oct 22, 2024
+[X] 4. Survey — ALTA/NSPS Land Title Survey            Received: Oct 8, 2024
+[ ] 5. Release of Mortgage Lien (First National Bank)  PENDING — lender payoff
+        requested Oct 14, 2024; payoff statement expected Oct 18, 2024
+[X] 6. HOA/Property Association Estoppel Certificate   Received: Oct 9, 2024
+
+---
+
+SECTION B — ENTITY AND AUTHORITY DOCUMENTS
+
+[X] 7.  Buyer Entity: Articles of Organisation         Received: Oct 1, 2024
+[X] 8.  Buyer Entity: Operating Agreement              Received: Oct 1, 2024
+[X] 9.  Buyer Entity: Certificate of Good Standing     Received: Oct 2, 2024
+[ ] 10. Buyer Entity: Resolution Authorising Purchase  MISSING — to be provided
+         by Buyer's counsel no later than Oct 25, 2024
+[X] 11. Seller Entity: Certificate of Good Standing    Received: Oct 3, 2024
+[X] 12. Seller Entity: Resolution Authorising Sale     Received: Oct 11, 2024
+[ ] 13. Seller Entity: IRS Form W-9                    PENDING — requested Oct 12
+
+---
+
+SECTION C — FINANCIAL AND LENDING DOCUMENTS
+
+[X] 14. Purchase and Sale Agreement (fully executed)   Received: Sept 28, 2024
+[X] 15. Loan Commitment Letter — Horizon Bank NA       Received: Oct 7, 2024
+[ ] 16. Loan Agreement (final form)                    PENDING — expected Oct 20
+[ ] 17. Deed of Trust — Horizon Bank NA                PENDING — expected Oct 25
+[X] 18. Proof of Earnest Money Deposit ($125,000)      Received: Sept 30, 2024
+[ ] 19. Closing Disclosure (HUD-1 equivalent)          PENDING — to be prepared by
+         Meridian Title no later than Nov 15, 2024
+
+---
+
+SECTION D — DUE DILIGENCE DOCUMENTS
+
+[X] 20. Phase I Environmental Site Assessment          Received: Oct 5, 2024
+         (No Recognised Environmental Conditions found)
+[ ] 21. Phase II Environmental Site Assessment        NOT REQUIRED per Phase I
+[ ] 22. Property Condition Report                     PENDING — inspector scheduled
+         Oct 18, 2024; report expected Oct 25, 2024
+[X] 23. Zoning Compliance Letter — City of Caldwell   Received: Oct 10, 2024
+[X] 24. Lease Abstracts (all 4 existing tenants)      Received: Oct 12, 2024
+[ ] 25. Tenant Estoppel Certificates (4 of 4)         PARTIAL — 2 of 4 received;
+         outstanding tenants: Unit 4B (Greystone Consulting) and Unit 6A (open)
+         Deadline for remaining: Oct 28, 2024
+[X] 26. Rent Roll (current as of Oct 1, 2024)         Received: Oct 11, 2024
+[ ] 27. Operating Expense Statement (trailing 12 mo.) PENDING — due from Seller
+         by Oct 22, 2024
+
+---
+
+SECTION E — CLOSING AND RECORDING
+
+[ ] 28. Grant Deed (Seller to Buyer) — draft          PENDING — draft to be
+         prepared by Meridian Title by Nov 1, 2024
+[ ] 29. Escrow Instructions (bilateral)               PENDING — draft circulated;
+         awaiting Seller's counsel comments by Oct 18, 2024
+[X] 30. Wire Instructions — Meridian Title Escrow     Received: Oct 15, 2024
+[ ] 31. Title Insurance Policy — ALTA Owner's Policy  PENDING — to be issued at
+         closing by Meridian Title and Escrow Services LLC
+[ ] 32. Title Insurance Policy — ALTA Lender's Policy PENDING — to be issued at
+         closing per Horizon Bank NA requirements
+
+---
+
+SUMMARY
+
+Total items on checklist:    32
+Items received/completed:    16  (50%)
+Items pending:               13  (41%)
+Items not required:           1  (3%)
+Items missing (no response):  2  (6%)
+
+CRITICAL PATH ITEMS (must be resolved to meet Nov 30 closing):
+- Item 10: Buyer resolution authorising purchase (due Oct 25)
+- Item 16: Final loan agreement (expected Oct 20)
+- Item 17: Deed of Trust (expected Oct 25)
+- Item 25: Remaining tenant estoppel certificates (due Oct 28)
+- Item 28: Grant deed draft (due Nov 1)
+
+Escrow Officer: /s/ Howard V. Kincaid, Jr.
+Date: October 15, 2024

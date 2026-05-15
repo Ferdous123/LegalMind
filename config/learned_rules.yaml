@@ -1,0 +1,8 @@
+# Auto-generated rules from operator corrections
+# Rules are added by the pattern extractor and consolidated into the system prompt
+# Do not edit manually — use the audit dashboard to review and delete rules
+
+rules: []
+last_extraction: null
+last_consolidation: null
+total_corrections_processed: 0

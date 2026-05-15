@@ -1,0 +1,119 @@
+IN THE DISTRICT COURT OF CALDWELL COUNTY
+STATE OF THORNFIELD
+CIVIL DIVISION
+
+-----------------------------------------------------------
+SYNTHEX INDUSTRIAL PARTNERS, INC.,        Case No.: CV-2024-08847
+a Thornfield corporation,
+
+                Plaintiff,
+
+        v.
+
+NORWOOD FABRICATION GROUP LLC,
+a Delaware limited liability company,
+and GERALD P. NORWOOD, individually,
+
+                Defendants.
+-----------------------------------------------------------
+
+COMPLAINT FOR BREACH OF CONTRACT,
+FRAUD, AND UNJUST ENRICHMENT
+
+Plaintiff Synthex Industrial Partners, Inc. ("Synthex" or "Plaintiff"), by and
+through its undersigned counsel, Kavanaugh & Ashworth LLP, hereby files this
+Complaint against Defendants Norwood Fabrication Group LLC ("Norwood") and
+Gerald P. Norwood ("Norwood Individual") (collectively "Defendants"), and in
+support thereof alleges as follows:
+
+PARTIES
+
+1. Plaintiff Synthex Industrial Partners, Inc. is a corporation incorporated and
+   existing under the laws of the State of Thornfield, with its principal place
+   of business at 9900 Commerce Parkway, Caldwell City, TX 77045.
+
+2. Defendant Norwood Fabrication Group LLC is a limited liability company
+   organised under the laws of the State of Delaware, registered to do business
+   in Thornfield, with its registered agent at 302 Industrial Loop, Caldwell
+   City, TX 77046.
+
+3. Defendant Gerald P. Norwood is an individual and the sole managing member of
+   Norwood Fabrication Group LLC, residing at 512 Ridgecrest Drive, Caldwell
+   City, TX 77048.
+
+JURISDICTION AND VENUE
+
+4. This Court has subject matter jurisdiction pursuant to Thornfield Civil
+   Practice Code Section 14.001, as the amount in controversy exceeds
+   $75,000.00 exclusive of interest and costs.
+
+5. Venue is proper in Caldwell County pursuant to Thornfield Civil Practice
+   Code Section 15.002(a)(1), as Defendants' principal place of business is
+   located in Caldwell County and the events giving rise to this action occurred
+   in Caldwell County.
+
+FACTUAL BACKGROUND
+
+6. On or about January 15, 2023, Synthex and Norwood entered into a Manufacturing
+   Services Agreement ("MSA") under which Norwood agreed to fabricate and deliver
+   3,500 custom industrial valve assemblies to Synthex at a total contract price
+   of $840,000.00, with delivery to occur in four equal quarterly instalments
+   beginning April 1, 2023.
+
+7. Synthex paid Norwood an initial deposit of $210,000.00 on January 20, 2023,
+   representing 25% of the total contract price, as required by Section 4.1
+   of the MSA.
+
+8. Norwood delivered the first instalment of 875 valve assemblies on April 3,
+   2023. Upon inspection, Synthex discovered that 312 of the 875 assemblies
+   failed to meet the pressure tolerance specifications set forth in Exhibit B
+   of the MSA.
+
+9. Synthex provided written notice of the defects to Norwood on April 10, 2023.
+   Norwood failed to cure the defects within the 30-day cure period required
+   by Section 8.3 of the MSA.
+
+10. Norwood failed to deliver the second, third, and fourth instalments. Despite
+    written demands dated July 5, 2023, October 6, 2023, and January 8, 2024,
+    Norwood did not deliver the remaining 2,625 valve assemblies.
+
+CAUSES OF ACTION
+
+COUNT I - BREACH OF CONTRACT
+11. Paragraphs 1 through 10 are incorporated by reference.
+12. Norwood materially breached the MSA by delivering defective goods and
+    failing to deliver the remaining contract quantity.
+13. Synthex has suffered damages of not less than $680,000.00.
+
+COUNT II - FRAUD
+14. Paragraphs 1 through 10 are incorporated by reference.
+15. Gerald P. Norwood personally represented that Norwood possessed the
+    manufacturing capacity to fulfil the MSA at the time of contracting.
+16. This representation was false; Norwood lacked the equipment and workforce
+    to manufacture the contracted quantity.
+17. Synthex relied on this misrepresentation in entering the MSA and paying the
+    initial deposit.
+
+COUNT III - UNJUST ENRICHMENT
+18. Defendants have been unjustly enriched by retaining Synthex's $210,000.00
+    deposit without performing the corresponding contractual obligations.
+
+PRAYER FOR RELIEF
+
+WHEREFORE, Plaintiff respectfully requests that this Court:
+(a) Award compensatory damages of not less than $680,000.00;
+(b) Award punitive damages on the fraud claim;
+(c) Award pre-judgment and post-judgment interest;
+(d) Award attorneys' fees and costs;
+(e) Grant such other and further relief as the Court deems just and proper.
+
+Respectfully submitted,
+Date: March 14, 2024
+
+KAVANAUGH & ASHWORTH LLP
+/s/ Diane L. Kavanaugh
+Diane L. Kavanaugh (Bar No. 19872341)
+1200 Commerce Tower, Suite 3400
+Caldwell City, TX 77002
+Tel: (713) 555-0147
+Attorneys for Plaintiff Synthex Industrial Partners, Inc.

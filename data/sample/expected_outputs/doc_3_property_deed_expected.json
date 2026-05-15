@@ -1,0 +1,31 @@
+{
+  "document": "doc_3_property_deed.txt",
+  "draft_type": "title_review_summary",
+  "expected_fields": {
+    "deed_type": "General Warranty Deed",
+    "grantor": "Bertram H. Lockwood and Dorothy M. Lockwood",
+    "grantee": "Fidelity Meridian Trust",
+    "property_description": "Lot 14, Block 7, Cedarbrook Estates Second Filing, Caldwell County, Thornfield",
+    "street_address": "1407 Cedarbrook Lane, Caldwell City, TX 77031",
+    "consideration": "$420,000.00",
+    "execution_date": "2024-09-04",
+    "recording_date": "2024-09-09",
+    "instrument_number": "2024-0394817",
+    "ownership_chain": [
+      "State of Thornfield (Patent 1901)",
+      "Elias Monroe Whitfield",
+      "Robert J. Carmichael",
+      "Voss Development Corporation",
+      "Harold G. Lockwood",
+      "Bertram H. Lockwood and Dorothy M. Lockwood",
+      "Fidelity Meridian Trust"
+    ],
+    "encumbrances": [
+      "Deed of Trust lien - Caldwell Savings Bank (to be released at closing)",
+      "Ten-foot utility easement along western boundary",
+      "Restrictive covenants - Cedarbrook Estates Second Filing",
+      "Ad valorem taxes for current year"
+    ],
+    "title_gaps": []
+  }
+}

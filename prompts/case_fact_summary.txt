@@ -1,0 +1,134 @@
+Generate a CASE FACT SUMMARY from the provided evidence. This draft will be used by attorneys to assess case posture and identify evidentiary gaps. Every factual assertion must be traceable to a specific evidence passage.
+
+IMPORTANT — GROUNDING REQUIREMENT:
+Attach [E1], [E2], etc. immediately after every factual claim. If you cannot cite a specific evidence passage for a claim, do not make the claim — instead record it under "Gaps in Factual Record." A draft with uncited claims is not acceptable.
+
+---
+
+## CASE FACT SUMMARY
+
+### Document Summary
+[2–3 sentences: document type, key parties, subject matter, and date range of events. Cite at least one evidence item.]
+
+---
+
+### 1. Parties
+
+#### Plaintiffs
+For each plaintiff:
+- Full legal name: [value] [cite]
+- Role description: [value] [cite]
+- Represented by (if stated): [value] [cite]
+
+#### Defendants
+For each defendant:
+- Full legal name: [value] [cite]
+- Role description: [value] [cite]
+- Represented by (if stated): [value] [cite]
+
+#### Other Parties
+For each additional party (witnesses, experts, third-party defendants, intervenors):
+- Name: [value] [cite]
+- Role: [value] [cite]
+
+If no additional parties are identified in the evidence: "No additional parties identified in source documents."
+
+---
+
+### 2. Key Dates
+
+List every date-anchored event identified in the evidence:
+
+| Event | Date | Confidence | Citation |
+|-------|------|-----------|----------|
+| [description] | [date] | HIGH/MEDIUM/LOW | [EX] |
+
+Rules:
+- Use the date format as it appears in the source; note any OCR ambiguity (e.g., "3/12/24 — month/day order unclear [E3]").
+- If a date is partially illegible, record what is readable: "[illegible]/12/2024 [E4]".
+- Do not infer dates from context (e.g., do not compute a deadline from a notice period unless the source document explicitly states the resulting date).
+
+---
+
+### 3. Claims and Allegations
+
+For each distinct legal claim or cause of action identified:
+
+**Claim [N]: [Claim Type — e.g., Breach of Contract]**
+- Description: [Brief statement of the allegation] [cite]
+- Supporting facts from evidence: [key factual basis] [cite each fact separately]
+- Legal basis stated in document: [statutory or common law basis, if stated] [cite] — if not stated: "Legal basis not stated in source documents."
+- Party asserting claim: [plaintiff name] [cite]
+
+---
+
+### 4. Procedural History
+
+Chronological list of procedural events identified in the evidence:
+
+| Date | Procedural Event | Citation |
+|------|-----------------|----------|
+| [date] | [filing, hearing, order, etc.] | [EX] |
+
+- Current stage of proceedings: [value] [cite] — if not determinable: "Current stage not clearly established in source documents."
+- Pending motions (if identified): [list with disposition status] [cite each]
+- Jurisdiction and venue: [value] [cite] — if not stated: "Not clearly established in source documents."
+
+---
+
+### 5. Evidence Summary
+
+Documentary evidence referenced in the source materials:
+
+| # | Evidence Type | Date | Description | Citation |
+|---|--------------|------|-------------|----------|
+| 1 | [deed/contract/affidavit/etc.] | [date] | [summary] | [EX] |
+
+- Witness statements or testimonies mentioned: [list or "None identified"] [cite if present]
+- Expert opinions referenced: [list or "None identified"] [cite if present]
+- Physical evidence referenced: [list or "None identified"] [cite if present]
+
+---
+
+### 6. Relief Sought
+
+For each party asserting a claim:
+- Party: [name] [cite]
+- Relief requested: [description — injunctive, monetary, declaratory, etc.] [cite]
+- Monetary amount (if specified): [value or "Amount not specified in source documents"] [cite]
+
+---
+
+### 7. Preliminary Assessment
+
+**Strength of documented claims** (based solely on completeness of evidence in this document set):
+- [Claim type]: [Well-supported / Partially supported / Weakly documented] — reason based on what is and is not cited [cite supporting evidence]
+
+**Gaps in the factual record** (fields that could not be populated from provided evidence):
+1. [Field]: Missing — additional document needed: [specify document type]
+2. ...
+
+**Items requiring further documentation:**
+1. [Item] — reason [cite any partial evidence that surfaced]
+
+---
+
+### Citation Index
+
+[E1] "verbatim source quote" (Document: [filename or ID], Page: [X])
+[E2] "verbatim source quote" (Document: [filename or ID], Page: [X])
+...
+
+---
+
+### Confidence Table
+
+| Field | Extracted Value (summary) | Confidence | Notes |
+|-------|--------------------------|-----------|-------|
+| Plaintiff(s) | ... | HIGH/MEDIUM/LOW/UNSUPPORTED | [reason if not HIGH] |
+| Defendant(s) | ... | | |
+| Filing date | ... | | |
+| Incident date(s) | ... | | |
+| Primary claim type | ... | | |
+| Procedural stage | ... | | |
+| Relief sought | ... | | |

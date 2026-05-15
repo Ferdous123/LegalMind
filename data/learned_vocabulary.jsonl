@@ -1,0 +1,68 @@
+{"term": "John", "category": "general_legal", "source_correction_id": "corr_92fee635", "confidence": 0.6, "frequency": 3}
+{"term": "Defendant John", "category": "party_roles", "source_correction_id": "corr_92fee635", "confidence": 0.8500000000000001, "frequency": 3}
+{"term": "John Doe", "category": "general_legal", "source_correction_id": "corr_92fee635", "confidence": 0.8500000000000001, "frequency": 3}
+{"term": "Defendant John Doe", "category": "party_roles", "source_correction_id": "corr_92fee635", "confidence": 0.8500000000000001, "frequency": 3}
+{"term": "Party", "category": "general_legal", "source_correction_id": "corr_a980aae1", "confidence": 1.0, "frequency": 261}
+{"term": "Named", "category": "general_legal", "source_correction_id": "corr_a980aae1", "confidence": 1.0, "frequency": 261}
+{"term": "Defendant Named", "category": "party_roles", "source_correction_id": "corr_a980aae1", "confidence": 1.0, "frequency": 261}
+{"term": "Named Party", "category": "general_legal", "source_correction_id": "corr_a980aae1", "confidence": 1.0, "frequency": 261}
+{"term": "Defendant Named Party", "category": "party_roles", "source_correction_id": "corr_a980aae1", "confidence": 1.0, "frequency": 261}
+{"term": "Marcus", "category": "general_legal", "source_correction_id": "corr_5540e330", "confidence": 1.0, "frequency": 7}
+{"term": "Bell", "category": "general_legal", "source_correction_id": "corr_5540e330", "confidence": 1.0, "frequency": 7}
+{"term": "Defendant Marcus", "category": "party_roles", "source_correction_id": "corr_5540e330", "confidence": 1.0, "frequency": 7}
+{"term": "Marcus Bell", "category": "general_legal", "source_correction_id": "corr_5540e330", "confidence": 1.0, "frequency": 7}
+{"term": "Defendant Marcus Bell", "category": "party_roles", "source_correction_id": "corr_5540e330", "confidence": 1.0, "frequency": 7}
+{"term": "Name", "category": "general_legal", "source_correction_id": "corr_7d29d0c2", "confidence": 1.0, "frequency": 51}
+{"term": "Edited", "category": "general_legal", "source_correction_id": "corr_7d29d0c2", "confidence": 1.0, "frequency": 57}
+{"term": "Edited Defendant", "category": "party_roles", "source_correction_id": "corr_7d29d0c2", "confidence": 1.0, "frequency": 51}
+{"term": "Defendant Name", "category": "party_roles", "source_correction_id": "corr_7d29d0c2", "confidence": 1.0, "frequency": 51}
+{"term": "Edited Defendant Name", "category": "party_roles", "source_correction_id": "corr_7d29d0c2", "confidence": 1.0, "frequency": 51}
+{"term": "Smith", "category": "general_legal", "source_correction_id": "corr_7a1cf3b9", "confidence": 0.6, "frequency": 3}
+{"term": "Jane", "category": "general_legal", "source_correction_id": "corr_7a1cf3b9", "confidence": 0.6, "frequency": 3}
+{"term": "Grantor Jane", "category": "legal_actions", "source_correction_id": "corr_7a1cf3b9", "confidence": 0.8500000000000001, "frequency": 3}
+{"term": "Jane Smith", "category": "general_legal", "source_correction_id": "corr_7a1cf3b9", "confidence": 0.8500000000000001, "frequency": 3}
+{"term": "Grantor Jane Smith", "category": "legal_actions", "source_correction_id": "corr_7a1cf3b9", "confidence": 0.8500000000000001, "frequency": 3}
+{"term": "Edited early", "category": "general_legal", "source_correction_id": "corr_d060e8f8", "confidence": 0.8500000000000001, "frequency": 3}
+{"term": "Edited late", "category": "general_legal", "source_correction_id": "corr_8791459d", "confidence": 0.8500000000000001, "frequency": 3}
+{"term": "County", "category": "general_legal", "source_correction_id": "corr_test_0002", "confidence": 0.5, "frequency": 2}
+{"term": "Riverside", "category": "general_legal", "source_correction_id": "corr_test_0002", "confidence": 0.5, "frequency": 2}
+{"term": "Book Page", "category": "general_legal", "source_correction_id": "corr_test_0002", "confidence": 0.7000000000000001, "frequency": 2}
+{"term": "Page Riverside", "category": "general_legal", "source_correction_id": "corr_test_0002", "confidence": 0.7000000000000001, "frequency": 2}
+{"term": "Riverside County", "category": "general_legal", "source_correction_id": "corr_test_0002", "confidence": 0.7000000000000001, "frequency": 2}
+{"term": "County dated", "category": "general_legal", "source_correction_id": "corr_test_0002", "confidence": 0.7000000000000001, "frequency": 2}
+{"term": "Trust Book Page", "category": "general_legal", "source_correction_id": "corr_test_0002", "confidence": 0.9, "frequency": 2}
+{"term": "Book Page Riverside", "category": "general_legal", "source_correction_id": "corr_test_0002", "confidence": 0.7000000000000001, "frequency": 2}
+{"term": "Page Riverside County", "category": "general_legal", "source_correction_id": "corr_test_0002", "confidence": 0.7000000000000001, "frequency": 2}
+{"term": "Riverside County dated", "category": "general_legal", "source_correction_id": "corr_test_0002", "confidence": 0.7000000000000001, "frequency": 2}
+{"term": "days notice", "category": "general_legal", "source_correction_id": "corr_test_0003", "confidence": 0.7000000000000001, "frequency": 2}
+{"term": "notice date", "category": "general_legal", "source_correction_id": "corr_test_0003", "confidence": 0.7000000000000001, "frequency": 2}
+{"term": "Amount due due", "category": "general_legal", "source_correction_id": "corr_test_0003", "confidence": 0.7000000000000001, "frequency": 2}
+{"term": "within days notice", "category": "general_legal", "source_correction_id": "corr_test_0003", "confidence": 0.7000000000000001, "frequency": 2}
+{"term": "days notice date", "category": "general_legal", "source_correction_id": "corr_test_0003", "confidence": 0.7000000000000001, "frequency": 2}
+{"term": "First", "category": "general_legal", "source_correction_id": "corr_test_0004", "confidence": 0.44999999999999996, "frequency": 2}
+{"term": "Present", "category": "general_legal", "source_correction_id": "corr_test_0004", "confidence": 0.5, "frequency": 2}
+{"term": "Company", "category": "document_types", "source_correction_id": "corr_test_0004", "confidence": 0.5, "frequency": 2}
+{"term": "American", "category": "general_legal", "source_correction_id": "corr_test_0004", "confidence": 0.5, "frequency": 2}
+{"term": "Insurance", "category": "general_legal", "source_correction_id": "corr_test_0004", "confidence": 0.65, "frequency": 2}
+{"term": "Policy", "category": "general_legal", "source_correction_id": "corr_test_0004", "confidence": 0.5, "frequency": 2}
+{"term": "Present Certificate", "category": "general_legal", "source_correction_id": "corr_test_0004", "confidence": 0.7000000000000001, "frequency": 2}
+{"term": "Certificate Title", "category": "property_terms", "source_correction_id": "corr_test_0004", "confidence": 0.9, "frequency": 2}
+{"term": "Title Policy", "category": "property_terms", "source_correction_id": "corr_test_0004", "confidence": 0.9, "frequency": 2}
+{"term": "Policy RTL", "category": "general_legal", "source_correction_id": "corr_test_0004", "confidence": 0.7000000000000001, "frequency": 2}
+{"term": "RTL First", "category": "general_legal", "source_correction_id": "corr_test_0004", "confidence": 0.7000000000000001, "frequency": 2}
+{"term": "First American", "category": "general_legal", "source_correction_id": "corr_test_0004", "confidence": 0.7000000000000001, "frequency": 2}
+{"term": "American Title", "category": "property_terms", "source_correction_id": "corr_test_0004", "confidence": 0.9, "frequency": 2}
+{"term": "Title Insurance", "category": "property_terms", "source_correction_id": "corr_test_0004", "confidence": 1.0, "frequency": 2}
+{"term": "Insurance Company", "category": "general_legal", "source_correction_id": "corr_test_0004", "confidence": 0.7000000000000001, "frequency": 2}
+{"term": "Company dated", "category": "document_types", "source_correction_id": "corr_test_0004", "confidence": 0.7000000000000001, "frequency": 2}
+{"term": "Title policy Present", "category": "property_terms", "source_correction_id": "corr_test_0004", "confidence": 0.9, "frequency": 2}
+{"term": "policy Present Certificate", "category": "general_legal", "source_correction_id": "corr_test_0004", "confidence": 0.7000000000000001, "frequency": 2}
+{"term": "Present Certificate Title", "category": "property_terms", "source_correction_id": "corr_test_0004", "confidence": 0.9, "frequency": 2}
+{"term": "Certificate Title Policy", "category": "property_terms", "source_correction_id": "corr_test_0004", "confidence": 0.9, "frequency": 2}
+{"term": "Title Policy RTL", "category": "property_terms", "source_correction_id": "corr_test_0004", "confidence": 0.9, "frequency": 2}
+{"term": "Policy RTL First", "category": "general_legal", "source_correction_id": "corr_test_0004", "confidence": 0.7000000000000001, "frequency": 2}
+{"term": "RTL First American", "category": "general_legal", "source_correction_id": "corr_test_0004", "confidence": 0.7000000000000001, "frequency": 2}
+{"term": "First American Title", "category": "property_terms", "source_correction_id": "corr_test_0004", "confidence": 0.9, "frequency": 2}
+{"term": "American Title Insurance", "category": "property_terms", "source_correction_id": "corr_test_0004", "confidence": 1.0, "frequency": 2}
+{"term": "Title Insurance Company", "category": "property_terms", "source_correction_id": "corr_test_0004", "confidence": 0.9, "frequency": 2}
+{"term": "Insurance Company dated", "category": "general_legal", "source_correction_id": "corr_test_0004", "confidence": 0.7000000000000001, "frequency": 2}

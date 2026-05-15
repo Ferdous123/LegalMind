@@ -1,0 +1,126 @@
+Generate a DOCUMENT CHECKLIST from the provided evidence. This draft audits the completeness and integrity of the document set. Attorneys rely on this checklist to identify what is present, what is missing, and what requires follow-up before proceeding.
+
+IMPORTANT — GROUNDING REQUIREMENT:
+Attach [E1], [E2], etc. immediately after every factual claim about document presence, condition, or contents. Assertions about document absence cannot be directly cited — use the notation "Not found in evidence set" for missing items.
+
+OCR QUALITY ASSESSMENT: Flag any document that shows OCR artifacts affecting key fields. A "Poor" quality rating does not mean the document is useless — it means its contents should be verified against the original before reliance.
+
+---
+
+## DOCUMENT CHECKLIST
+
+### Document Summary
+[2–3 sentences: case or matter type, number of documents reviewed, and overall completeness assessment. Cite at least one evidence item.]
+
+---
+
+### 1. Document Inventory
+
+For each document present in the evidence set:
+
+| # | Document Type | Date on Document | Approx. Pages | Quality | Key Content Summary | Citation |
+|---|--------------|-----------------|---------------|---------|---------------------|----------|
+| 1 | [type] | [date] | [count or "unknown"] | Good / Fair / Poor | [1–2 sentence summary] | [EX] |
+
+Quality definitions:
+- Good: Text is clearly legible; no significant OCR artifacts; dates, names, and numbers are readable.
+- Fair: Minor illegibility or formatting artifacts; key fields are legible but some secondary content is unclear.
+- Poor: Significant illegibility; OCR artifacts affecting names, dates, or monetary amounts; material content is uncertain.
+
+---
+
+### 2. Completeness Assessment
+
+#### 2a. Present Documents
+Confirmed present in evidence set:
+- [Document type]: Present [cite evidence]
+- ...
+
+#### 2b. Missing Documents
+Documents that SHOULD be present based on the matter type and other documents in the set, but are NOT found:
+- [Document type]: Not found in evidence set — needed because: [reason based on what other documents indicate]
+- ...
+
+If no documents are clearly missing: "No obvious gaps identified based on available evidence. Note: this assessment is limited to inferences from the current document set."
+
+#### 2c. Partially Available Documents
+Documents present but incomplete, damaged, or degraded:
+- [Document type]: Partial — [describe what is missing, illegible, or truncated] [cite evidence showing the partial state]
+
+---
+
+### 3. Verification Status
+
+For key documents, verify integrity across the following dimensions:
+
+| Document | Signatures Present | Dates Consistent | Notarization | Recording/Filing | Status | Citation |
+|----------|--------------------|-----------------|--------------|-----------------|--------|----------|
+| [name] | Yes / No / N/A | Consistent / Inconsistent / N/A | Yes / No / N/A | Yes / No / N/A | Verified / Issues Found / Cannot Verify | [EX] |
+
+For any "Issues Found" status, describe the specific issue:
+- [Document]: [Description of inconsistency or missing element] [cite]
+
+---
+
+### 4. Cross-Reference Check
+
+Review consistency across documents for the following:
+
+- Date consistency: [Are dates for the same event consistent across documents? List any discrepancies with citations.]
+  - Consistent / DISCREPANCY: [description] [cite each conflicting source]
+
+- Party name consistency: [Are party names spelled consistently? List OCR-induced variants.]
+  - Consistent / VARIANT: "[Name in Document A]" vs. "[Name in Document B]" — likely same party but verify [cite each]
+
+- Monetary amount consistency: [Do amounts agree across invoices, contracts, and notices?]
+  - Consistent / DISCREPANCY: [description] [cite each conflicting source]
+
+- Reference number consistency: [Do case numbers, account numbers, parcel IDs agree?]
+  - Consistent / DISCREPANCY: [description] [cite each conflicting source]
+
+---
+
+### 5. Action Items
+
+Prioritized list of items requiring attention, based on findings above:
+
+| Priority | Action | Basis | Citation |
+|----------|--------|-------|----------|
+| HIGH | [action] | [reason] | [EX] |
+| MEDIUM | [action] | [reason] | [EX] |
+| LOW | [action] | [reason] | [EX] |
+
+HIGH = Missing or defective document that blocks a critical step.
+MEDIUM = Document present but quality or completeness issue that should be resolved.
+LOW = Minor gap or inconsistency that should be noted but does not block progress.
+
+---
+
+### 6. Summary Statistics
+
+- Total documents reviewed: [X]
+- Complete and verified: [X]
+- Present but partial or degraded quality: [X]
+- Identified as missing from set: [X]
+- Overall completeness score: [X]% ([complete + partial] / [complete + partial + missing])
+
+---
+
+### Citation Index
+
+[E1] "verbatim source quote" (Document: [filename or ID], Page: [X])
+[E2] "verbatim source quote" (Document: [filename or ID], Page: [X])
+...
+
+---
+
+### Confidence Table
+
+| Assessment Area | Finding (summary) | Confidence | Notes |
+|----------------|------------------|-----------|-------|
+| Document inventory completeness | ... | HIGH/MEDIUM/LOW/UNSUPPORTED | |
+| Signature verification | ... | | |
+| Date consistency | ... | | |
+| Party name consistency | ... | | |
+| Amount consistency | ... | | |
+| Missing document identification | ... | | [inferred — lower confidence] |

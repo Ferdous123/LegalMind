@@ -1,0 +1,527 @@
+{% extends "base.html" %}
+{% block title %}Pipeline — LegalMind{% endblock %}
+{% block content %}
+
+<!-- ── Section heading ──────────────────────────────────────────────── -->
+<div style="margin-bottom:24px;">
+    <h1 style="font-size:20px;font-weight:700;color:rgb(var(--body-primary));margin:0 0 4px;">
+        Document Processing Pipeline
+    </h1>
+    <p style="font-size:13px;color:rgb(var(--body-muted));margin:0;">
+        Upload a legal document and watch it move through every processing stage in real time.
+    </p>
+</div>
+
+<!-- ── Pipeline topology ────────────────────────────────────────────── -->
+<div class="card" style="margin-bottom:20px;">
+    <div class="card-head">Processing Stages</div>
+    <div class="pipeline-track" id="pipeline-track">
+
+        <!-- ingest -->
+        <div class="stage-node">
+            <div class="stage-badge" id="stage-ingest">
+                <div class="stage-dot"></div>
+            </div>
+            <div style="text-align:center;margin-top:6px;">
+                <div class="stage-label">ingest</div>
+                <div class="stage-model">PDF/TXT</div>
+            </div>
+        </div>
+
+        <div class="stage-connector" id="conn-ingest">
+            <div class="stage-connector-fill"></div>
+        </div>
+
+        <!-- ocr -->
+        <div class="stage-node">
+            <div class="stage-badge" id="stage-ocr">
+                <div class="stage-dot"></div>
+            </div>
+            <div style="text-align:center;margin-top:6px;">
+                <div class="stage-label">ocr</div>
+                <div class="stage-model">LightOnOCR 1B</div>
+            </div>
+        </div>
+
+        <div class="stage-connector" id="conn-ocr">
+            <div class="stage-connector-fill"></div>
+        </div>
+
+        <!-- extract -->
+        <div class="stage-node">
+            <div class="stage-badge" id="stage-extract">
+                <div class="stage-dot"></div>
+            </div>
+            <div style="text-align:center;margin-top:6px;">
+                <div class="stage-label">extract</div>
+                <div class="stage-model">Qwen3 VL-8B</div>
+            </div>
+        </div>
+
+        <div class="stage-connector" id="conn-extract">
+            <div class="stage-connector-fill"></div>
+        </div>
+
+        <!-- index -->
+        <div class="stage-node">
+            <div class="stage-badge" id="stage-index">
+                <div class="stage-dot"></div>
+            </div>
+            <div style="text-align:center;margin-top:6px;">
+                <div class="stage-label">index</div>
+                <div class="stage-model">BGE-M3</div>
+            </div>
+        </div>
+
+        <div class="stage-connector" id="conn-index">
+            <div class="stage-connector-fill"></div>
+        </div>
+
+        <!-- retrieve -->
+        <div class="stage-node">
+            <div class="stage-badge" id="stage-retrieve">
+                <div class="stage-dot"></div>
+            </div>
+            <div style="text-align:center;margin-top:6px;">
+                <div class="stage-label">retrieve</div>
+                <div class="stage-model">BGE-M3</div>
+            </div>
+        </div>
+
+        <div class="stage-connector" id="conn-retrieve">
+            <div class="stage-connector-fill"></div>
+        </div>
+
+        <!-- generate -->
+        <div class="stage-node">
+            <div class="stage-badge" id="stage-generate">
+                <div class="stage-dot"></div>
+            </div>
+            <div style="text-align:center;margin-top:6px;">
+                <div class="stage-label">generate</div>
+                <div class="stage-model">Qwen3 VL-8B</div>
+            </div>
+        </div>
+
+        <div class="stage-connector" id="conn-generate">
+            <div class="stage-connector-fill"></div>
+        </div>
+
+        <!-- verify -->
+        <div class="stage-node">
+            <div class="stage-badge" id="stage-verify">
+                <div class="stage-dot"></div>
+            </div>
+            <div style="text-align:center;margin-top:6px;">
+                <div class="stage-label">verify</div>
+                <div class="stage-model">Firewall</div>
+            </div>
+        </div>
+
+    </div><!-- /pipeline-track -->
+</div>
+
+<!-- ── Upload dropzone ───────────────────────────────────────────────── -->
+<div class="card" style="margin-bottom:20px;">
+    <div class="card-head">Upload Document</div>
+
+    <div class="dropzone" id="dropzone"
+         onclick="document.getElementById('file-input').click()"
+         style="margin-bottom:16px;">
+        <!-- Upload icon -->
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none"
+             stroke="rgb(var(--body-muted))" stroke-width="1.4"
+             stroke-linecap="round" stroke-linejoin="round"
+             style="margin:0 auto 12px;">
+            <path d="M12 16V8m0 0l-3 3m3-3l3 3"/>
+            <path d="M20.39 18.39A5 5 0 0018 9h-1.26A8 8 0 103 16.3"/>
+        </svg>
+        <p style="font-size:14px;font-weight:600;color:rgb(var(--body-primary));margin:0 0 4px;">
+            Drop a legal document here
+        </p>
+        <p style="font-size:12px;color:rgb(var(--body-muted));margin:0 0 10px;">
+            PDF, TXT, image scan — any format
+        </p>
+        <div id="selected-filename"
+             style="display:none;font-size:11px;font-family:'JetBrains Mono',monospace;
+                    color:rgb(var(--gold));background:rgb(var(--gold-dim));
+                    padding:3px 10px;border-radius:4px;display:inline-block;">
+        </div>
+    </div>
+    <input id="file-input" type="file" accept=".pdf,.txt,.png,.jpg,.jpeg,.tiff,.bmp" style="display:none;">
+
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap;">
+        <label style="font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
+                       color:rgb(var(--body-muted));white-space:nowrap;">Draft Type</label>
+        <select id="draft-type-select" class="input" style="max-width:280px;">
+            {% for dt in draft_types %}
+            <option value="{{ dt.id }}">{{ dt.label }}</option>
+            {% else %}
+            <option value="">No draft types configured</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:12px;">
+        <button id="upload-btn" class="btn btn-primary" onclick="startUpload()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+            </svg>
+            Upload &amp; Process
+        </button>
+        <span id="progress-msg"
+              style="font-size:12px;color:rgb(var(--body-muted));font-family:'JetBrains Mono',monospace;
+                     display:none;"></span>
+    </div>
+</div>
+
+<!-- ── Recent documents ──────────────────────────────────────────────── -->
+<div class="card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+        <div class="card-head" style="margin:0;">Recent Documents</div>
+        <span id="recent-count" style="font-size:11px;color:rgb(var(--body-muted));"></span>
+    </div>
+
+    <div style="overflow-x:auto;">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Document</th>
+                    <th>Type</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                    <th style="text-align:right;">Action</th>
+                </tr>
+            </thead>
+            <tbody id="recent-docs-body">
+                {% if recent_docs %}
+                    {% for doc in recent_docs %}
+                    <tr>
+                        <td style="font-family:'JetBrains Mono',monospace;color:rgb(var(--body-primary));
+                                   max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"
+                            title="{{ doc.filename }}">
+                            {{ doc.filename | truncate(38) }}
+                        </td>
+                        <td>{{ doc.draft_type | default('—') }}</td>
+                        <td>
+                            {% set s = doc.status | default('unknown') %}
+                            {% if s == 'complete' %}
+                                <span class="badge badge-ok">complete</span>
+                            {% elif s == 'processing' %}
+                                <span class="badge badge-gold">processing</span>
+                            {% elif s == 'error' %}
+                                <span class="badge badge-fail">error</span>
+                            {% else %}
+                                <span class="badge badge-muted">{{ s }}</span>
+                            {% endif %}
+                        </td>
+                        <td style="font-family:'JetBrains Mono',monospace;color:rgb(var(--body-muted));">
+                            {% if doc.created_at %}{{ doc.created_at[:10] }}{% else %}—{% endif %}
+                        </td>
+                        <td style="text-align:right;">
+                            {% if doc.id %}
+                            <a href="/documents/{{ doc.id }}/draft" class="btn btn-ghost btn-sm">
+                                View Draft
+                            </a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <!-- Skeleton placeholder rows -->
+                    {% for i in range(3) %}
+                    <tr class="skeleton-row">
+                        <td><div class="skeleton" style="height:12px;width:160px;"></div></td>
+                        <td><div class="skeleton" style="height:12px;width:80px;"></div></td>
+                        <td><div class="skeleton" style="height:12px;width:60px;"></div></td>
+                        <td><div class="skeleton" style="height:12px;width:72px;"></div></td>
+                        <td style="text-align:right;"><div class="skeleton" style="height:12px;width:60px;margin-left:auto;"></div></td>
+                    </tr>
+                    {% endfor %}
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+(function () {
+    'use strict';
+
+    /* ── Stage ordering & connector mapping ─────────────────────────── */
+    const STAGES = ['ingest','ocr','extract','index','retrieve','generate','verify'];
+
+    // connector IDs sit between consecutive stages; indexed by the *preceding* stage
+    const CONN_FOR = {
+        ingest:   'conn-ingest',
+        ocr:      'conn-ocr',
+        extract:  'conn-extract',
+        index:    'conn-index',
+        retrieve: 'conn-retrieve',
+        generate: 'conn-generate',
+    };
+
+    // Map server event stage names → canonical stage names
+    const STAGE_MAP = {
+        uploading:  'ingest',
+        ingest:     'ingest',
+        ocr:        'ocr',
+        extracting: 'extract',
+        extract:    'extract',
+        indexing:   'index',
+        index:      'index',
+        retrieving: 'retrieve',
+        retrieve:   'retrieve',
+        generating: 'generate',
+        generate:   'generate',
+        verifying:  'verify',
+        verify:     'verify',
+    };
+
+    /* ── DOM helpers ────────────────────────────────────────────────── */
+    const stageBadge = id => document.getElementById('stage-' + id);
+    const connEl     = id => document.getElementById('conn-' + id);
+
+    function resetPipeline() {
+        STAGES.forEach(s => {
+            const b = stageBadge(s);
+            if (b) b.classList.remove('s-active','s-done');
+        });
+        Object.values(CONN_FOR).forEach(cid => {
+            const c = connEl(cid.replace('conn-',''));
+            if (c) c.classList.remove('s-done','s-flowing');
+        });
+    }
+
+    function activateStage(stage) {
+        const idx = STAGES.indexOf(stage);
+        if (idx < 0) return;
+
+        // Mark all earlier stages done
+        for (let i = 0; i < idx; i++) {
+            const b = stageBadge(STAGES[i]);
+            if (b) { b.classList.remove('s-active'); b.classList.add('s-done'); }
+            const prevConn = CONN_FOR[STAGES[i]];
+            if (prevConn) {
+                const c = document.getElementById(prevConn);
+                if (c) { c.classList.remove('s-flowing'); c.classList.add('s-done'); }
+            }
+        }
+
+        // Activate current stage
+        const b = stageBadge(stage);
+        if (b) { b.classList.remove('s-done'); b.classList.add('s-active'); }
+
+        // Animate incoming connector as flowing
+        if (idx > 0) {
+            const incomingKey = STAGES[idx - 1];
+            const incomingConn = CONN_FOR[incomingKey];
+            if (incomingConn) {
+                const c = document.getElementById(incomingConn);
+                if (c) { c.classList.remove('s-done'); c.classList.add('s-flowing'); }
+            }
+        }
+    }
+
+    function completeStage(stage) {
+        const b = stageBadge(stage);
+        if (b) { b.classList.remove('s-active'); b.classList.add('s-done'); }
+        const idx = STAGES.indexOf(stage);
+        if (idx > 0) {
+            const incomingKey = STAGES[idx - 1];
+            const incomingConn = CONN_FOR[incomingKey];
+            if (incomingConn) {
+                const c = document.getElementById(incomingConn);
+                if (c) { c.classList.remove('s-flowing'); c.classList.add('s-done'); }
+            }
+        }
+    }
+
+    function completeAll() {
+        STAGES.forEach(s => completeStage(s));
+        // Also mark all connectors done
+        Object.values(CONN_FOR).forEach(cid => {
+            const c = document.getElementById(cid);
+            if (c) { c.classList.remove('s-flowing'); c.classList.add('s-done'); }
+        });
+    }
+
+    /* ── SSE ────────────────────────────────────────────────────────── */
+    let _sse = null;
+
+    function openSSE() {
+        if (_sse) { _sse.close(); }
+        _sse = new EventSource('/api/v1/events/pipeline');
+
+        _sse.onmessage = function(ev) {
+            let data;
+            try { data = JSON.parse(ev.data); } catch(_) { return; }
+            handleEvent(data);
+        };
+
+        _sse.onerror = function() {
+            _sse.close();
+            _sse = null;
+        };
+    }
+
+    function handleEvent(data) {
+        const rawStage = data.stage || '';
+        const status   = data.status || '';
+        const msg      = data.message || '';
+
+        setProgress(msg || ('Stage: ' + rawStage));
+
+        if (rawStage === 'all' && status === 'complete') {
+            completeAll();
+            if (_sse) { _sse.close(); _sse = null; }
+            window.setPipelineState && window.setPipelineState(false, 'Complete');
+            setProgress('Processing complete.');
+            showToast('Document processed successfully.', 'ok');
+            setTimeout(resetPipeline, 3000);
+            return;
+        }
+
+        const stage = STAGE_MAP[rawStage];
+        if (!stage) return;
+
+        if (status === 'active' || status === 'running') {
+            activateStage(stage);
+            window.setPipelineState && window.setPipelineState(true, stage);
+        } else if (status === 'complete') {
+            completeStage(stage);
+        }
+    }
+
+    /* ── File selection + drag-and-drop ─────────────────────────────── */
+    let _file = null;
+
+    const dropzone = document.getElementById('dropzone');
+    const fileInput = document.getElementById('file-input');
+    const filenameLbl = document.getElementById('selected-filename');
+
+    dropzone.addEventListener('dragover', e => {
+        e.preventDefault();
+        dropzone.classList.add('over');
+    });
+    dropzone.addEventListener('dragleave', () => dropzone.classList.remove('over'));
+    dropzone.addEventListener('drop', e => {
+        e.preventDefault();
+        dropzone.classList.remove('over');
+        const f = e.dataTransfer.files[0];
+        if (f) selectFile(f);
+    });
+    fileInput.addEventListener('change', () => {
+        if (fileInput.files[0]) selectFile(fileInput.files[0]);
+    });
+
+    function selectFile(f) {
+        _file = f;
+        filenameLbl.textContent = f.name;
+        filenameLbl.style.display = 'inline-block';
+    }
+
+    /* ── Progress message ───────────────────────────────────────────── */
+    function setProgress(msg) {
+        const el = document.getElementById('progress-msg');
+        if (!el) return;
+        el.textContent = msg;
+        el.style.display = msg ? '' : 'none';
+    }
+
+    /* ── Upload ─────────────────────────────────────────────────────── */
+    window.startUpload = async function() {
+        if (!_file) {
+            showToast('Please select a file first.', 'warn');
+            return;
+        }
+
+        const btn       = document.getElementById('upload-btn');
+        const draftType = document.getElementById('draft-type-select').value;
+
+        btn.disabled = true;
+        resetPipeline();
+        setProgress('Uploading…');
+        window.setPipelineState && window.setPipelineState(true, 'Uploading');
+        openSSE();
+
+        const fd = new FormData();
+        fd.append('file', _file);
+        fd.append('draft_type', draftType);
+
+        try {
+            const res  = await fetch('/api/v1/documents/upload', { method: 'POST', body: fd });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'HTTP ' + res.status);
+            setProgress('Uploaded. Running pipeline…');
+            activateStage('ingest');
+            if (data.document) prependDoc(data.document);
+        } catch (err) {
+            setProgress('Upload failed: ' + err.message);
+            showToast('Upload failed: ' + err.message, 'error');
+            resetPipeline();
+            if (_sse) { _sse.close(); _sse = null; }
+            window.setPipelineState && window.setPipelineState(false, 'Error');
+        } finally {
+            btn.disabled = false;
+        }
+    };
+
+    /* ── Prepend completed doc to recent table ──────────────────────── */
+    function escH(s) {
+        return String(s == null ? '' : s)
+            .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+            .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    function statusBadge(s) {
+        if (s === 'complete')   return '<span class="badge badge-ok">complete</span>';
+        if (s === 'processing') return '<span class="badge badge-gold">processing</span>';
+        if (s === 'error')      return '<span class="badge badge-fail">error</span>';
+        return '<span class="badge badge-muted">' + escH(s) + '</span>';
+    }
+
+    function prependDoc(doc) {
+        const tbody = document.getElementById('recent-docs-body');
+        if (!tbody) return;
+
+        // Remove skeleton rows
+        tbody.querySelectorAll('.skeleton-row').forEach(r => r.remove());
+
+        const s   = doc.status || 'processing';
+        const dt  = (doc.created_at || '').slice(0, 10) || '—';
+        const row = document.createElement('tr');
+        row.innerHTML =
+            '<td style="font-family:\'JetBrains Mono\',monospace;color:rgb(var(--body-primary));' +
+            'max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" ' +
+            'title="' + escH(doc.filename) + '">' + escH((doc.filename || '').slice(0,38)) + '</td>' +
+            '<td>' + escH(doc.draft_type || '—') + '</td>' +
+            '<td>' + statusBadge(s) + '</td>' +
+            '<td style="font-family:\'JetBrains Mono\',monospace;color:rgb(var(--body-muted));">' + escH(dt) + '</td>' +
+            '<td style="text-align:right;">' +
+            (doc.id ? '<a href="/documents/' + escH(doc.id) + '/draft" class="btn btn-ghost btn-sm">View Draft</a>' : '') +
+            '</td>';
+
+        tbody.insertBefore(row, tbody.firstChild);
+
+        // Keep max 10 rows
+        const rows = tbody.querySelectorAll('tr');
+        if (rows.length > 10) rows[rows.length - 1].remove();
+
+        const cnt = document.getElementById('recent-count');
+        if (cnt) cnt.textContent = tbody.querySelectorAll('tr').length + ' recent';
+    }
+
+    /* ── Init recent count ──────────────────────────────────────────── */
+    (function initCount() {
+        const tbody = document.getElementById('recent-docs-body');
+        const cnt   = document.getElementById('recent-count');
+        if (!tbody || !cnt) return;
+        const real = tbody.querySelectorAll('tr:not(.skeleton-row)').length;
+        if (real > 0) cnt.textContent = real + ' recent';
+    })();
+
+})();
+</script>
+{% endblock %}

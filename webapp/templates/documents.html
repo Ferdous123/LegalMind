@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+
+{% block title %}Documents &mdash; LegalMind{% endblock %}
+
+{% block content %}
+<div class="flex flex-1 h-[calc(100vh-3.5rem)] overflow-hidden">
+
+  <!-- Left sidebar: document list + upload -->
+  <aside class="w-72 shrink-0 flex flex-col bg-white border-r border-slate-200 overflow-hidden">
+
+    <!-- Sidebar header + upload button -->
+    <div class="px-4 py-4 border-b border-slate-200 space-y-3">
+      <div class="flex items-center justify-between">
+        <h2 class="text-sm font-semibold text-slate-800">Documents</h2>
+        <span class="text-xs text-slate-400">{{ documents | length }} total</span>
+      </div>
+      <button type="button"
+              id="open-upload-btn"
+              onclick="document.getElementById('upload-panel').classList.toggle('hidden')"
+              class="w-full inline-flex items-center justify-center gap-2 px-3 py-2 bg-blue-800 text-white text-xs font-medium rounded-md hover:bg-blue-900 transition-colors">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
+        </svg>
+        Upload Document
+      </button>
+    </div>
+
+    <!-- Upload panel (collapsible) -->
+    <div id="upload-panel" class="hidden border-b border-slate-200 bg-slate-50 px-4 py-4">
+      <h3 class="text-xs font-semibold text-slate-700 mb-3 uppercase tracking-wide">New Upload</h3>
+      <form id="upload-form"
+            hx-post="/api/v1/documents/upload"
+            hx-encoding="multipart/form-data"
+            hx-target="#upload-result"
+            hx-swap="innerHTML"
+            class="space-y-3">
+        <!-- File input -->
+        <div>
+          <label for="doc-file" class="block text-xs font-medium text-slate-600 mb-1">Document file</label>
+          <input type="file"
+                 id="doc-file"
+                 name="file"
+                 accept=".pdf,.png,.jpg,.jpeg,.tiff,.tif"
+                 required
+                 class="w-full text-xs text-slate-600 file:mr-2 file:py-1.5 file:px-3 file:rounded file:border-0 file:bg-blue-50 file:text-blue-800 file:text-xs file:font-medium hover:file:bg-blue-100 cursor-pointer">
+          <p class="text-xs text-slate-400 mt-1">PDF, PNG, JPG, TIFF accepted</p>
+        </div>
+
+        <!-- Draft type selector -->
+        <div>
+          <label for="draft-type" class="block text-xs font-medium text-slate-600 mb-1">Draft type</label>
+          <select id="draft-type"
+                  name="draft_type"
+                  class="w-full text-xs border border-slate-200 rounded-md px-2.5 py-2 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-800 focus:border-transparent">
+            <option value="">-- Select draft type --</option>
+            <option value="case_fact_summary">Case Fact Summary</option>
+            <option value="title_review_summary">Title Review Summary</option>
+            <option value="notice_summary">Notice Summary</option>
+            <option value="document_checklist">Document Checklist</option>
+          </select>
+        </div>
+
+        <!-- Submit -->
+        <div class="flex items-center gap-2">
+          <button type="submit"
+                  class="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-blue-800 text-white text-xs font-medium rounded-md hover:bg-blue-900 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
+            </svg>
+            Upload
+          </button>
+          <button type="button"
+                  onclick="document.getElementById('upload-panel').classList.add('hidden')"
+                  class="px-3 py-2 text-xs text-slate-500 border border-slate-200 rounded-md hover:bg-slate-100 transition-colors">
+            Cancel
+          </button>
+        </div>
+
+        <!-- Upload result feedback -->
+        <div id="upload-result" class="text-xs"></div>
+      </form>
+    </div>
+
+    <!-- Document list -->
+    <div class="flex-1 overflow-y-auto divide-y divide-slate-100">
+      {% if not documents %}
+        <div class="text-center text-slate-400 py-12 text-sm px-4">No documents uploaded yet.</div>
+      {% else %}
+        {% for doc in documents %}
+        <button type="button"
+                class="w-full text-left px-4 py-3 hover:bg-slate-50 transition-colors focus:outline-none focus:bg-slate-50 group document-list-item"
+                data-doc-id="{{ doc.id }}"
+                hx-get="/api/v1/documents/{{ doc.id }}/detail"
+                hx-target="#doc-detail-panel"
+                hx-swap="innerHTML"
+                onclick="setActiveDoc(this)">
+          <div class="flex items-start justify-between gap-2">
+            <div class="flex-1 min-w-0">
+              <p class="text-xs font-medium text-slate-800 truncate" title="{{ doc.filename | default('') }}">
+                {{ doc.filename | default('Untitled') | truncate(30) }}
+              </p>
+              <p class="text-xs text-slate-400 mt-0.5">
+                {{ doc.upload_timestamp[:10] | default('') }}
+                &middot;
+                {{ doc.page_count | default(0) }} page{% if doc.page_count != 1 %}s{% endif %}
+              </p>
+            </div>
+            <!-- Confidence badge -->
+            <span class="shrink-0 inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium
+              {% if (doc.confidence | default(0)) >= 0.8 %}bg-emerald-100 text-emerald-700
+              {% elif (doc.confidence | default(0)) >= 0.5 %}bg-amber-100 text-amber-700
+              {% else %}bg-red-100 text-red-700{% endif %}">
+              {{ (doc.confidence | default(0) * 100) | round(0) | int }}%
+            </span>
+          </div>
+          {% if doc.ocr_used %}
+          <span class="inline-flex items-center mt-1 px-1.5 py-0.5 rounded text-xs bg-slate-100 text-slate-500">OCR</span>
+          {% endif %}
+        </button>
+        {% endfor %}
+      {% endif %}
+    </div>
+
+  </aside>
+
+  <!-- Main content: document detail or empty state -->
+  <main class="flex-1 overflow-y-auto bg-slate-50">
+    <div id="doc-detail-panel" class="h-full">
+
+      <!-- Empty state -->
+      <div class="flex flex-col items-center justify-center h-full text-center px-8">
+        <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-4">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-slate-400" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd"/>
+          </svg>
+        </div>
+        <h3 class="text-base font-medium text-slate-700 mb-1">Select a document to view details</h3>
+        <p class="text-sm text-slate-400 max-w-xs">Choose a document from the list on the left, or upload a new document to get started.</p>
+      </div>
+
+    </div>
+  </main>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function setActiveDoc(el) {
+  document.querySelectorAll('.document-list-item').forEach(function(btn) {
+    btn.classList.remove('bg-blue-50', 'border-l-2', 'border-blue-800');
+  });
+  el.classList.add('bg-blue-50', 'border-l-2', 'border-blue-800');
+}
+</script>
+{% endblock %}
