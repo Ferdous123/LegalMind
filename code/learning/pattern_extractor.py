@@ -1,13 +1,14 @@
 """Pattern extractor — analyzes correction clusters to extract reusable rules.
 
-Triggered every 20 new corrections. Clusters similar corrections by embedding
-similarity, then uses Gemma-4-E4B to extract generalizable rules from each cluster.
-Rules are stored in config/learned_rules.yaml.
+Triggered every 20 new corrections (or on forced manual run). Clusters similar
+corrections by field category and correction type, then uses Gemma-4-E4B to
+extract generalizable rules from each cluster.  Rules are stored in
+config/learned_rules.yaml.
 """
 
 import logging
+from collections import defaultdict
 from datetime import datetime, timezone
-from pathlib import Path
 
 import yaml
 
@@ -19,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 TRIGGER_INTERVAL = 20
 CLUSTER_MIN_SIZE = 3
-SIMILARITY_THRESHOLD = 0.75
+FORCE_CLUSTER_MIN_SIZE = 2  # lower threshold when manually forced
 
 PATTERN_EXTRACTION_PROMPT = """Analyze these operator corrections to a legal document AI system.
 Each correction shows: what the source text said, what the AI generated, and what the operator fixed it to.
@@ -51,20 +52,30 @@ class PatternExtractor:
         current = self._store.get_count()
         return current >= self._last_trigger_count + TRIGGER_INTERVAL
 
-    def extract_patterns(self) -> list[str]:
-        """Run pattern extraction on recent corrections.
+    def extract_patterns(self, force: bool = False) -> list[str]:
+        """Run pattern extraction on accumulated corrections.
 
-        Returns list of newly extracted rules.
+        Args:
+            force: If True, run even if fewer than TRIGGER_INTERVAL corrections
+                   exist and use a lower minimum cluster size.
+
+        Returns:
+            List of newly extracted rule strings.
         """
-        recent = self._store.get_recent(n=TRIGGER_INTERVAL)
-        if len(recent) < TRIGGER_INTERVAL:
+        recent = self._store.get_recent(n=500)
+        if not recent:
+            return []
+        if not force and len(recent) < TRIGGER_INTERVAL:
             return []
 
-        clusters = self._cluster_corrections(recent)
+        work_set = recent if force else recent[:TRIGGER_INTERVAL]
+        min_size = FORCE_CLUSTER_MIN_SIZE if (force and len(work_set) < TRIGGER_INTERVAL) else CLUSTER_MIN_SIZE
+
+        clusters = self._cluster_corrections(work_set)
         new_rules = []
 
         for cluster in clusters:
-            if len(cluster) < CLUSTER_MIN_SIZE:
+            if len(cluster) < min_size:
                 continue
             rule = self._extract_rule_from_cluster(cluster)
             if rule:
@@ -78,37 +89,18 @@ class PatternExtractor:
         return new_rules
 
     def _cluster_corrections(self, corrections: list[Correction]) -> list[list[Correction]]:
-        """Cluster corrections by embedding similarity.
+        """Cluster corrections by field category and correction type.
 
-        Simple greedy clustering: for each correction, find nearest neighbors
-        above threshold and group them.
+        Groups corrections that share the same field prefix (e.g. 'parties',
+        'key_dates') and correction type. No embedding model required — this
+        produces semantically meaningful clusters for legal field corrections.
         """
-        if not corrections:
-            return []
-
-        texts = [c.source_ocr_chunk for c in corrections]
-        embeddings = self._engine.embed_batch(texts)
-
-        assigned = [False] * len(corrections)
-        clusters = []
-
-        for i in range(len(corrections)):
-            if assigned[i]:
-                continue
-            cluster = [corrections[i]]
-            assigned[i] = True
-
-            for j in range(i + 1, len(corrections)):
-                if assigned[j]:
-                    continue
-                sim = self._cosine_similarity(embeddings[i], embeddings[j])
-                if sim >= SIMILARITY_THRESHOLD:
-                    cluster.append(corrections[j])
-                    assigned[j] = True
-
-            clusters.append(cluster)
-
-        return clusters
+        groups: dict[str, list[Correction]] = defaultdict(list)
+        for c in corrections:
+            field_prefix = c.field_path.split(".")[0] if c.field_path else "general"
+            key = f"{field_prefix}:{c.correction_type or 'unknown'}"
+            groups[key].append(c)
+        return list(groups.values())
 
     def _extract_rule_from_cluster(self, cluster: list[Correction]) -> str:
         """Use Gemma-4-E4B to extract a rule from a correction cluster."""
@@ -142,14 +134,21 @@ class PatternExtractor:
             with open(LEARNED_RULES_YAML, encoding="utf-8") as f:
                 existing = yaml.safe_load(f) or {"rules": [], "metadata": {}}
 
+        existing_texts = {r["text"].strip() for r in existing.get("rules", []) if isinstance(r, dict)}
+        added = 0
         for rule in new_rules:
-            existing["rules"].append({
-                "text": rule,
-                "extracted_at": datetime.now(timezone.utc).isoformat(),
-                "active": True,
-            })
+            if rule.strip() not in existing_texts:
+                existing["rules"].append({
+                    "text": rule,
+                    "extracted_at": datetime.now(timezone.utc).isoformat(),
+                    "active": True,
+                })
+                existing_texts.add(rule.strip())
+                added += 1
+        if not added:
+            return
 
-        existing["metadata"]["last_extraction"] = datetime.now(timezone.utc).isoformat()
+        existing.setdefault("metadata", {})["last_extraction"] = datetime.now(timezone.utc).isoformat()
         existing["metadata"]["total_rules"] = len(existing["rules"])
 
         with open(LEARNED_RULES_YAML, "w", encoding="utf-8") as f:
@@ -165,7 +164,7 @@ class PatternExtractor:
         return 0
 
     def _update_last_trigger_count(self) -> None:
-        """Update stored trigger count."""
+        """Update stored trigger count after extraction."""
         if LEARNED_RULES_YAML.exists():
             with open(LEARNED_RULES_YAML, encoding="utf-8") as f:
                 data = yaml.safe_load(f) or {}
@@ -174,13 +173,3 @@ class PatternExtractor:
         data.setdefault("metadata", {})["trigger_count"] = self._store.get_count()
         with open(LEARNED_RULES_YAML, "w", encoding="utf-8") as f:
             yaml.dump(data, f, default_flow_style=False, allow_unicode=True)
-
-    @staticmethod
-    def _cosine_similarity(a: list[float], b: list[float]) -> float:
-        """Compute cosine similarity between two vectors."""
-        dot = sum(x * y for x, y in zip(a, b))
-        norm_a = sum(x * x for x in a) ** 0.5
-        norm_b = sum(x * x for x in b) ** 0.5
-        if norm_a == 0 or norm_b == 0:
-            return 0.0
-        return dot / (norm_a * norm_b)

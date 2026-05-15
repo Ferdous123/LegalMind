@@ -29,6 +29,7 @@ data/processed/
 data/corrections/
 data/palace/
 data/chromadb/
+data/pages/
 logs/
 
 # Model files (never committed — mounted as volume)
@@ -37,6 +38,10 @@ logs/
 # Environment
 .env
 .env.local
+
+# Claude Code (development-only)
+.claude/
+NEXT_SESSION.md
 
 # Test artifacts
 .pytest_cache/

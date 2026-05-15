@@ -46,19 +46,12 @@ local_models:
     quantization: Q4_K_M
     role: "Verification, pattern extraction from edits, rule consolidation"
 
-  embeddings:
-    name: bge-m3
-    backend: sentence_transformers
-    model_id: BAAI/bge-m3
-    device: cuda
-    vram_gb: 0.6
-
 # GPU swap strategy:
-# - OCR (1.5GB) + embeddings (0.6GB) = 2.1GB — can coexist
-# - Extraction (6.1GB) + embeddings (0.6GB) = 6.7GB — can coexist
-# - Reasoning (3.5GB) + embeddings (0.6GB) = 4.1GB — can coexist
+# - Extraction (6.1GB) alone
+# - Reasoning (3.5GB) alone
+# - OCR (1.5GB) alone
 # - NEVER load extraction + reasoning simultaneously (9.6GB > 10GB)
-# - OCR + extraction = 7.6GB — tight but possible, avoid
+# - Retrieval uses BM25 keyword search — no embedding model required
 #
 # Preferred swap order for full pipeline:
 # 1. Load OCR → process all scanned pages → unload OCR

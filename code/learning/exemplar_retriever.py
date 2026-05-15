@@ -1,109 +1,112 @@
 """Exemplar retriever — finds relevant past corrections for prompt injection.
 
-Uses ChromaDB to store correction embeddings and perform semantic search.
-When generating a new draft, retrieves the top-K most similar corrections
-to inject as few-shot examples in the prompt.
+Uses BM25 keyword search over the active correction JSONL files. No
+embedding model or vector store required — same keyword-match pattern
+as the evidence searcher and TRACE's query_by_field.
 """
 
 import logging
+import math
+import re
+from collections import Counter
 from typing import Optional
 
-import chromadb
-from chromadb.config import Settings
-
-from config.paths import CHROMA_DIR
 from code.learning.correction_store import Correction, CorrectionStore
-from code.llm_interface.model_manager import ModelManager
 
 logger = logging.getLogger(__name__)
 
-COLLECTION_NAME = "legalmind_corrections"
+_STOP = {"the", "a", "an", "of", "in", "to", "and", "or", "is", "was",
+         "are", "were", "be", "been", "has", "have", "had", "that", "this",
+         "it", "for", "on", "at", "by", "with", "from", "as", "not"}
+
+
+def _tokenise(text: str) -> list[str]:
+    words = re.split(r"\W+", text.lower())
+    return [w for w in words if len(w) > 2 and w not in _STOP]
+
+
+def _bm25_score(query_tokens: list[str], doc_tokens: list[str],
+                df: dict[str, int], N: int, avgdl: float,
+                k1: float = 1.5, b: float = 0.75) -> float:
+    tf_map = Counter(doc_tokens)
+    doc_len = len(doc_tokens)
+    score = 0.0
+    for term in query_tokens:
+        if term not in tf_map:
+            continue
+        tf = tf_map[term]
+        n_docs = df.get(term, 0)
+        idf = math.log((N - n_docs + 0.5) / (n_docs + 0.5) + 1)
+        norm = (tf * (k1 + 1)) / (tf + k1 * (1 - b + b * doc_len / max(1, avgdl)))
+        score += idf * norm
+    return score
 
 
 class ExemplarRetriever:
-    """Retrieves semantically similar past corrections for few-shot injection."""
+    """Retrieves similar past corrections for few-shot prompt injection."""
 
     def __init__(self):
-        CHROMA_DIR.mkdir(parents=True, exist_ok=True)
-        self._client = chromadb.PersistentClient(path=str(CHROMA_DIR))
-        self._collection = self._client.get_or_create_collection(
-            name=COLLECTION_NAME,
-            metadata={"hnsw:space": "cosine"}
-        )
         self._store = CorrectionStore()
 
     def index_correction(self, correction: Correction) -> None:
-        """Add a correction to the retrieval index."""
-        if not correction.embedding:
-            mgr = ModelManager.instance()
-            correction.embedding = mgr.embed([correction.source_ocr_chunk])[0]
-
-        self._collection.upsert(
-            ids=[correction.id],
-            embeddings=[correction.embedding],
-            metadatas=[{
-                "draft_type": correction.draft_type,
-                "field_path": correction.field_path,
-                "correction_type": correction.correction_type,
-                "active": correction.active,
-            }],
-            documents=[correction.source_ocr_chunk],
-        )
+        """No-op — corrections are already stored in JSONL by CorrectionStore."""
+        pass
 
     def get_relevant_exemplars(self, source_text: str,
                                 field_type: Optional[str] = None,
                                 draft_type: Optional[str] = None,
                                 k: int = 3) -> list[Correction]:
-        """Retrieve top-K most similar corrections for few-shot injection.
+        """Retrieve top-K most similar corrections using BM25.
 
         Args:
             source_text: The source text being processed (query).
             field_type: Optional filter by field path prefix.
             draft_type: Optional filter by draft type.
-            k: Number of exemplars to retrieve.
+            k: Number of exemplars to return.
 
         Returns:
-            List of Correction objects, most similar first.
+            List of Correction objects ranked by BM25 relevance.
         """
-        mgr = ModelManager.instance()
-        query_embedding = mgr.embed([source_text])[0]
+        # Collect candidate corrections
+        draft_types = ([draft_type] if draft_type
+                       else ["case_fact_summary", "title_review_summary",
+                             "notice_summary", "document_checklist"])
+        candidates: list[Correction] = []
+        for dt in draft_types:
+            try:
+                candidates.extend(self._store.get_all_active(dt))
+            except Exception as exc:
+                logger.warning("Could not load corrections for %s: %s", dt, exc)
 
-        where_filter = {"active": True}
-        if draft_type:
-            where_filter["draft_type"] = draft_type
+        if field_type:
+            candidates = [c for c in candidates if c.field_path.startswith(field_type)]
 
-        try:
-            results = self._collection.query(
-                query_embeddings=[query_embedding],
-                n_results=k,
-                where=where_filter if len(where_filter) > 1 else None,
-            )
-        except Exception as e:
-            logger.warning("Exemplar retrieval failed: %s", e)
+        if not candidates:
             return []
 
-        if not results["ids"] or not results["ids"][0]:
-            return []
+        # Build BM25 corpus from source_ocr_chunk of each correction
+        corpus = [_tokenise(c.source_ocr_chunk) for c in candidates]
+        N = len(corpus)
+        avgdl = sum(len(d) for d in corpus) / max(1, N)
+        df: dict[str, int] = {}
+        for doc in corpus:
+            for term in set(doc):
+                df[term] = df.get(term, 0) + 1
 
-        corrections = []
-        for corr_id in results["ids"][0]:
-            active_corrections = []
-            for draft_file_type in ["case_fact_summary", "title_review_summary",
-                                     "notice_summary", "document_checklist"]:
-                active_corrections.extend(self._store.get_all_active(draft_file_type))
+        query_tokens = _tokenise(source_text)
+        if not query_tokens:
+            return candidates[:k]
 
-            for c in active_corrections:
-                if c.id == corr_id:
-                    corrections.append(c)
-                    break
+        scored = [
+            (i, _bm25_score(query_tokens, corpus[i], df, N, avgdl))
+            for i in range(N)
+        ]
+        scored.sort(key=lambda x: x[1], reverse=True)
 
-        return corrections
+        return [candidates[i] for i, _ in scored[:k]]
 
     def format_exemplars_for_prompt(self, exemplars: list[Correction]) -> str:
-        """Format exemplars as few-shot examples for prompt injection.
-
-        Returns a formatted string block ready to insert into generation prompts.
-        """
+        """Format exemplars as few-shot examples for prompt injection."""
         if not exemplars:
             return ""
 
@@ -119,12 +122,5 @@ class ExemplarRetriever:
         return "\n".join(lines)
 
     def rebuild_index(self) -> int:
-        """Rebuild the entire correction index from stored corrections."""
-        count = 0
-        for draft_type in ["case_fact_summary", "title_review_summary",
-                           "notice_summary", "document_checklist"]:
-            for correction in self._store.get_all_active(draft_type):
-                self.index_correction(correction)
-                count += 1
-        logger.info("Rebuilt correction index: %d entries", count)
-        return count
+        """No-op — no persistent index to rebuild."""
+        return 0

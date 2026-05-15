@@ -169,19 +169,29 @@
         </details>
         {% endif %}
 
-        <!-- Main draft content (editable fields rendered by editor.js) -->
+        <!-- Main draft content — editable via editor.js -->
         <div id="draft-content"
              class="card p-8"
              style="--tw-prose-body: rgb(var(--body-secondary)); --tw-prose-headings: rgb(var(--body-primary));"
              data-draft-id="{{ (draft.id if draft else '') | default('') }}"
              data-doc-id="{{ (doc.id if doc else '') | default('') }}"
              data-draft-type="{{ (draft.draft_type if draft else '') | default('') }}">
-          {{ draft.content_markdown | safe }}
+
+          <!-- Each section rendered as an editable field -->
+          <div class="field-editable-wrapper"
+               data-editable="true"
+               data-field-path="content_markdown"
+               data-doc-id="{{ (doc.id if doc else '') | default('') }}"
+               data-draft-type="{{ (draft.draft_type if draft else '') | default('') }}"
+               data-generated-text="{{ draft.content_markdown | default('') | e }}"
+               data-source-chunk="">
+            {{ draft.content_markdown | safe }}
+          </div>
         </div>
 
         <!-- Edit note -->
         <p class="text-xs text-body-muted mt-4 text-center">
-          Hover over any field to edit. Corrections are saved and applied to future drafts.
+          Click <strong>Edit</strong> on any section to correct it. Corrections are saved and applied to future drafts.
         </p>
 
       {% endif %}

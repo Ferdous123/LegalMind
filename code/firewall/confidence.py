@@ -80,6 +80,7 @@ class ConfidenceScorer:
             "level": level,
             "score": round(avg_score, 3),
             "reasons": reasons if reasons else ["All signals indicate high confidence"],
+            "_value": field_value,
         }
 
     def score_document(self, fields: dict, ocr_confidence: float = 1.0) -> dict:

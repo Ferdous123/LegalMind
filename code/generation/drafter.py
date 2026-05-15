@@ -134,10 +134,17 @@ class DraftGenerator:
         return queries.get(draft_type, "legal document content")
 
     def _load_system_prompt(self) -> str:
-        """Load base system prompt."""
+        """Load base system prompt, stripping the rules placeholder.
+
+        The {learned_rules_block} token in system_base.txt is a slot reserved
+        for Layer-3 prompt consolidation.  Rules are injected separately by
+        _assemble_prompt() so the placeholder is removed here to avoid passing
+        a literal format-string token to the LLM.
+        """
         prompt_file = PROMPTS_DIR / "system_base.txt"
         if prompt_file.exists():
-            return prompt_file.read_text(encoding="utf-8")
+            content = prompt_file.read_text(encoding="utf-8")
+            return content.replace("{learned_rules_block}", "").rstrip()
         return ""
 
     def _load_task_prompt(self, draft_type: str) -> str:

@@ -1,51 +1,83 @@
 """OCR engine — uses LightOnOCR-1B for optical character recognition.
 
-Handles scanned documents, handwritten notes, and low-resolution images.
-Uses llama-cpp-python with the qwen25vl chat handler for vision processing.
+Per TRACE D-000057: LightOnOCR is an image-only OCR model — no text prompt.
+Uses base64 data URI (not file:// URL). Model called directly via ModelManager
+with TRACE-aligned message format.
 """
 
+import base64
 import logging
 import tempfile
 from pathlib import Path
 from typing import Optional
 
 from code.pipeline.ingestion import PageContent
-from code.llm_interface.inference import InferenceEngine
+from code.llm_interface.model_manager import ModelManager
 
 logger = logging.getLogger(__name__)
 
-OCR_PROMPT = """Extract ALL text from this image. This is a legal document page.
 
-Instructions:
-- Transcribe every word you can read, maintaining the original layout where possible
-- For text you cannot read clearly, mark it as [illegible]
-- Preserve paragraph breaks and formatting
-- Include headers, footers, page numbers, stamps, and handwritten annotations
-- For tables, represent them with clear alignment
-- Do not add any text that is not visible in the image
-- Do not interpret or summarize — only transcribe what you see"""
+def _image_to_data_uri(image_path: str) -> str:
+    """Convert image file to base64 data URI for multimodal input."""
+    path = Path(image_path)
+    suffix = path.suffix.lower().lstrip(".")
+    mime = {"png": "image/png", "jpg": "image/jpeg", "jpeg": "image/jpeg",
+            "tiff": "image/tiff", "tif": "image/tiff", "bmp": "image/bmp"}.get(suffix, "image/png")
+    with open(path, "rb") as f:
+        encoded = base64.b64encode(f.read()).decode("ascii")
+    return f"data:{mime};base64,{encoded}"
 
 
 class OCREngine:
-    """LightOnOCR-1B based OCR for scanned legal documents."""
+    """LightOnOCR-1B based OCR for scanned legal documents.
+
+    Follows TRACE approach: image-only messages, base64 data URI,
+    no text prompt (LightOnOCR is trained without text instructions).
+    """
 
     def __init__(self):
-        self._engine = InferenceEngine()
+        self._mgr = ModelManager.instance()
+
+    def _run_ocr(self, image_path: str) -> str:
+        """Load OCR model and run inference on an image.
+
+        Sends image as base64 data URI with empty system message.
+        No text prompt — LightOnOCR is an image-only OCR model.
+        Per TRACE pattern: load() returns the handle, call it directly.
+        """
+        handle = self._mgr.load("ocr")
+
+        data_uri = _image_to_data_uri(image_path)
+        messages = [
+            {"role": "system", "content": ""},
+            {
+                "role": "user",
+                "content": [
+                    {"type": "image_url", "image_url": {"url": data_uri}},
+                ],
+            },
+        ]
+
+        cfg = self._mgr._config.get("local_models", {}).get("ocr", {})
+        stop_tokens = ["<|im_end|>", "<|im_start|>", "<|endoftext|>"]
+        response = handle.create_chat_completion(
+            messages=messages,
+            max_tokens=cfg.get("max_output_tokens", 2048),
+            temperature=cfg.get("temperature", 0.2),
+            top_p=0.9,
+            top_k=0,
+            repeat_penalty=cfg.get("repeat_penalty", 1.0),
+            stop=stop_tokens,
+        )
+        return response["choices"][0]["message"]["content"] or ""
 
     def process_image(self, image_path: str) -> PageContent:
-        """Run OCR on a single image file.
-
-        Args:
-            image_path: Path to PNG/JPG/TIFF image.
-
-        Returns:
-            PageContent with extracted text and confidence.
-        """
+        """Run OCR on a single image file."""
         try:
-            text = self._engine.generate_with_image(
-                OCR_PROMPT, image_path, role="ocr", max_tokens=2048
-            )
+            text = self._run_ocr(image_path)
             confidence = self._estimate_confidence(text)
+            logger.info("OCR complete for %s: %d chars, confidence=%.2f",
+                        Path(image_path).name, len(text), confidence)
             return PageContent(
                 page_number=1,
                 text=text.strip(),
@@ -90,13 +122,7 @@ class OCREngine:
 
     @staticmethod
     def _estimate_confidence(text: str) -> float:
-        """Heuristic confidence estimate based on OCR output quality.
-
-        Factors:
-        - Proportion of [illegible] markers
-        - Text length (very short = likely failed)
-        - Presence of recognizable patterns (dates, names, legal terms)
-        """
+        """Heuristic confidence from OCR output quality."""
         if not text or len(text) < 20:
             return 0.1
 

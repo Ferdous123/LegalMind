@@ -43,19 +43,20 @@ None of these can co-reside with another model of similar size within 10 GB of V
 
 ---
 
-## 3. ChromaDB for Vector Store
+## 3. BM25 Keyword Retrieval (No Vector Store)
 
 ### Decision
-Document chunks are embedded and stored in a local persistent ChromaDB instance.
+Document retrieval uses a custom BM25 implementation over chunked document text. No embedding model, vector database, or external service is used.
 
 ### Rationale
-ChromaDB is the simplest vector store that satisfies the requirements: local persistence, no external service, Python-native API, sufficient performance for the document volumes expected at a single-firm installation. A typical matter file contains hundreds to low thousands of documents; ChromaDB handles this comfortably on a local disk.
+The system is constrained to a single RTX 3080 with 10 GB VRAM, all of which is consumed by the inference models (OCR, extraction, reasoning). Running an embedding model (even a small one like BGE-M3 at ~1.1 GB) would require either: sharing the GPU and complicating the model-swap logic, or running on CPU with significant indexing latency.
+
+BM25 is a proven retrieval algorithm that requires zero GPU, zero external dependencies, and zero model downloads. For the document volumes expected (hundreds of documents per matter, with 2-5 chunks per document), BM25 provides adequate retrieval quality — legal documents contain distinctive terminology (case numbers, party names, statutory references) that keyword search handles well.
 
 ### Tradeoffs Accepted
-- **Scalability ceiling**: ChromaDB is not designed for millions of vectors or multi-node deployment. If the corpus grows beyond ~500,000 chunks (roughly 5,000-10,000 substantial documents), query latency will degrade noticeably and alternatives (Qdrant, Weaviate, pgvector) should be evaluated.
-- **No distributed search**: Horizontal scaling would require migrating to a client-server vector store and re-indexing all documents.
-- **Limited filtering expressiveness**: ChromaDB's metadata filtering is less expressive than SQL-backed vector stores. Complex cross-document queries (e.g., "find all notices referencing property X across all matters") require workarounds.
-- **Backup complexity**: ChromaDB's on-disk format is not a single portable file. Backups require copying the entire collection directory.
+- **No semantic similarity**: BM25 cannot match paraphrases or synonyms. A search for "breach of fiduciary duty" will not retrieve a chunk that only mentions "violation of the duty of loyalty." In practice, legal documents are sufficiently formulaic that this limitation rarely causes missed evidence.
+- **No pre-computed index**: Each query scans all chunks of the target document(s) and computes BM25 scores from scratch. This is acceptable for the expected corpus size (sub-second even with thousands of chunks) but would not scale to a firm-wide search across millions of documents.
+- **No learned relevance**: The BM25 parameters (k1=1.5, b=0.75) are standard defaults. There is no relevance feedback loop or query expansion. A future enhancement could use the exemplar bank to learn query reformulations.
 
 ---
 
@@ -83,20 +84,19 @@ Together, the three layers approximate the behavior of fine-tuning (generalizati
 
 ---
 
-## 5. BGE-M3 for Embeddings
+## 5. BM25 for Exemplar Retrieval (No Embedding Model)
 
 ### Decision
-All text embedding (for retrieval indexing, exemplar similarity, and correction clustering) uses BGE-M3 via `sentence-transformers`.
+The exemplar retriever (Layer 1 of the learning system) uses BM25 keyword matching over stored corrections, the same algorithm used for document retrieval. No embedding model is used for similarity search.
 
 ### Rationale
-BGE-M3 supports over 100 languages natively from a single model. While the primary use case is English-language U.S. legal documents, Pearson Specter Litt handles matters with international components involving documents in French, Spanish, and occasionally Mandarin. Using a monolingual English embedding model would produce poor retrieval quality for those documents. BGE-M3 handles them without any additional configuration or model swap.
+Exemplar retrieval must answer: "given this source text, which past corrections are most relevant?" The corrections store is small (tens to hundreds of entries), and legal corrections are highly specific — a correction about "Gerald P. Norwood" being omitted is relevant when the source text mentions "Norwood." BM25 keyword overlap identifies this relationship directly.
 
-Additionally, BGE-M3 performs competitively with larger proprietary embedding models on legal-domain retrieval benchmarks while remaining small enough to run on CPU with acceptable latency (embedding a 512-token chunk takes approximately 80ms on CPU; this is done at index time, not query time).
+Using an embedding model would add complexity (model download, GPU/CPU allocation, index maintenance) for marginal benefit on a corpus of this size. The decision is consistent with the overall constraint of keeping the system dependency-free and GPU-focused on the inference models.
 
 ### Tradeoffs Accepted
-- **CPU inference for embeddings**: BGE-M3 runs on CPU to avoid competing with the main LLM for VRAM. This means indexing a large document takes longer than it would with GPU-accelerated embeddings.
-- **Fixed vector dimension**: BGE-M3 outputs 1024-dimensional vectors. Switching to a different embedding model later would require re-indexing all stored documents, as the vector space would be incompatible.
-- **Model download on first run**: BGE-M3 is downloaded from HuggingFace Hub on first use (approximately 1.1 GB). This requires an internet connection on initial setup.
+- **No semantic matching for corrections**: If a correction teaches "always list all named defendants" on a document mentioning "Norwood," BM25 will not retrieve this correction for a different document mentioning "Harrison" even though the correction pattern is identical. Layer 2 (pattern extraction) compensates by extracting generalizable rules that apply regardless of specific entity names.
+- **Cold start**: With fewer than 3 corrections, BM25 retrieval returns no meaningful results. The system degrades gracefully — no exemplars are injected, and the base prompt alone drives generation.
 
 ---
 

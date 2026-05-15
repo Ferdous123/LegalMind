@@ -1,100 +1,60 @@
-"""Document indexer — stores document chunks in ChromaDB for retrieval."""
+"""Document indexer — chunks are stored in the processed document JSON.
+
+No external vector store or embedding model is needed. The indexer is a
+thin shim that validates chunk data and confirms the document has been
+saved. Actual retrieval uses BM25 over the stored chunks (see searcher.py).
+"""
 
 import logging
-from typing import Optional
 
-import chromadb
-from chromadb.config import Settings
-
-from config.paths import CHROMA_DIR
-from code.llm_interface.model_manager import ModelManager
+from config.paths import PROCESSED_DIR
 
 logger = logging.getLogger(__name__)
 
-COLLECTION_NAME = "legalmind_documents"
-
 
 class DocumentIndexer:
-    """Indexes document chunks into ChromaDB for semantic retrieval.
+    """Confirms document chunks are ready for BM25 retrieval.
 
-    One collection holds all document chunks. Each chunk is stored with:
-    - embedding (BGE-M3)
-    - metadata (document_id, page_number, char offsets)
-    - raw text
+    Chunks are persisted as part of the ProcessedDocument JSON in
+    data/processed/<doc_id>.json — no separate index needed.
     """
 
-    def __init__(self):
-        CHROMA_DIR.mkdir(parents=True, exist_ok=True)
-        self._client = chromadb.PersistentClient(path=str(CHROMA_DIR))
-        self._collection = self._client.get_or_create_collection(
-            name=COLLECTION_NAME,
-            metadata={"hnsw:space": "cosine"}
-        )
-
     def index_document(self, document_id: str, chunks: list[dict]) -> int:
-        """Index all chunks from a processed document.
+        """Validate and confirm chunks for the given document.
 
         Args:
             document_id: Unique document identifier.
-            chunks: List of chunk dicts with keys: id, text, page_number, char_start, char_end.
+            chunks: List of chunk dicts (id, text, page_number, etc.).
 
         Returns:
-            Number of chunks indexed.
+            Number of chunks confirmed.
         """
         if not chunks:
+            logger.warning("No chunks to index for document %s", document_id)
             return 0
 
-        # Remove existing entries for this document (idempotent re-indexing)
-        self._remove_document(document_id)
+        doc_path = PROCESSED_DIR / f"{document_id}.json"
+        if not doc_path.exists():
+            logger.warning("Document file not found for %s — save before indexing", document_id)
+            return 0
 
-        # Generate embeddings
-        mgr = ModelManager.instance()
-        texts = [c["text"] for c in chunks]
-        embeddings = mgr.embed(texts)
-
-        # Prepare batch data
-        ids = [c.get("id", f"chunk_{i}") for i, c in enumerate(chunks)]
-        metadatas = [{
-            "document_id": document_id,
-            "page_number": c.get("page_number", 0),
-            "char_start": c.get("char_start", 0),
-            "char_end": c.get("char_end", 0),
-        } for c in chunks]
-
-        # Upsert in batches (ChromaDB has batch size limits)
-        batch_size = 100
-        for i in range(0, len(ids), batch_size):
-            end = min(i + batch_size, len(ids))
-            self._collection.upsert(
-                ids=ids[i:end],
-                embeddings=embeddings[i:end],
-                metadatas=metadatas[i:end],
-                documents=texts[i:end],
-            )
-
-        logger.info("Indexed %d chunks for document %s", len(ids), document_id)
-        return len(ids)
-
-    def _remove_document(self, document_id: str) -> None:
-        """Remove all indexed chunks for a document."""
-        try:
-            results = self._collection.get(
-                where={"document_id": document_id}
-            )
-            if results["ids"]:
-                self._collection.delete(ids=results["ids"])
-        except Exception as e:
-            logger.debug("No existing entries to remove for %s: %s", document_id, e)
+        valid = sum(1 for c in chunks if c.get("text", "").strip())
+        logger.info("Indexed %d/%d chunks for %s (stored in doc JSON)", valid, len(chunks), document_id)
+        return valid
 
     def get_document_count(self) -> int:
-        """Return total number of indexed chunks."""
-        return self._collection.count()
+        """Return number of processed documents available for retrieval."""
+        try:
+            return len([p for p in PROCESSED_DIR.glob("*.json") if not p.stem.startswith("draft_")])
+        except Exception:
+            return 0
 
     def get_indexed_documents(self) -> list[str]:
-        """Return list of unique document IDs that have been indexed."""
-        results = self._collection.get(include=["metadatas"])
-        doc_ids = set()
-        for meta in results.get("metadatas", []):
-            if meta and "document_id" in meta:
-                doc_ids.add(meta["document_id"])
-        return sorted(doc_ids)
+        """Return list of document IDs available for retrieval."""
+        try:
+            return sorted(
+                p.stem for p in PROCESSED_DIR.glob("*.json")
+                if not p.stem.startswith("draft_")
+            )
+        except Exception:
+            return []

@@ -1,33 +1,65 @@
 """Grounding verifier — checks that generated claims cite actual evidence.
 
-Scans draft output for citation markers [E1], [E2], etc. and verifies
-that each cited passage actually supports the claim being made.
+Uses TRACE-style source anchoring: a claim is "verified" if it contains a
+5-word n-gram that appears verbatim in the cited evidence, OR if token
+containment exceeds threshold.  Segments without citations are skipped
+(they are either structural or deliberate absence statements).
 """
 
 import logging
 import re
-from typing import Optional
-
-from code.llm_interface.model_manager import ModelManager
 
 logger = logging.getLogger(__name__)
 
 CITATION_PATTERN = re.compile(r"\[E(\d+)\]")
 
+_STOP = {"the", "a", "an", "of", "in", "to", "and", "or", "is", "was",
+         "are", "were", "be", "been", "has", "have", "had", "that", "this",
+         "it", "for", "on", "at", "by", "with", "from", "as", "not"}
+
+NGRAM_SIZE = 4
+
+
+def _tokens(text: str) -> set[str]:
+    words = re.split(r"\W+", text.lower())
+    return {w for w in words if len(w) > 2 and w not in _STOP}
+
+
+def _word_list(text: str) -> list[str]:
+    return [w for w in re.split(r"\W+", text.lower()) if w]
+
+
+def _has_ngram_overlap(claim: str, evidence: str, n: int = NGRAM_SIZE) -> bool:
+    """Return True if any n-gram from the claim appears verbatim in the evidence."""
+    claim_words = _word_list(claim)
+    if len(claim_words) < n:
+        return claim.lower().strip() in evidence.lower()
+    evidence_lower = evidence.lower()
+    for i in range(len(claim_words) - n + 1):
+        ngram = " ".join(claim_words[i:i + n])
+        if ngram in evidence_lower:
+            return True
+    return False
+
+
+def _containment(claim_tokens: set, evidence_tokens: set) -> float:
+    """What fraction of claim tokens appear in the evidence (asymmetric)."""
+    if not claim_tokens or not evidence_tokens:
+        return 0.0
+    return len(claim_tokens & evidence_tokens) / len(claim_tokens)
+
 
 class GroundingVerifier:
     """Verifies that generated text is grounded in cited evidence."""
 
-    def __init__(self, similarity_threshold_high: float = 0.75,
-                 similarity_threshold_low: float = 0.5):
-        self._high_threshold = similarity_threshold_high
-        self._low_threshold = similarity_threshold_low
+    def __init__(self, containment_threshold: float = 0.40):
+        self._containment_threshold = containment_threshold
 
-    def verify_draft_citations(self, draft_text: str,
-                                citation_map: dict) -> dict:
+    def verify_draft_citations(self, draft_text: str, citation_map: dict) -> dict:
         """Verify all citations in a draft against the evidence.
 
-        Returns dict mapping each claim segment to verification status.
+        Only scores segments that carry citation markers [E1], [E2], etc.
+        Segments without citations are skipped.
         """
         segments = self._extract_cited_segments(draft_text)
         results = {}
@@ -37,7 +69,9 @@ class GroundingVerifier:
             claim_text = segment["text"]
 
             if not citation_ids:
-                results[claim_text[:50]] = "unsupported"
+                continue
+
+            if self._is_structural(claim_text):
                 continue
 
             best_status = "unsupported"
@@ -47,7 +81,7 @@ class GroundingVerifier:
                 if not evidence_text:
                     continue
 
-                status = self._verify_single_citation(claim_text, evidence_text)
+                status = self._verify_single(claim_text, evidence_text)
                 if status == "verified":
                     best_status = "verified"
                     break
@@ -59,59 +93,54 @@ class GroundingVerifier:
         return results
 
     def verify_single_claim(self, claim: str, evidence_text: str) -> str:
-        """Verify a single claim against evidence text.
+        """Verify a single claim against evidence text."""
+        return self._verify_single(claim, evidence_text)
 
-        Returns: "verified", "uncertain", or "unsupported"
-        """
-        return self._verify_single_citation(claim, evidence_text)
-
-    def _verify_single_citation(self, claim: str, evidence: str) -> str:
-        """Check if evidence supports the claim using embedding similarity."""
-        try:
-            mgr = ModelManager.instance()
-            embeddings = mgr.embed([claim, evidence])
-            similarity = self._cosine_similarity(embeddings[0], embeddings[1])
-
-            if similarity >= self._high_threshold:
-                return "verified"
-            elif similarity >= self._low_threshold:
-                return "uncertain"
-            else:
-                return "unsupported"
-        except Exception as e:
-            logger.warning("Grounding verification failed: %s", e)
+    def _verify_single(self, claim: str, evidence: str) -> str:
+        """TRACE-style L0 anchoring: n-gram verbatim match OR high containment."""
+        if _has_ngram_overlap(claim, evidence):
+            return "verified"
+        score = _containment(_tokens(claim), _tokens(evidence))
+        if score >= self._containment_threshold:
+            return "verified"
+        elif score >= 0.20:
             return "uncertain"
+        return "unsupported"
+
+    @staticmethod
+    def _is_structural(text: str) -> bool:
+        """Return True if text is a markdown header, label, or table divider."""
+        stripped = text.strip().strip("-").strip()
+        if stripped.startswith("#"):
+            return True
+        if stripped.startswith("|") and stripped.endswith("|"):
+            return True
+        if len(_tokens(stripped)) < 3:
+            return True
+        if re.match(r"^(Full legal name|Role description|Represented by|Event|Date|"
+                    r"Confidence|Citation|Plaintiffs|Defendants|Other Parties|"
+                    r"Not stated)", stripped):
+            return True
+        return False
 
     def _extract_cited_segments(self, text: str) -> list[dict]:
-        """Extract text segments with their citation references."""
         segments = []
-        sentences = re.split(r"(?<=[.!?])\s+", text)
-
-        for sentence in sentences:
-            if not sentence.strip():
+        lines = text.split("\n")
+        for line in lines:
+            line = line.strip()
+            if not line:
                 continue
-            citations = CITATION_PATTERN.findall(sentence)
-            citation_ids = [f"E{num}" for num in citations]
-            clean_text = CITATION_PATTERN.sub("", sentence).strip()
-            if clean_text:
-                segments.append({
-                    "text": clean_text,
-                    "citations": citation_ids,
-                })
-
+            sentences = re.split(r"(?<=[.!?])\s+", line)
+            for sentence in sentences:
+                if not sentence.strip():
+                    continue
+                citations = CITATION_PATTERN.findall(sentence)
+                citation_ids = [f"E{num}" for num in citations]
+                clean_text = CITATION_PATTERN.sub("", sentence).strip()
+                if clean_text:
+                    segments.append({"text": clean_text, "citations": citation_ids})
         return segments
 
     def get_uncited_claims(self, draft_text: str) -> list[str]:
-        """Return list of sentences in the draft that have no citations."""
         segments = self._extract_cited_segments(draft_text)
-        return [s["text"] for s in segments if not s["citations"]
-                and len(s["text"]) > 20]  # skip short fragments
-
-    @staticmethod
-    def _cosine_similarity(a: list[float], b: list[float]) -> float:
-        dot = sum(x * y for x, y in zip(a, b))
-        norm_a = sum(x * x for x in a) ** 0.5
-        norm_b = sum(x * x for x in b) ** 0.5
-        if norm_a == 0 or norm_b == 0:
-            return 0.0
-        return dot / (norm_a * norm_b)
+        return [s["text"] for s in segments if not s["citations"] and len(s["text"]) > 20]

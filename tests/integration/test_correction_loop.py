@@ -159,18 +159,13 @@ def test_multiple_draft_types_counted_separately(isolated_dirs):
 # ---------------------------------------------------------------------------
 
 def test_exemplar_retrieval_after_save(isolated_dirs):
-    """Save a correction, index it via a mocked ChromaDB/ModelManager, then
-    retrieve it by similar source text.
+    """Save a correction, then retrieve it by BM25 similarity on source text.
 
-    The test uses a deterministic mock ModelManager (no real embeddings model
-    needed) and a mock ChromaDB collection that returns the saved correction's id.
+    ExemplarRetriever uses BM25 keyword search over the CorrectionStore JSONL
+    files — no ChromaDB or embedding model required.
     """
     from code.learning.correction_store import CorrectionStore, Correction
     from code.learning.exemplar_retriever import ExemplarRetriever
-
-    # Also patch the correction_store module-level reference used by ExemplarRetriever
-    import code.learning.exemplar_retriever as er_mod
-    import code.learning.correction_store as cs_mod
 
     store = CorrectionStore()
     corr = Correction(
@@ -184,42 +179,12 @@ def test_exemplar_retrieval_after_save(isolated_dirs):
     )
     store.save_correction(corr)
 
-    # Deterministic mock embeddings
-    mock_mgr = MagicMock()
-    unit_vec = [1.0] + [0.0] * 127
-    mock_mgr.embed.return_value = [unit_vec]
-
-    # Mock ChromaDB so we control the query result
-    mock_client = MagicMock()
-    mock_collection = MagicMock()
-    mock_client.get_or_create_collection.return_value = mock_collection
-    mock_collection.upsert.return_value = None
-    mock_collection.query.return_value = {
-        "ids": [[corr.id]],
-        "metadatas": [[{
-            "draft_type": "case_fact_summary",
-            "field_path": "parties.defendant",
-            "correction_type": "omission",
-            "active": True,
-        }]],
-        "distances": [[0.05]],
-        "documents": [["the defendant Marcus Bell filed a motion"]],
-    }
-
-    with (
-        patch("code.learning.exemplar_retriever.chromadb.PersistentClient",
-              return_value=mock_client),
-        patch("code.learning.exemplar_retriever.ModelManager") as mock_cls,
-    ):
-        mock_cls.instance.return_value = mock_mgr
-        retriever = ExemplarRetriever()
-        retriever.index_correction(corr)
-
-        exemplars = retriever.get_relevant_exemplars(
-            source_text="the defendant Marcus Bell filed a motion",
-            draft_type="case_fact_summary",
-            k=3,
-        )
+    retriever = ExemplarRetriever()
+    exemplars = retriever.get_relevant_exemplars(
+        source_text="the defendant Marcus Bell filed a motion",
+        draft_type="case_fact_summary",
+        k=3,
+    )
 
     assert len(exemplars) >= 1, (
         "At least one exemplar should be returned for matching source text"
@@ -236,21 +201,12 @@ def test_exemplar_retrieval_after_save(isolated_dirs):
 
 def test_format_exemplars_for_prompt(isolated_dirs):
     """format_exemplars_for_prompt should produce a non-empty string that
-    includes the source_ocr_chunk and edited_text of each exemplar.
+    includes the edited_text of each exemplar.
     """
     from code.learning.correction_store import Correction
     from code.learning.exemplar_retriever import ExemplarRetriever
 
-    mock_client = MagicMock()
-    mock_collection = MagicMock()
-    mock_client.get_or_create_collection.return_value = mock_collection
-
-    with (
-        patch("code.learning.exemplar_retriever.chromadb.PersistentClient",
-              return_value=mock_client),
-        patch("code.learning.exemplar_retriever.ModelManager"),
-    ):
-        retriever = ExemplarRetriever()
+    retriever = ExemplarRetriever()
 
     exemplar = Correction(
         document_id="doc_fmt",
@@ -283,17 +239,7 @@ def test_format_exemplars_empty_list(isolated_dirs):
     """format_exemplars_for_prompt with an empty list must return an empty string."""
     from code.learning.exemplar_retriever import ExemplarRetriever
 
-    mock_client = MagicMock()
-    mock_collection = MagicMock()
-    mock_client.get_or_create_collection.return_value = mock_collection
-
-    with (
-        patch("code.learning.exemplar_retriever.chromadb.PersistentClient",
-              return_value=mock_client),
-        patch("code.learning.exemplar_retriever.ModelManager"),
-    ):
-        retriever = ExemplarRetriever()
-
+    retriever = ExemplarRetriever()
     result = retriever.format_exemplars_for_prompt([])
     assert result == "", (
         f"Expected empty string for empty exemplar list, got {result!r}"

@@ -48,14 +48,6 @@ class InferenceEngine:
         self._mgr.load(role)
         return self._mgr.generate(prompt, max_tokens=max_tokens, images=[image_path])
 
-    def embed_text(self, text: str) -> list[float]:
-        """Embed a single text string."""
-        return self._mgr.embed([text])[0]
-
-    def embed_batch(self, texts: list[str]) -> list[list[float]]:
-        """Embed a batch of texts."""
-        return self._mgr.embed(texts)
-
     def get_current_model(self) -> Optional[str]:
         """Return the currently loaded model role, or None."""
         return self._mgr.current_model

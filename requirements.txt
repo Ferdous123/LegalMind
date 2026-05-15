@@ -15,11 +15,9 @@ pyyaml>=6.0.1
 pdfplumber>=0.11.0
 pypdfium2>=4.25.0
 
-# Vector store
-chromadb>=0.5.0
-
-# Embeddings
-sentence-transformers>=3.0.0
+# Retrieval (BM25 keyword search — no embedding model required)
+# rank-bm25 is an optional speedup; the built-in BM25 in code/retrieval/searcher.py
+# has zero external dependencies. Chromadb removed.
 
 # Local LLM inference (GGUF)
 # NOTE: llama-cpp-python is NOT installed from this file.

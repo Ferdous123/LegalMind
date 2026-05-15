@@ -306,6 +306,86 @@ def print_summary_table(results: list[dict[str, Any]]) -> None:
 # ---------------------------------------------------------------------------
 
 
+def _evaluate_draft_quality() -> dict[str, Any]:
+    """Check for existing draft outputs and report grounding metrics."""
+    drafts = list(PROCESSED_DIR.glob("draft_*.json"))
+    if not drafts:
+        return {"drafts_found": 0}
+    results = []
+    for path in drafts:
+        try:
+            d = json.loads(path.read_text(encoding="utf-8"))
+            results.append({
+                "file": path.name,
+                "evidence_count": d.get("evidence_count", 0),
+                "confidence_overall": d.get("confidence_overall", 0),
+                "exemplars_used": len(d.get("exemplars_used", [])),
+                "rules_applied": len(d.get("rules_applied", [])),
+                "content_length": len(d.get("content_markdown", "")),
+            })
+        except (json.JSONDecodeError, OSError):
+            continue
+    if results:
+        avg_confidence = sum(r["confidence_overall"] for r in results) / len(results)
+        avg_evidence = sum(r["evidence_count"] for r in results) / len(results)
+        print()
+        print("=" * 80)
+        print("  DRAFT QUALITY METRICS")
+        print("=" * 80)
+        print(f"  Drafts evaluated: {len(results)}")
+        print(f"  Mean grounding score: {avg_confidence:.2%}")
+        print(f"  Mean evidence chunks used: {avg_evidence:.1f}")
+        for r in results:
+            print(f"    {r['file']}: confidence={r['confidence_overall']:.2f}, "
+                  f"evidence={r['evidence_count']}, exemplars={r['exemplars_used']}, "
+                  f"rules={r['rules_applied']}")
+    return {"drafts_found": len(results), "draft_results": results}
+
+
+def _evaluate_learning_loop() -> dict[str, Any]:
+    """Report learning loop state from corrections and rules files."""
+    corrections_dir = REPO_ROOT / "data" / "corrections"
+    rules_file = REPO_ROOT / "config" / "learned_rules.yaml"
+
+    total_corrections = 0
+    per_type: dict[str, int] = {}
+    if corrections_dir.exists():
+        for f in corrections_dir.glob("*.jsonl"):
+            count = sum(1 for line in f.read_text(encoding="utf-8").splitlines() if line.strip())
+            per_type[f.stem] = count
+            total_corrections += count
+
+    rules_count = 0
+    if rules_file.exists():
+        try:
+            import yaml
+            data = yaml.safe_load(rules_file.read_text(encoding="utf-8")) or {}
+            rules_count = len(data.get("rules", []))
+        except Exception:
+            pass
+
+    print()
+    print("=" * 80)
+    print("  LEARNING LOOP METRICS")
+    print("=" * 80)
+    print(f"  Total corrections stored: {total_corrections}")
+    for dt, c in per_type.items():
+        print(f"    {dt}: {c} corrections")
+    print(f"  Learned rules extracted: {rules_count}")
+    if total_corrections > 0 and rules_count > 0:
+        print("  Status: ACTIVE — corrections are being converted to reusable rules")
+    elif total_corrections > 0:
+        print("  Status: COLLECTING — corrections stored, rules pending extraction")
+    else:
+        print("  Status: COLD START — no corrections yet")
+
+    return {
+        "total_corrections": total_corrections,
+        "per_type": per_type,
+        "rules_extracted": rules_count,
+    }
+
+
 def main() -> None:
     expected_outputs = load_expected_outputs()
 
@@ -362,6 +442,10 @@ def main() -> None:
     mean_exact = sum(r["exact_accuracy"] for r in all_results) / n if n > 0 else 0.0
     mean_soft = sum(r["soft_accuracy"] for r in all_results) / n if n > 0 else 0.0
 
+    # --- Draft quality and learning metrics ---
+    draft_metrics = _evaluate_draft_quality()
+    learning_metrics = _evaluate_learning_loop()
+
     output: dict[str, Any] = {
         "evaluation_summary": {
             "documents_evaluated": n,
@@ -369,6 +453,8 @@ def main() -> None:
             "mean_soft_accuracy": round(mean_soft, 3),
         },
         "document_results": all_results,
+        "draft_quality": draft_metrics,
+        "learning_loop": learning_metrics,
     }
 
     RESULTS_PATH.parent.mkdir(parents=True, exist_ok=True)

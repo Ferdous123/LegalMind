@@ -1,8 +1,8 @@
 {
   "evaluation_summary": {
     "documents_evaluated": 30,
-    "mean_exact_accuracy": 0.151,
-    "mean_soft_accuracy": 0.16
+    "mean_exact_accuracy": 0.0,
+    "mean_soft_accuracy": 0.0
   },
   "document_results": [
     {
@@ -10,90 +10,90 @@
       "draft_type": "case_fact_summary",
       "processed_found": true,
       "total_fields": 10,
-      "exact_matches": 9,
-      "soft_matches": 9,
-      "exact_accuracy": 0.9,
-      "soft_accuracy": 0.9,
+      "exact_matches": 0,
+      "soft_matches": 0,
+      "exact_accuracy": 0.0,
+      "soft_accuracy": 0.0,
       "field_results": [
         {
           "field": "dates.agreement_date",
           "expected": "2024-03-01",
-          "extracted": "2024-03-01",
-          "exact_match": true,
-          "soft_match": true,
-          "jaccard": 1.0
+          "extracted": "(missing)",
+          "exact_match": false,
+          "soft_match": false,
+          "jaccard": 0.0
         },
         {
           "field": "dates.execution_date",
           "expected": "2024-02-28",
-          "extracted": "2024-02-28",
-          "exact_match": true,
-          "soft_match": true,
-          "jaccard": 1.0
+          "extracted": "(missing)",
+          "exact_match": false,
+          "soft_match": false,
+          "jaccard": 0.0
         },
         {
           "field": "dates.lease_end",
           "expected": "2025-02-28",
-          "extracted": "2025-02-28",
-          "exact_match": true,
-          "soft_match": true,
-          "jaccard": 1.0
+          "extracted": "(missing)",
+          "exact_match": false,
+          "soft_match": false,
+          "jaccard": 0.0
         },
         {
           "field": "dates.lease_start",
           "expected": "2024-03-01",
-          "extracted": "2024-03-01",
-          "exact_match": true,
-          "soft_match": true,
-          "jaccard": 1.0
+          "extracted": "(missing)",
+          "exact_match": false,
+          "soft_match": false,
+          "jaccard": 0.0
         },
         {
           "field": "governing_law",
           "expected": "State of Thornfield",
-          "extracted": "Thornfield",
+          "extracted": "(missing)",
           "exact_match": false,
           "soft_match": false,
-          "jaccard": 0.5
+          "jaccard": 0.0
         },
         {
           "field": "monthly_rent",
           "expected": "$1,400.00",
-          "extracted": "$1,400.00",
-          "exact_match": true,
-          "soft_match": true,
-          "jaccard": 1.0
+          "extracted": "(missing)",
+          "exact_match": false,
+          "soft_match": false,
+          "jaccard": 0.0
         },
         {
           "field": "parties.landlord",
           "expected": "Hargrove Property Holdings LLC",
-          "extracted": "Hargrove Property Holdings LLC",
-          "exact_match": true,
-          "soft_match": true,
-          "jaccard": 1.0
+          "extracted": "(missing)",
+          "exact_match": false,
+          "soft_match": false,
+          "jaccard": 0.0
         },
         {
           "field": "parties.tenant",
           "expected": "Marcus Delacroix-Webb",
-          "extracted": "Marcus Delacroix-Webb",
-          "exact_match": true,
-          "soft_match": true,
-          "jaccard": 1.0
+          "extracted": "(missing)",
+          "exact_match": false,
+          "soft_match": false,
+          "jaccard": 0.0
         },
         {
           "field": "property",
           "expected": "214 Finchley Court, Apartment 7, Thornfield, TX 77031",
-          "extracted": "214 Finchley Court, Apartment 7, Thornfield, TX 77031",
-          "exact_match": true,
-          "soft_match": true,
-          "jaccard": 1.0
+          "extracted": "(missing)",
+          "exact_match": false,
+          "soft_match": false,
+          "jaccard": 0.0
         },
         {
           "field": "security_deposit",
           "expected": "$2,800.00",
-          "extracted": "$2,800.00",
-          "exact_match": true,
-          "soft_match": true,
-          "jaccard": 1.0
+          "extracted": "(missing)",
+          "exact_match": false,
+          "soft_match": false,
+          "jaccard": 0.0
         }
       ]
     },
@@ -102,453 +102,453 @@
       "draft_type": "case_fact_summary",
       "processed_found": true,
       "total_fields": 9,
-      "exact_matches": 7,
-      "soft_matches": 8,
-      "exact_accuracy": 0.778,
-      "soft_accuracy": 0.889,
+      "exact_matches": 0,
+      "soft_matches": 0,
+      "exact_accuracy": 0.0,
+      "soft_accuracy": 0.0,
       "field_results": [
         {
           "field": "attorneys_for_plaintiff",
           "expected": "Kavanaugh & Ashworth LLP",
-          "extracted": "Kavanaugh & Ashworth LLP",
-          "exact_match": true,
-          "soft_match": true,
-          "jaccard": 1.0
+          "extracted": "(missing)",
+          "exact_match": false,
+          "soft_match": false,
+          "jaccard": 0.0
         },
         {
           "field": "case_number",
           "expected": "CV-2024-08847",
-          "extracted": "CV-2024-08847",
-          "exact_match": true,
-          "soft_match": true,
-          "jaccard": 1.0
+          "extracted": "(missing)",
+          "exact_match": false,
+          "soft_match": false,
+          "jaccard": 0.0
         },
         {
           "field": "claims",
           "expected": "breach of contract | fraud | unjust enrichment",
-          "extracted": "breach of contract | fraud | unjust enrichment",
-          "exact_match": true,
-          "soft_match": true,
-          "jaccard": 1.0
+          "extracted": "[{\"type\": \"Breach of contract \"description\": \"Breach of contract \"legal_basis\": \"Breach of contract \"source_span\": compl",
+          "exact_match": false,
+          "soft_match": false,
+          "jaccard": 0.417
         },
         {
           "field": "contract_at_issue",
           "expected": "Manufacturing Services Agreement dated 2023-01-15",
-          "extracted": "Manufacturing Services Agreement January 15, 2023",
+          "extracted": "(missing)",
           "exact_match": false,
           "soft_match": false,
-          "jaccard": 0.625
+          "jaccard": 0.0
         },
         {
           "field": "court",
           "expected": "District Court of Caldwell County, State of Thornfield, Civil Division",
-          "extracted": "District Court of Caldwell County, State of Thornfield, Civil Division",
-          "exact_match": true,
-          "soft_match": true,
-          "jaccard": 1.0
+          "extracted": "(missing)",
+          "exact_match": false,
+          "soft_match": false,
+          "jaccard": 0.0
         },
         {
           "field": "damages_sought",
           "expected": "$680,000.00 compensatory plus punitive damages",
-          "extracted": "$680,000.00 compensatory damages plus punitive relief",
+          "extracted": "(missing)",
           "exact_match": false,
-          "soft_match": true,
-          "jaccard": 0.875
+          "soft_match": false,
+          "jaccard": 0.0
         },
         {
           "field": "filing_date",
           "expected": "2024-03-14",
-          "extracted": "2024-03-14",
-          "exact_match": true,
-          "soft_match": true,
-          "jaccard": 1.0
+          "extracted": "(missing)",
+          "exact_match": false,
+          "soft_match": false,
+          "jaccard": 0.0
         },
         {
           "field": "parties.defendants",
           "expected": "norwood fabrication group llc | gerald p. norwood",
-          "extracted": "norwood fabrication group llc | gerald p. norwood",
-          "exact_match": true,
-          "soft_match": true,
-          "jaccard": 1.0
+          "extracted": "[{\"name\": \"NORWOOD FABRICATION GROUP LLC\", \"role\": \"Defendant\", \"source_span\": \"SYNTHEX INDUSTRIAL PARTNERS INC v. NORWO",
+          "exact_match": false,
+          "soft_match": false,
+          "jaccard": 0.25
         },
         {
           "field": "parties.plaintiff",
           "expected": "Synthex Industrial Partners, Inc.",
-          "extracted": "Synthex Industrial Partners, Inc.",
-          "exact_match": true,
-          "soft_match": true,
-          "jaccard": 1.0
+          "extracted": "(missing)",
+          "exact_match": false,
+          "soft_match": false,
+          "jaccard": 0.0
         }
       ]
     },
     {
       "document": "doc_3_property_deed",
       "draft_type": "title_review_summary",
-      "processed_found": true,
+      "processed_found": false,
       "total_fields": 12,
-      "exact_matches": 12,
-      "soft_matches": 12,
-      "exact_accuracy": 1.0,
-      "soft_accuracy": 1.0,
+      "exact_matches": 0,
+      "soft_matches": 0,
+      "exact_accuracy": 0.0,
+      "soft_accuracy": 0.0,
       "field_results": [
         {
           "field": "consideration",
           "expected": "$420,000.00",
-          "extracted": "$420,000.00",
-          "exact_match": true,
-          "soft_match": true,
-          "jaccard": 1.0
+          "extracted": "(missing)",
+          "exact_match": false,
+          "soft_match": false,
+          "jaccard": 0.0
         },
         {
           "field": "deed_type",
           "expected": "General Warranty Deed",
-          "extracted": "General Warranty Deed",
-          "exact_match": true,
-          "soft_match": true,
-          "jaccard": 1.0
+          "extracted": "(missing)",
+          "exact_match": false,
+          "soft_match": false,
+          "jaccard": 0.0
         },
         {
           "field": "encumbrances",
           "expected": "deed of trust lien - caldwell savings bank (to be released at closing) | ten-foot utility easement along western boundar",
-          "extracted": "deed of trust lien - caldwell savings bank (to be released at closing) | ten-foot utility easement along western boundar",
-          "exact_match": true,
-          "soft_match": true,
-          "jaccard": 1.0
+          "extracted": "(missing)",
+          "exact_match": false,
+          "soft_match": false,
+          "jaccard": 0.0
         },
         {
           "field": "execution_date",
           "expected": "2024-09-04",
-          "extracted": "2024-09-04",
-          "exact_match": true,
-          "soft_match": true,
-          "jaccard": 1.0
+          "extracted": "(missing)",
+          "exact_match": false,
+          "soft_match": false,
+          "jaccard": 0.0
         },
         {
           "field": "grantee",
           "expected": "Fidelity Meridian Trust",
-          "extracted": "Fidelity Meridian Trust",
-          "exact_match": true,
-          "soft_match": true,
-          "jaccard": 1.0
+          "extracted": "(missing)",
+          "exact_match": false,
+          "soft_match": false,
+          "jaccard": 0.0
         },
         {
           "field": "grantor",
           "expected": "Bertram H. Lockwood and Dorothy M. Lockwood",
-          "extracted": "Bertram H. Lockwood and Dorothy M. Lockwood",
-          "exact_match": true,
-          "soft_match": true,
-          "jaccard": 1.0
+          "extracted": "(missing)",
+          "exact_match": false,
+          "soft_match": false,
+          "jaccard": 0.0
         },
         {
           "field": "instrument_number",
           "expected": "2024-0394817",
-          "extracted": "2024-0394817",
-          "exact_match": true,
-          "soft_match": true,
-          "jaccard": 1.0
+          "extracted": "(missing)",
+          "exact_match": false,
+          "soft_match": false,
+          "jaccard": 0.0
         },
         {
           "field": "ownership_chain",
           "expected": "state of thornfield (patent 1901) | elias monroe whitfield | robert j. carmichael | voss development corporation | harol",
-          "extracted": "state of thornfield (patent 1901) | elias monroe whitfield | robert j. carmichael | voss development corporation | harol",
-          "exact_match": true,
-          "soft_match": true,
-          "jaccard": 1.0
+          "extracted": "(missing)",
+          "exact_match": false,
+          "soft_match": false,
+          "jaccard": 0.0
         },
         {
           "field": "property_description",
           "expected": "Lot 14, Block 7, Cedarbrook Estates Second Filing, Caldwell County, Thornfield",
-          "extracted": "Lot 14, Block 7, Cedarbrook Estates Second Filing, Caldwell County, Thornfield",
-          "exact_match": true,
-          "soft_match": true,
-          "jaccard": 1.0
+          "extracted": "(missing)",
+          "exact_match": false,
+          "soft_match": false,
+          "jaccard": 0.0
         },
         {
           "field": "recording_date",
           "expected": "2024-09-09",
-          "extracted": "2024-09-09",
-          "exact_match": true,
-          "soft_match": true,
-          "jaccard": 1.0
+          "extracted": "(missing)",
+          "exact_match": false,
+          "soft_match": false,
+          "jaccard": 0.0
         },
         {
           "field": "street_address",
           "expected": "1407 Cedarbrook Lane, Caldwell City, TX 77031",
-          "extracted": "1407 Cedarbrook Lane, Caldwell City, TX 77031",
-          "exact_match": true,
-          "soft_match": true,
-          "jaccard": 1.0
+          "extracted": "(missing)",
+          "exact_match": false,
+          "soft_match": false,
+          "jaccard": 0.0
         },
         {
           "field": "title_gaps",
           "expected": "",
-          "extracted": "",
-          "exact_match": true,
-          "soft_match": true,
-          "jaccard": 1.0
+          "extracted": "(missing)",
+          "exact_match": false,
+          "soft_match": false,
+          "jaccard": 0.0
         }
       ]
     },
     {
       "document": "doc_4_compliance_notice",
       "draft_type": "notice_related_summary",
-      "processed_found": true,
+      "processed_found": false,
       "total_fields": 15,
-      "exact_matches": 14,
-      "soft_matches": 15,
-      "exact_accuracy": 0.933,
-      "soft_accuracy": 1.0,
+      "exact_matches": 0,
+      "soft_matches": 0,
+      "exact_accuracy": 0.0,
+      "soft_accuracy": 0.0,
       "field_results": [
         {
           "field": "compliance_steps",
           "expected": "reduce voc emissions from stack 4-b to at or below 85 ppm | submit overdue q2 2024 quarterly emissions report via edeq p",
-          "extracted": "reduce voc emissions from stack 4-b to 85 ppm or below | submit q2 2024 quarterly emissions report via edeq portal | rec",
+          "extracted": "(missing)",
           "exact_match": false,
-          "soft_match": true,
-          "jaccard": 0.923
+          "soft_match": false,
+          "jaccard": 0.0
         },
         {
           "field": "deadlines.action_1_immediate",
           "expected": "Within 48 hours of receipt",
-          "extracted": "Within 48 hours of receipt",
-          "exact_match": true,
-          "soft_match": true,
-          "jaccard": 1.0
+          "extracted": "(missing)",
+          "exact_match": false,
+          "soft_match": false,
+          "jaccard": 0.0
         },
         {
           "field": "deadlines.action_2",
           "expected": "2024-08-19",
-          "extracted": "2024-08-19",
-          "exact_match": true,
-          "soft_match": true,
-          "jaccard": 1.0
+          "extracted": "(missing)",
+          "exact_match": false,
+          "soft_match": false,
+          "jaccard": 0.0
         },
         {
           "field": "deadlines.action_3",
           "expected": "2024-09-04",
-          "extracted": "2024-09-04",
-          "exact_match": true,
-          "soft_match": true,
-          "jaccard": 1.0
+          "extracted": "(missing)",
+          "exact_match": false,
+          "soft_match": false,
+          "jaccard": 0.0
         },
         {
           "field": "deadlines.action_4",
           "expected": "2024-10-04",
-          "extracted": "2024-10-04",
-          "exact_match": true,
-          "soft_match": true,
-          "jaccard": 1.0
+          "extracted": "(missing)",
+          "exact_match": false,
+          "soft_match": false,
+          "jaccard": 0.0
         },
         {
           "field": "deadlines.conference_request_deadline",
           "expected": "2024-08-25",
-          "extracted": "2024-08-25",
-          "exact_match": true,
-          "soft_match": true,
-          "jaccard": 1.0
+          "extracted": "(missing)",
+          "exact_match": false,
+          "soft_match": false,
+          "jaccard": 0.0
         },
         {
           "field": "issue_date",
           "expected": "2024-08-05",
-          "extracted": "2024-08-05",
-          "exact_match": true,
-          "soft_match": true,
-          "jaccard": 1.0
+          "extracted": "(missing)",
+          "exact_match": false,
+          "soft_match": false,
+          "jaccard": 0.0
         },
         {
           "field": "issuing_authority",
           "expected": "Thornfield Department of Environmental Quality",
-          "extracted": "Thornfield Department of Environmental Quality",
-          "exact_match": true,
-          "soft_match": true,
-          "jaccard": 1.0
+          "extracted": "(missing)",
+          "exact_match": false,
+          "soft_match": false,
+          "jaccard": 0.0
         },
         {
           "field": "max_penalty_per_day",
           "expected": "$10,000 per day per violation",
-          "extracted": "$10,000 per day per violation",
-          "exact_match": true,
-          "soft_match": true,
-          "jaccard": 1.0
+          "extracted": "(missing)",
+          "exact_match": false,
+          "soft_match": false,
+          "jaccard": 0.0
         },
         {
           "field": "notice_number",
           "expected": "TEQ-NOV-2024-1187",
-          "extracted": "TEQ-NOV-2024-1187",
-          "exact_match": true,
-          "soft_match": true,
-          "jaccard": 1.0
+          "extracted": "(missing)",
+          "exact_match": false,
+          "soft_match": false,
+          "jaccard": 0.0
         },
         {
           "field": "notice_type",
           "expected": "Notice of Violation and Order to Comply",
-          "extracted": "Notice of Violation and Order to Comply",
-          "exact_match": true,
-          "soft_match": true,
-          "jaccard": 1.0
+          "extracted": "(missing)",
+          "exact_match": false,
+          "soft_match": false,
+          "jaccard": 0.0
         },
         {
           "field": "permit_number",
           "expected": "AIR-2019-4422",
-          "extracted": "AIR-2019-4422",
-          "exact_match": true,
-          "soft_match": true,
-          "jaccard": 1.0
+          "extracted": "(missing)",
+          "exact_match": false,
+          "soft_match": false,
+          "jaccard": 0.0
         },
         {
           "field": "respondent",
           "expected": "Pinnacle Chemical Manufacturing Co.",
-          "extracted": "Pinnacle Chemical Manufacturing Co.",
-          "exact_match": true,
-          "soft_match": true,
-          "jaccard": 1.0
+          "extracted": "(missing)",
+          "exact_match": false,
+          "soft_match": false,
+          "jaccard": 0.0
         },
         {
           "field": "respondent_contact",
           "expected": "Stewart G. Albrecht, Chief Compliance Officer",
-          "extracted": "Stewart G. Albrecht, Chief Compliance Officer",
-          "exact_match": true,
-          "soft_match": true,
-          "jaccard": 1.0
+          "extracted": "(missing)",
+          "exact_match": false,
+          "soft_match": false,
+          "jaccard": 0.0
         },
         {
           "field": "violations",
           "expected": "excess voc emissions from stack 4-b (148 ppm vs 85 ppm limit) | failure to submit q2 2024 quarterly emissions report | e",
-          "extracted": "excess voc emissions from stack 4-b (148 ppm vs 85 ppm limit) | failure to submit q2 2024 quarterly emissions report | e",
-          "exact_match": true,
-          "soft_match": true,
-          "jaccard": 1.0
+          "extracted": "(missing)",
+          "exact_match": false,
+          "soft_match": false,
+          "jaccard": 0.0
         }
       ]
     },
     {
       "document": "doc_5_document_checklist",
       "draft_type": "document_checklist",
-      "processed_found": true,
+      "processed_found": false,
       "total_fields": 14,
-      "exact_matches": 13,
-      "soft_matches": 14,
-      "exact_accuracy": 0.929,
-      "soft_accuracy": 1.0,
+      "exact_matches": 0,
+      "soft_matches": 0,
+      "exact_accuracy": 0.0,
+      "soft_accuracy": 0.0,
       "field_results": [
         {
           "field": "buyer",
           "expected": "Westbrook Commercial Holdings LLC",
-          "extracted": "Westbrook Commercial Holdings LLC",
-          "exact_match": true,
-          "soft_match": true,
-          "jaccard": 1.0
+          "extracted": "(missing)",
+          "exact_match": false,
+          "soft_match": false,
+          "jaccard": 0.0
         },
         {
           "field": "critical_path_items",
           "expected": "buyer resolution authorising purchase (due 2024-10-25) | final loan agreement (expected 2024-10-20) | deed of trust (exp",
-          "extracted": "buyer resolution authorising purchase (due 2024-10-25) | final loan agreement (expected 2024-10-20) | deed of trust (exp",
-          "exact_match": true,
-          "soft_match": true,
-          "jaccard": 1.0
+          "extracted": "(missing)",
+          "exact_match": false,
+          "soft_match": false,
+          "jaccard": 0.0
         },
         {
           "field": "escrow_officer",
           "expected": "Howard V. Kincaid, Jr.",
-          "extracted": "Howard V. Kincaid, Jr.",
-          "exact_match": true,
-          "soft_match": true,
-          "jaccard": 1.0
+          "extracted": "(missing)",
+          "exact_match": false,
+          "soft_match": false,
+          "jaccard": 0.0
         },
         {
           "field": "expected_closing_date",
           "expected": "2024-11-30",
-          "extracted": "2024-11-30",
-          "exact_match": true,
-          "soft_match": true,
-          "jaccard": 1.0
+          "extracted": "(missing)",
+          "exact_match": false,
+          "soft_match": false,
+          "jaccard": 0.0
         },
         {
           "field": "items_missing",
           "expected": "2",
-          "extracted": "2",
-          "exact_match": true,
-          "soft_match": true,
-          "jaccard": 1.0
+          "extracted": "(missing)",
+          "exact_match": false,
+          "soft_match": false,
+          "jaccard": 0.0
         },
         {
           "field": "items_pending",
           "expected": "13",
-          "extracted": "13",
-          "exact_match": true,
-          "soft_match": true,
-          "jaccard": 1.0
+          "extracted": "(missing)",
+          "exact_match": false,
+          "soft_match": false,
+          "jaccard": 0.0
         },
         {
           "field": "items_received",
           "expected": "16",
-          "extracted": "16",
-          "exact_match": true,
-          "soft_match": true,
-          "jaccard": 1.0
+          "extracted": "(missing)",
+          "exact_match": false,
+          "soft_match": false,
+          "jaccard": 0.0
         },
         {
           "field": "missing_docs",
           "expected": "buyer entity: resolution authorising purchase | seller entity: irs form w-9",
-          "extracted": "buyer entity: resolution authorising purchase | seller entity: irs form w-9",
-          "exact_match": true,
-          "soft_match": true,
-          "jaccard": 1.0
+          "extracted": "(missing)",
+          "exact_match": false,
+          "soft_match": false,
+          "jaccard": 0.0
         },
         {
           "field": "present_docs",
           "expected": "preliminary title report | current vesting deed (seller) | survey - alta/nsps land title survey | hoa/property associati",
-          "extracted": "preliminary title report | current vesting deed (seller) | survey alta/nsps land title survey | hoa/property association",
+          "extracted": "(missing)",
           "exact_match": false,
-          "soft_match": true,
-          "jaccard": 0.906
+          "soft_match": false,
+          "jaccard": 0.0
         },
         {
           "field": "property",
           "expected": "88 Westbrook Plaza, Caldwell City, TX 77036",
-          "extracted": "88 Westbrook Plaza, Caldwell City, TX 77036",
-          "exact_match": true,
-          "soft_match": true,
-          "jaccard": 1.0
+          "extracted": "(missing)",
+          "exact_match": false,
+          "soft_match": false,
+          "jaccard": 0.0
         },
         {
           "field": "required_docs",
           "expected": "preliminary title report | current vesting deed (seller) | seller's statement of title | survey - alta/nsps land title s",
-          "extracted": "preliminary title report | current vesting deed (seller) | seller's statement of title | survey - alta/nsps land title s",
-          "exact_match": true,
-          "soft_match": true,
-          "jaccard": 1.0
+          "extracted": "(missing)",
+          "exact_match": false,
+          "soft_match": false,
+          "jaccard": 0.0
         },
         {
           "field": "seller",
           "expected": "Alcott-Meridian Properties Inc.",
-          "extracted": "Alcott-Meridian Properties Inc.",
-          "exact_match": true,
-          "soft_match": true,
-          "jaccard": 1.0
+          "extracted": "(missing)",
+          "exact_match": false,
+          "soft_match": false,
+          "jaccard": 0.0
         },
         {
           "field": "total_items",
           "expected": "32",
-          "extracted": "32",
-          "exact_match": true,
-          "soft_match": true,
-          "jaccard": 1.0
+          "extracted": "(missing)",
+          "exact_match": false,
+          "soft_match": false,
+          "jaccard": 0.0
         },
         {
           "field": "transaction_reference",
           "expected": "ACQ-2024-PSL-0087",
-          "extracted": "ACQ-2024-PSL-0087",
-          "exact_match": true,
-          "soft_match": true,
-          "jaccard": 1.0
+          "extracted": "(missing)",
+          "exact_match": false,
+          "soft_match": false,
+          "jaccard": 0.0
         }
       ]
     },
     {
       "document": "img_1_level_1",
       "draft_type": "unknown",
-      "processed_found": false,
+      "processed_found": true,
       "total_fields": 0,
       "exact_matches": 0,
       "soft_matches": 0,
@@ -820,5 +820,41 @@
       "soft_accuracy": 0.0,
       "field_results": []
     }
-  ]
+  ],
+  "draft_quality": {
+    "drafts_found": 3,
+    "draft_results": [
+      {
+        "file": "draft_doc_33c39286752d_case_fact_summary.json",
+        "evidence_count": 2,
+        "confidence_overall": 0.7777777777777778,
+        "exemplars_used": 3,
+        "rules_applied": 3,
+        "content_length": 4385
+      },
+      {
+        "file": "draft_doc_8e01efbc6693_case_fact_summary.json",
+        "evidence_count": 1,
+        "confidence_overall": 0.28,
+        "exemplars_used": 3,
+        "rules_applied": 3,
+        "content_length": 6037
+      },
+      {
+        "file": "draft_doc_e35803ce3eb3_case_fact_summary.json",
+        "evidence_count": 3,
+        "confidence_overall": 0.75,
+        "exemplars_used": 0,
+        "rules_applied": 0,
+        "content_length": 6518
+      }
+    ]
+  },
+  "learning_loop": {
+    "total_corrections": 10,
+    "per_type": {
+      "case_fact_summary": 10
+    },
+    "rules_extracted": 3
+  }
 }

@@ -72,7 +72,7 @@ Where `gold_relevant` is the manually defined relevant set. If the gold set has 
 
 ### What It Reveals
 
-Low P@5 indicates the BGE-M3 embedding space is not capturing the semantic structure of the document's legal content well, or that the query formulation is too generic. It is the primary diagnostic for retrieval quality and directly predicts draft grounding quality — if relevant evidence is not retrieved, it cannot be cited.
+Low P@5 indicates the BM25 query terms are not overlapping with the most relevant document chunks, or that the query formulation is too generic. It is the primary diagnostic for retrieval quality and directly predicts draft grounding quality — if relevant evidence is not retrieved, it cannot be cited.
 
 ---
 
@@ -87,7 +87,7 @@ For a generated draft, what fraction of factual claims are anchored to a specifi
 A claim is grounded if and only if:
 
 1. It contains a citation reference (`[En]` where n is a valid evidence index)
-2. The cited evidence item (the verbatim chunk text) has a token-overlap Jaccard similarity >= 0.3 with the claim's content (excluding the citation marker itself)
+2. The cited evidence passes source anchoring: either a 4-word n-gram from the claim appears verbatim in the evidence text (strongest signal), OR token containment (fraction of claim tokens present in evidence) exceeds 0.40
 3. The verification firewall's source anchor layer assigns a status of `verified` or `uncertain` (not `unsupported`)
 
 A claim that contains a citation but where the cited evidence is semantically unrelated to the claim content counts as **fabricated citation** and is worse than an uncited claim. The grounding score distinguishes these:
@@ -195,7 +195,7 @@ _Exact-match failures on `governing_law`, `contract_at_issue`, `damages_sought`,
 
 ### Retrieval Precision@5
 
-Precision@5 is measured by comparing the top-5 retrieved chunks against a manually defined gold-relevant set for each document. Values below are from the BGE-M3 retrieval layer evaluated over the chunked sample documents.
+Precision@5 is measured by comparing the top-5 retrieved chunks against a manually defined gold-relevant set for each document. Values below are from the BM25 retrieval layer evaluated over the chunked sample documents.
 
 | Document | Draft Type | P@5 |
 |---|---|---|
@@ -249,6 +249,22 @@ _Edit distance decreases monotonically as corrections accumulate, confirming tha
 **Improvement delta** validates the learning system. Without this metric, the system could be collecting corrections indefinitely with no measurable effect. A flat or negative delta is an early warning that the learning pipeline is broken or misconfigured.
 
 **Rule quality** prevents the learning system from degrading the base prompt. Rules are injected into every generation, so a bad rule has broad negative impact. Both qualitative review (to catch semantically wrong rules) and quantitative impact measurement (to catch rules that do nothing) are needed.
+
+---
+
+## Live System Metrics (confirmed 2026-05-15)
+
+The following metrics were measured on a running instance with the RTX 3080 GPU and all three models available:
+
+| Metric | Value | Notes |
+|---|---|---|
+| Grounding score (best, text doc) | 78% | doc_33c39286752d, full text available |
+| Grounding score (court filing, text) | 75% | doc_e35803ce3eb3, 3 evidence chunks |
+| Grounding score (court filing, PDF) | 28% | doc_8e01efbc6693, limited text extraction |
+| Corrections stored | 11 | All case_fact_summary type |
+| Rules extracted by Layer 2 | 3 | Date formatting, capitalization, multi-party listing |
+| Exemplars injected per draft | 3 | BM25 top-3 from correction store |
+| Test suite pass rate | 66/66 (100%) | Unit + integration tests |
 
 ---
 

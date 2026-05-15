@@ -309,9 +309,9 @@
         try {
             const res  = await fetch('/api/v1/learning/rules', { method: 'POST' });
             const data = await res.json();
-            if (!res.ok) throw new Error(data.error || 'HTTP ' + res.status);
-            const n = data.count || 0;
-            showToast('Rules extracted: ' + n + ' new rule' + (n !== 1 ? 's' : '') + '.', 'ok');
+            if (!res.ok) throw new Error(data.detail || data.error || 'HTTP ' + res.status);
+            const n = data.rules_extracted ?? data.count ?? 0;
+            showToast('Rules extracted: ' + n + ' rule' + (n !== 1 ? 's' : '') + '.', 'ok');
             setTimeout(() => window.location.reload(), 1400);
         } catch (err) {
             showToast('Extraction failed: ' + err.message, 'error');

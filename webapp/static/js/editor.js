@@ -236,7 +236,7 @@ async function saveCorrection(fieldEl, newText, originalText, originalHtml) {
             exitEditMode(fieldEl, displayHtml);
             markFieldEdited(fieldEl);
 
-            const toast = (window.LegalMind?.showToast) ?? showToastFallback;
+            const toast = window.showToast ?? showToastFallback;
             toast('Correction saved. Future drafts will reflect this change.', 'success');
         } else {
             let serverMessage = null;
@@ -247,14 +247,14 @@ async function saveCorrection(fieldEl, newText, originalText, originalHtml) {
                 // Response body not JSON — ignore
             }
             const msg = serverMessage ?? 'Failed to save correction. Please try again.';
-            const toast = (window.LegalMind?.showToast) ?? showToastFallback;
+            const toast = window.showToast ?? showToastFallback;
             toast(msg, 'error');
             // Restore to original on failure so no data is lost
             exitEditMode(fieldEl, originalHtml);
         }
     } catch (networkErr) {
         console.error('[editor.js] saveCorrection network error:', networkErr);
-        const toast = (window.LegalMind?.showToast) ?? showToastFallback;
+        const toast = window.showToast ?? showToastFallback;
         toast('Network error — correction could not be submitted.', 'error');
         exitEditMode(fieldEl, originalHtml);
     }

@@ -25,6 +25,7 @@ cp .env.example .env
 docker compose up --build
 
 # The web UI is available at http://localhost:8000
+# (manual setup uses port 7860; set --port in uvicorn invocation accordingly)
 ```
 
 To run in the background:
@@ -71,10 +72,10 @@ cp config/models.yaml.example config/models.yaml
 # Edit config/models.yaml to point to your GGUF files
 
 # Start the server
-uvicorn webapp.main:app --host 0.0.0.0 --port 8000 --reload
+uvicorn webapp.main:app --host 0.0.0.0 --port 7860 --reload
 ```
 
-The web UI is available at `http://localhost:8000`.
+The web UI is available at `http://localhost:7860`.
 
 ---
 
@@ -121,11 +122,10 @@ See [docs/assumptions.md](docs/assumptions.md) for design decisions and tradeoff
 - OCR threshold: fewer than 100 characters per page triggers the OCR path
 - Page-level confidence flags preserve traceability
 
-### Semantic Evidence Retrieval
-- All document text is chunked (512-token target, 64-token overlap) and embedded using BGE-M3
-- Stored in a local persistent ChromaDB instance
-- Hybrid retrieval: semantic cosine similarity + BM25-style keyword filtering
-- Returns top-5 evidence chunks with similarity scores and verbatim source spans
+### Evidence Retrieval
+- All document text is chunked (512-token target, 64-token overlap) and stored locally
+- Retrieval uses BM25 keyword search — no embedding model or network required
+- Returns top-K evidence chunks with relevance scores and verbatim source spans
 
 ### Grounded Draft Generation
 - Four draft output types (see below)
@@ -136,7 +136,7 @@ See [docs/assumptions.md](docs/assumptions.md) for design decisions and tradeoff
 ### Continuous Improvement
 - **Layer 1 (Exemplar bank)**: Every operator correction is stored and retrieved as a few-shot example for similar future documents
 - **Layer 2 (Pattern extraction)**: Every 20 corrections, Gemma-4-E4B analyzes the correction cluster and extracts reusable rules (`config/learned_rules.yaml`)
-- **Layer 3 (Prompt consolidation)**: Every 50 corrections, accumulated rules are folded into the base system prompt; redundant exemplars are archived
+- **Layer 3 (Prompt consolidation)**: When 10+ new rules accumulate, they are folded into the base system prompt; redundant exemplars are archived
 
 ### Verification Firewall
 - Per-claim source anchoring: verifies cited evidence semantically supports the claim
@@ -160,7 +160,7 @@ See [docs/assumptions.md](docs/assumptions.md) for design decisions and tradeoff
 
 ### Via Web UI
 
-1. Navigate to `http://localhost:8000`
+1. Navigate to `http://localhost:7860` (manual) or `http://localhost:8000` (Docker)
 2. Go to **Documents** and upload a PDF or image file
 3. Select a draft type and click **Process**
 4. Review the generated draft; click any field to edit it
@@ -172,26 +172,26 @@ Upload a document and request a draft:
 
 ```bash
 # Upload a document (returns document_id and full document record on completion)
-curl -X POST http://localhost:8000/api/v1/documents/upload \
+curl -X POST http://localhost:7860/api/v1/documents/upload \
   -F "file=@/path/to/contract.pdf" \
   -F "draft_type=case_fact_summary"
 
 # Retrieve the processed document record
-curl http://localhost:8000/api/v1/documents/{document_id}
+curl http://localhost:7860/api/v1/documents/{document_id}
 
 # Generate a draft for the document
-curl -X POST http://localhost:8000/api/v1/drafts/generate \
+curl -X POST http://localhost:7860/api/v1/drafts/generate \
   -H "Content-Type: application/json" \
   -d '{"document_id": "{document_id}", "draft_type": "case_fact_summary"}'
 
 # Retrieve a previously generated draft
-curl http://localhost:8000/api/v1/drafts/{document_id}_{draft_type}
+curl http://localhost:7860/api/v1/drafts/{document_id}_{draft_type}
 ```
 
 Submit a correction:
 
 ```bash
-curl -X POST http://localhost:8000/api/v1/corrections \
+curl -X POST http://localhost:7860/api/v1/corrections \
   -H "Content-Type: application/json" \
   -d '{
     "document_id": "{document_id}",
@@ -207,7 +207,7 @@ curl -X POST http://localhost:8000/api/v1/corrections \
 Retrieve learned rules:
 
 ```bash
-curl http://localhost:8000/api/v1/learning/rules
+curl http://localhost:7860/api/v1/learning/rules
 ```
 
 ---

@@ -47,6 +47,7 @@ def test_extract_returns_dict():
         result = structurer.extract(
             text="The defendant John Doe filed a motion.",
             draft_type="case_fact_summary",
+            use_cascade=False,
         )
 
     assert isinstance(result, dict), "extract() must return a dict"
@@ -80,6 +81,7 @@ def test_extract_invalid_json_returns_empty():
         result = structurer.extract(
             text="Garbled text with no structure.",
             draft_type="case_fact_summary",
+            use_cascade=False,
         )
 
     # Must not raise; must return a dict (the schema fallback)
@@ -110,7 +112,7 @@ def test_extract_text_truncated_at_max_chars():
         return_value=mock_engine,
     ):
         structurer = DocumentStructurer()
-        result = structurer.extract(long_text, draft_type="notice_summary")
+        result = structurer.extract(long_text, draft_type="notice_summary", use_cascade=False)
 
     assert isinstance(result, dict)
     # Verify generate_structured was indeed called (with the truncated prompt)

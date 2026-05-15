@@ -1,8 +1,19 @@
-# Auto-generated rules from operator corrections
-# Rules are added by the pattern extractor and consolidated into the system prompt
-# Do not edit manually — use the audit dashboard to review and delete rules
-
-rules: []
-last_extraction: null
-last_consolidation: null
-total_corrections_processed: 0
+metadata:
+  last_extraction: '2026-05-15T15:20:06.175539+00:00'
+  total_rules: 3
+  trigger_count: 10
+rules:
+- active: true
+  extracted_at: '2026-05-15T15:01:14.840776+00:00'
+  text: When extracting or formatting dates, always convert all variations (e.g.,
+    "Month Day, Year" or "Month Day Year") into the ISO 8601 standard format (YYYY-MM-DD).
+- active: true
+  extracted_at: '2026-05-15T15:01:14.840776+00:00'
+  text: Ensure proper capitalization for all proper nouns, including names, company
+    names, and specific locations, when generating text.
+- active: true
+  extracted_at: '2026-05-15T15:01:14.840776+00:00'
+  text: When identifying multiple parties, the system must accurately parse and list
+    all named entities, ensuring correct pluralization and distinguishing between
+    corporate and individual roles. Do not default to only extracting the first or
+    most prominent entity when multiple parties are present in the source text.

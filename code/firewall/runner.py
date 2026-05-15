@@ -48,25 +48,22 @@ class FirewallRunner:
             List of VerificationResult for each verified claim/field.
         """
         results = []
+        all_evidence = self._concatenate_evidence(citation_map)
 
-        # Layer 1: Confidence scoring on structured fields
         confidence_results = self._confidence.score_document(
             structured_fields, ocr_confidence
         )
 
-        # Layer 2: Source anchor verification for each field with evidence
         for field_name, conf in confidence_results.get("fields", {}).items():
-            # Find relevant evidence for this field
-            evidence_text = self._find_evidence_for_field(field_name, citation_map)
+            field_value = conf.get("_value", field_name)
 
             anchor_result = {"status": "uncertain", "similarity": 0.0, "evidence_snippet": ""}
-            if evidence_text:
+            if all_evidence and field_value and len(field_value) > 3:
                 anchor_result = self._anchor.verify(
-                    claim=field_name,
-                    evidence_text=evidence_text,
+                    claim=field_value,
+                    evidence_text=all_evidence,
                 )
 
-            # Combine signals
             final_status = self._combine_signals(
                 anchor_status=anchor_result["status"],
                 confidence_level=conf["level"],
@@ -84,18 +81,15 @@ class FirewallRunner:
 
         return results
 
-    def _find_evidence_for_field(self, field_name: str, citation_map: dict) -> str:
-        """Find the most relevant evidence text for a field."""
-        if not citation_map:
-            return ""
-
-        # Simple heuristic: return first evidence chunk text
-        # In production, would match field content against evidence
-        for cid, meta in citation_map.items():
-            text = meta.get("text", "")
+    @staticmethod
+    def _concatenate_evidence(citation_map: dict) -> str:
+        """Concatenate all evidence texts for broad field verification."""
+        parts = []
+        for meta in citation_map.values():
+            text = meta.get("text", "") if isinstance(meta, dict) else ""
             if text:
-                return text
-        return ""
+                parts.append(text)
+        return " ".join(parts)
 
     @staticmethod
     def _combine_signals(anchor_status: str, confidence_level: str) -> str:

@@ -46,6 +46,47 @@ from code.llm_interface.gpu_guard import get_gpu_info
 
 logger = logging.getLogger(__name__)
 
+# ---------------------------------------------------------------------------
+# Pipeline SSE event bus  (TRACE subscriber-list pattern)
+# ---------------------------------------------------------------------------
+# Each SSE connection gets its own asyncio.Queue. _sse_broadcast() is awaited
+# from the upload handler and puts the event into every subscriber's queue.
+# The SSE endpoint sends a "connected" sentinel immediately on connect so the
+# browser knows the stream is live before it starts the upload POST.
+
+_sse_subscribers: list[asyncio.Queue] = []
+_sse_log = Path(__file__).resolve().parent.parent / "logs" / "pipeline_events.jsonl"
+
+# One active pipeline job at a time (upload or draft generation).
+# Concurrent requests receive 409 — same pattern as TRACE.
+_pipeline_lock: asyncio.Lock = asyncio.Lock()
+
+
+async def _sse_broadcast(stage: str, status: str, message: str = "") -> None:
+    """Put a pipeline event into every connected subscriber's queue."""
+    payload = json.dumps({
+        "stage": stage, "status": status,
+        "message": message, "ts": datetime.now().isoformat(),
+    })
+    try:
+        _sse_log.parent.mkdir(parents=True, exist_ok=True)
+        with open(_sse_log, "a", encoding="utf-8") as fh:
+            fh.write(payload + "\n")
+    except Exception:
+        pass
+    dead: list[asyncio.Queue] = []
+    for q in list(_sse_subscribers):
+        try:
+            q.put_nowait(payload)
+        except asyncio.QueueFull:
+            dead.append(q)
+    for q in dead:
+        try:
+            _sse_subscribers.remove(q)
+        except ValueError:
+            pass
+
+
 PANELS = [
     {"id": "pipeline", "name": "Pipeline", "icon": "M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"},
     {"id": "library", "name": "Library", "icon": "M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"},
@@ -340,20 +381,42 @@ async def upload_document(
     file: UploadFile = File(...),
     draft_type: str = Form(...),
 ) -> dict:
+    if _pipeline_lock.locked():
+        raise HTTPException(
+            status_code=409,
+            detail="Pipeline already running. Wait for the current job to finish."
+        )
+
+    async with _pipeline_lock:
+        return await _run_upload(file, draft_type)
+
+
+async def _run_upload(file: UploadFile, draft_type: str) -> dict:
+    # Stage 1: ingest — save file to disk
+    await _sse_broadcast("ingest", "active", "Saving file…")
     dest = UPLOADS_DIR / file.filename
     try:
         contents = await file.read()
         dest.write_bytes(contents)
     except Exception as exc:
+        await _sse_broadcast("ingest", "error", str(exc))
         raise HTTPException(status_code=500, detail=f"File save failed: {exc}") from exc
+    await _sse_broadcast("ingest", "complete", "File saved")
 
+    # Stage 2: ocr + extract — run full ingestion pipeline in thread
+    await _sse_broadcast("ocr", "active", "Running OCR & text extraction…")
     try:
         ingester = DocumentIngester()
         doc = await asyncio.to_thread(ingester.process, str(dest), draft_type)
     except Exception as exc:
+        await _sse_broadcast("ocr", "error", str(exc))
         logger.exception("Ingestion failed for %s", file.filename)
         raise HTTPException(status_code=500, detail=f"Ingestion failed: {exc}") from exc
+    await _sse_broadcast("ocr", "complete", "Text extracted")
+    await _sse_broadcast("extract", "complete", f"{doc.page_count} page(s) structured")
 
+    # Stage 3: index — build BM25 index
+    await _sse_broadcast("index", "active", "Indexing chunks…")
     try:
         indexer = DocumentIndexer()
         await asyncio.wait_for(
@@ -361,12 +424,85 @@ async def upload_document(
             timeout=60.0,
         )
     except asyncio.TimeoutError:
-        logger.warning("Indexing timed out for %s (embeddings model may still be loading)", doc.id)
+        logger.warning("Indexing timed out for %s", doc.id)
     except Exception as exc:
-        # Indexing failure is non-fatal; log and continue.
         logger.warning("Indexing failed for %s: %s", doc.id, exc)
+    await _sse_broadcast("index", "complete", f"{len(doc.chunks)} chunks indexed")
 
-    return _doc_to_dict(doc)
+    # Stage 4: retrieve — search for evidence passages
+    await _sse_broadcast("retrieve", "active", "Retrieving evidence…")
+    from code.retrieval.searcher import EvidenceSearcher
+    from code.retrieval.evidence import EvidencePackager
+    evidence_package = None
+    try:
+        searcher = EvidenceSearcher()
+        packager = EvidencePackager()
+        query_map = {
+            "case_fact_summary": "parties claims evidence dates procedural history relief",
+            "title_review_summary": "property deed title transfer ownership chain lien encumbrance",
+            "notice_summary": "notice deadline requirement compliance response demand",
+            "document_checklist": "document filing record deed agreement contract certificate",
+        }
+        query = query_map.get(draft_type, "legal document content")
+        chunks = await asyncio.to_thread(searcher.search, query, [doc.id], 8)
+        evidence_package = packager.package(chunks)
+        await _sse_broadcast("retrieve", "complete",
+                             f"{evidence_package.chunk_count} evidence passages retrieved")
+    except Exception as exc:
+        logger.warning("Evidence retrieval failed for %s: %s", doc.id, exc)
+        await _sse_broadcast("retrieve", "complete", "Retrieval skipped")
+
+    # Stage 5: generate — produce grounded draft
+    await _sse_broadcast("generate", "active", f"Generating {draft_type.replace('_', ' ')}…")
+    draft_dict = None
+    try:
+        gen = DraftGenerator()
+        output = await asyncio.to_thread(
+            gen.generate_draft, doc.id, draft_type, doc.full_text, 8
+        )
+        draft_dict = _draft_to_dict(output)
+        await _sse_broadcast("generate", "complete", "Draft generated")
+    except Exception as exc:
+        logger.warning("Draft generation failed for %s: %s", doc.id, exc)
+        await _sse_broadcast("generate", "complete", "Generation skipped (CPU mode)")
+
+    # Stage 6: verify — run firewall checks
+    await _sse_broadcast("verify", "active", "Verifying grounding…")
+    if draft_dict:
+        try:
+            runner = FirewallRunner()
+            citation_map = {}
+            if evidence_package:
+                citation_map = evidence_package.citation_map
+            results = await asyncio.to_thread(
+                runner.verify_draft,
+                draft_dict.get("content_markdown", ""),
+                doc.structured_fields,
+                citation_map,
+                doc.confidence,
+            )
+            fw_summary = runner.get_summary(results)
+            draft_dict["firewall_results"] = [_vr_to_dict(r) for r in results]
+            draft_dict["firewall_summary"] = fw_summary
+            draft_path = PROCESSED_DIR / f"draft_{doc.id}_{draft_type}.json"
+            draft_path.write_text(json.dumps(draft_dict, default=str), encoding="utf-8")
+            verified = fw_summary.get("verified", 0)
+            total = fw_summary.get("total", 0)
+            await _sse_broadcast("verify", "complete",
+                                 f"Verified: {verified}/{total} claims grounded")
+        except Exception as exc:
+            logger.warning("Firewall check failed: %s", exc)
+            await _sse_broadcast("verify", "complete", "Verification skipped")
+    else:
+        await _sse_broadcast("verify", "complete", "No draft to verify")
+
+    # Signal complete
+    await _sse_broadcast("all", "complete", "Processing complete")
+
+    result = _doc_to_dict(doc)
+    if draft_dict:
+        result["draft"] = draft_dict
+    return result
 
 
 @app.get("/api/v1/documents")
@@ -467,12 +603,11 @@ async def generate_draft(body: dict) -> dict:
 
     try:
         runner = FirewallRunner()
-        citation_map = {c.get("id", i): c for i, c in enumerate(output.citations or [])}
         results = await asyncio.to_thread(
             runner.verify_draft,
             output.content_markdown,
             doc.structured_fields,
-            citation_map,
+            output.citations or {},
             doc.confidence,
         )
         fw_summary = runner.get_summary(results)
@@ -570,11 +705,12 @@ async def trigger_pattern_extraction() -> dict:
     """Manually trigger pattern extraction from accumulated corrections.
 
     Used by the Audit page's 'Trigger Pattern Extraction' button via HTMX.
-    Runs synchronously so the response confirms completion (or failure).
+    Passes force=True so extraction runs regardless of correction count —
+    useful for demo and review where fewer than TRIGGER_INTERVAL edits exist.
     """
     try:
         extractor = PatternExtractor()
-        patterns = await asyncio.to_thread(extractor.extract_patterns)
+        patterns = await asyncio.to_thread(extractor.extract_patterns, True)
         rule_count = len(patterns)
         return {"status": "ok", "rules_extracted": rule_count,
                 "message": f"Extraction complete — {rule_count} rule(s) generated."}
@@ -655,14 +791,13 @@ async def system_health() -> dict:
     # Check GPU
     try:
         gpu = await asyncio.to_thread(get_gpu_info)
-        gpu_ok = gpu.get("available", False)
+        gpu_ok = gpu.get("total_mb", 0) > 0
         components.append({
             "name": "GPU",
             "status": "ok" if gpu_ok else "warn",
-            "detail": f"{gpu.get('name', 'Unknown')} — {gpu.get('free_gb', 0):.1f}GB free" if gpu_ok else "No GPU detected",
+            "detail": f"{gpu.get('name', 'Unknown')} — {gpu.get('vram_free_gb', 0):.1f}GB free" if gpu_ok else "No GPU detected",
         })
-        if not gpu_ok:
-            healthy = False
+        # GPU missing is a warning, not a hard failure — CPU fallback is possible
     except Exception as e:
         components.append({"name": "GPU", "status": "fail", "detail": str(e)})
         healthy = False
@@ -707,6 +842,27 @@ async def system_health() -> dict:
     }
 
 
+@app.post("/api/v1/system/gpu_reset")
+async def gpu_reset() -> dict:
+    """Emergency GPU/VRAM reset — unloads all models, zeroes the VRAM budget.
+
+    Use when the server is stuck in a VRAMBudgetExceeded state due to a timed-out
+    or crashed pipeline run that left a model partially loaded.
+    """
+    try:
+        from code.llm_interface.model_manager import ModelManager
+        mgr = ModelManager.instance()
+        await asyncio.to_thread(mgr.reclear_gpu)
+        return {
+            "ok": True,
+            "vram_used_gb": mgr.vram_used_gb,
+            "message": "GPU reset complete. VRAM budget zeroed.",
+        }
+    except Exception as exc:
+        logger.exception("GPU reset failed")
+        raise HTTPException(status_code=500, detail=f"GPU reset failed: {exc}") from exc
+
+
 # ---------------------------------------------------------------------------
 # SSE pipeline events
 # ---------------------------------------------------------------------------
@@ -714,20 +870,36 @@ async def system_health() -> dict:
 
 @app.get("/api/v1/events/pipeline")
 async def pipeline_events(request: Request):
+    """Stream pipeline events to the browser using the TRACE subscriber pattern.
+
+    On connect: subscriber queue is created and a "connected/ready" sentinel is
+    sent immediately so the browser knows the stream is live before it POSTs
+    the upload. Events: {stage, status, message, ts}.
+    Keepalive ping sent after 15s idle to prevent proxy timeout.
+    """
+    q: asyncio.Queue = asyncio.Queue(maxsize=200)
+    _sse_subscribers.append(q)
+    # Sentinel: tells the browser SSE is established — safe to start the upload
+    await q.put(json.dumps({"stage": "connected", "status": "ready", "message": ""}))
+
     async def _event_generator() -> AsyncGenerator[dict, None]:
-        stages = [
-            ("uploading", 10),
-            ("ocr", 25),
-            ("extracting", 50),
-            ("generating", 70),
-            ("verifying", 90),
-            ("complete", 100),
-        ]
-        for stage, pct in stages:
-            if await request.is_disconnected():
-                break
-            yield {"data": json.dumps({"stage": stage, "pct": pct})}
-            await asyncio.sleep(0.4)
+        try:
+            while True:
+                if await request.is_disconnected():
+                    break
+                try:
+                    payload = await asyncio.wait_for(q.get(), timeout=15.0)
+                    yield {"data": payload}
+                    ev = json.loads(payload)
+                    if ev.get("stage") == "all" and ev.get("status") == "complete":
+                        return
+                except asyncio.TimeoutError:
+                    yield {"data": json.dumps({"stage": "ping", "status": "idle"})}
+        finally:
+            try:
+                _sse_subscribers.remove(q)
+            except ValueError:
+                pass
 
     return EventSourceResponse(_event_generator())
 

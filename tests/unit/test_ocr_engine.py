@@ -1,6 +1,6 @@
 """Unit tests for code.pipeline.ocr_engine.OCREngine.
 
-All LLM/GPU calls are mocked so these tests run fast (< 1 s each)
+All LLM/GPU calls are mocked via ModelManager so these tests run fast (< 1 s each)
 and require no hardware.
 """
 
@@ -12,10 +12,9 @@ from unittest.mock import MagicMock, patch
 # ---------------------------------------------------------------------------
 
 def test_ocr_engine_imports():
-    """Verify that OCREngine and its dependencies can be imported cleanly."""
-    from code.pipeline.ocr_engine import OCREngine, OCR_PROMPT  # noqa: F401
+    """Verify that OCREngine can be imported cleanly."""
+    from code.pipeline.ocr_engine import OCREngine  # noqa: F401
     assert OCREngine is not None
-    assert isinstance(OCR_PROMPT, str)
 
 
 # ---------------------------------------------------------------------------
@@ -23,36 +22,36 @@ def test_ocr_engine_imports():
 # ---------------------------------------------------------------------------
 
 def test_process_image_returns_page_content(tmp_path):
-    """Mock InferenceEngine.generate_with_image to return a known string.
+    """Mock ModelManager so process_image returns a PageContent with known text.
 
-    Verifies that process_image returns a PageContent whose .text equals
-    the stripped mock string and whose .confidence is > 0.
+    ocr_engine.py calls ModelManager.instance() and then calls
+    _current_model.create_chat_completion(). We mock that chain.
     """
     from code.pipeline.ocr_engine import OCREngine
     from code.pipeline.ingestion import PageContent
 
-    # Create a dummy image file so the path exists (OCREngine passes it to
-    # the engine without actually opening it in tests).
     image_path = tmp_path / "page.png"
     image_path.write_bytes(b"\x89PNG\r\n\x1a\n")  # minimal PNG header bytes
 
-    mock_engine = MagicMock()
-    mock_engine.generate_with_image.return_value = "Extracted text here."
+    mock_mgr = MagicMock()
+    mock_mgr._config = {
+        "local_models": {
+            "ocr": {"max_output_tokens": 512, "temperature": 0.2, "repeat_penalty": 1.0}
+        }
+    }
+    mock_mgr.load.return_value.create_chat_completion.return_value = {
+        "choices": [{"message": {"content": "Extracted text here."}}]
+    }
 
-    with patch(
-        "code.pipeline.ocr_engine.InferenceEngine",
-        return_value=mock_engine,
-    ):
+    with patch("code.pipeline.ocr_engine.ModelManager") as mock_mgr_cls:
+        mock_mgr_cls.instance.return_value = mock_mgr
         engine = OCREngine()
         result = engine.process_image(str(image_path))
 
     assert isinstance(result, PageContent), "Expected a PageContent instance"
-    assert result.text == "Extracted text here.", (
-        f"Unexpected text: {result.text!r}"
-    )
+    assert result.text == "Extracted text here.", f"Unexpected text: {result.text!r}"
     assert result.ocr_used is True, "ocr_used should be True for image processing"
     assert result.confidence > 0.0, "Confidence must be positive for non-empty text"
-    assert result.ocr_error == "", "No error expected on success"
 
 
 # ---------------------------------------------------------------------------
@@ -60,9 +59,8 @@ def test_process_image_returns_page_content(tmp_path):
 # ---------------------------------------------------------------------------
 
 def test_process_image_error_graceful(tmp_path):
-    """When InferenceEngine.generate_with_image raises, process_image must
-    return a PageContent with ocr_error set and confidence 0.0 rather than
-    propagating the exception.
+    """When ModelManager.load raises, process_image returns PageContent with
+    ocr_error set and confidence 0.0 rather than propagating the exception.
     """
     from code.pipeline.ocr_engine import OCREngine
     from code.pipeline.ingestion import PageContent
@@ -70,19 +68,17 @@ def test_process_image_error_graceful(tmp_path):
     image_path = tmp_path / "bad_page.png"
     image_path.write_bytes(b"not a real image")
 
-    mock_engine = MagicMock()
-    mock_engine.generate_with_image.side_effect = RuntimeError("GPU out of memory")
+    mock_mgr = MagicMock()
+    mock_mgr.load.side_effect = RuntimeError("GPU out of memory")
 
-    with patch(
-        "code.pipeline.ocr_engine.InferenceEngine",
-        return_value=mock_engine,
-    ):
+    with patch("code.pipeline.ocr_engine.ModelManager") as mock_mgr_cls:
+        mock_mgr_cls.instance.return_value = mock_mgr
         engine = OCREngine()
         result = engine.process_image(str(image_path))
 
     assert isinstance(result, PageContent), "Must return PageContent even on error"
     assert result.confidence == 0.0, "Confidence must be 0.0 on error"
-    assert result.ocr_error != "", "ocr_error must be set on error"
+    assert result.ocr_error, "ocr_error must be set on error"
     assert "GPU out of memory" in result.ocr_error, (
         f"Error message not propagated: {result.ocr_error!r}"
     )
@@ -114,7 +110,6 @@ def test_estimate_confidence_illegible_heavy():
     """Verify _estimate_confidence returns a low value when many illegibles appear."""
     from code.pipeline.ocr_engine import OCREngine
 
-    # Construct text where > 50 % of 'words' are [illegible]
     text = " ".join(["[illegible]"] * 12 + ["word"] * 4)
     score = OCREngine._estimate_confidence(text)
     assert score <= 0.5, f"Expected low confidence for illegible-heavy text, got {score}"

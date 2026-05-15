@@ -156,10 +156,34 @@ class DocumentIngester:
             return self._process_pdf(path, doc_id)
         elif suffix in (".png", ".jpg", ".jpeg", ".tiff", ".tif", ".bmp"):
             return self._process_image(path)
+        elif suffix in (".txt", ".md", ".text"):
+            return self._process_text_file(path)
         else:
             logger.warning("Unsupported file type: %s", suffix)
             return [PageContent(page_number=1, text="", confidence=0.0,
                                ocr_error=f"Unsupported file type: {suffix}")]
+
+    def _process_text_file(self, path: Path) -> list[PageContent]:
+        """Process plain text file — split into ~3000-char pages."""
+        try:
+            raw = path.read_text(encoding="utf-8", errors="replace")
+        except Exception as e:
+            logger.error("Text file read failed for %s: %s", path, e)
+            return [PageContent(page_number=1, text="", confidence=0.0,
+                               ocr_error=f"Text read failed: {e}")]
+
+        chunk_size = 3000
+        pages = []
+        for i in range(0, max(1, len(raw)), chunk_size):
+            chunk = raw[i : i + chunk_size].strip()
+            pages.append(PageContent(
+                page_number=len(pages) + 1,
+                text=chunk,
+                confidence=1.0,
+                ocr_used=False,
+            ))
+        logger.info("Text file %s split into %d page(s)", path.name, len(pages))
+        return pages or [PageContent(page_number=1, text="", confidence=1.0)]
 
     def _process_pdf(self, path: Path, doc_id: str = "") -> list[PageContent]:
         """Process PDF: try text extraction first, fall back to OCR if sparse.
@@ -197,16 +221,16 @@ class DocumentIngester:
         out_dir.mkdir(parents=True, exist_ok=True)
 
         try:
-            pdf = fitz.open(str(path))
-            mat = fitz.Matrix(150 / 72, 150 / 72)  # 150 DPI
-            for page_idx in range(len(pdf)):
-                img_path = out_dir / f"page_{page_idx + 1:03d}.jpg"
-                if img_path.exists():
-                    continue
-                pix = pdf[page_idx].get_pixmap(matrix=mat, alpha=False)
-                pix.save(str(img_path), output="jpeg", jpg_quality=85)
-            pdf.close()
-            logger.info("Saved %d page images for %s", len(pdf), doc_id)
+            with fitz.open(str(path)) as pdf:
+                n_pages = len(pdf)
+                mat = fitz.Matrix(150 / 72, 150 / 72)  # 150 DPI
+                for page_idx in range(n_pages):
+                    img_path = out_dir / f"page_{page_idx + 1:03d}.jpg"
+                    if img_path.exists():
+                        continue
+                    pix = pdf[page_idx].get_pixmap(matrix=mat, alpha=False)
+                    pix.save(str(img_path), output="jpeg", jpg_quality=85)
+            logger.info("Saved %d page images for %s", n_pages, doc_id)
         except Exception as e:
             logger.warning("Page image rendering failed for %s: %s", doc_id, e)
 
