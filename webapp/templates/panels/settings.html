@@ -211,48 +211,7 @@
 
 
     <!-- ═══════════════════════════════════════════════════════════════
-         SECTION 4 — System Actions
-    ═══════════════════════════════════════════════════════════════════ -->
-    <div class="card">
-        <div class="card-head">System Actions</div>
-        <div style="display:flex;flex-wrap:wrap;gap:24px;align-items:flex-start;">
-
-            <!-- Run Evaluation Script -->
-            <div style="display:flex;flex-direction:column;gap:8px;max-width:300px;">
-                <button id="btn-eval" class="btn btn-primary" onclick="runEvaluation()">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <polygon points="5 3 19 12 5 21 5 3"/>
-                    </svg>
-                    Run Evaluation Script
-                </button>
-                <p style="font-size:11px;color:rgb(var(--body-muted));line-height:1.5;margin:0;">
-                    Runs the end-to-end evaluation suite against the current document corpus.
-                    Results are printed to the server log. A confirmation is shown before executing.
-                </p>
-            </div>
-
-            <div style="width:1px;align-self:stretch;background:rgb(var(--ink-700));flex-shrink:0;"></div>
-
-            <!-- Rebuild Index -->
-            <div style="display:flex;flex-direction:column;gap:8px;max-width:300px;">
-                <button id="btn-reindex" class="btn btn-ghost" onclick="rebuildIndex()">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/>
-                    </svg>
-                    Rebuild Index
-                </button>
-                <p style="font-size:11px;color:rgb(var(--body-muted));line-height:1.5;margin:0;">
-                    Triggers a full reindex of all documents in the vector store.
-                    Existing embeddings are replaced. Retrieval remains unavailable until the process completes.
-                </p>
-            </div>
-
-        </div>
-    </div>
-
-
-    <!-- ═══════════════════════════════════════════════════════════════
-         SECTION 5 — About
+         SECTION 4 — About
     ═══════════════════════════════════════════════════════════════════ -->
     <div class="card">
         <div class="card-head">About</div>
@@ -291,64 +250,4 @@
 
 </div><!-- /sections -->
 
-<script>
-(function () {
-    'use strict';
-
-    /* ─── Run Evaluation Script ───────────────────────────────────── */
-    window.runEvaluation = async function () {
-        const confirmed = await legalModal({
-            title: 'Run Evaluation Script',
-            body: 'This will execute the evaluation pipeline against the full document corpus.\n\nProgress will be logged to the server console. This may take several minutes depending on corpus size.',
-            confirmLabel: 'Run Evaluation',
-        });
-        if (!confirmed) return;
-
-        const btn = document.getElementById('btn-eval');
-        btn.disabled    = true;
-        btn.innerHTML   = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> Running…';
-        try {
-            const r = await fetch('/scripts/run_evaluation.py');
-            const d = await r.json().catch(() => ({}));
-            if (!r.ok) throw new Error(d.error || 'HTTP ' + r.status);
-            showToast('Evaluation started. ' + (d.message || ''), 'ok');
-        } catch (e) {
-            showToast('Evaluation failed: ' + e.message, 'error');
-        } finally {
-            btn.disabled  = false;
-            btn.innerHTML =
-                '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>' +
-                ' Run Evaluation Script';
-        }
-    };
-
-    /* ─── Rebuild Index ───────────────────────────────────────────── */
-    window.rebuildIndex = async function () {
-        const confirmed = await legalModal({
-            title: 'Rebuild Vector Index',
-            body: 'This will delete the existing vector index and re-embed all documents from scratch.\n\nRetrieval will be unavailable during the process. Depending on corpus size this may take a significant amount of time.',
-            confirmLabel: 'Rebuild Index',
-            danger: true,
-        });
-        if (!confirmed) return;
-
-        const btn = document.getElementById('btn-reindex');
-        btn.disabled    = true;
-        btn.innerHTML   = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> Reindexing…';
-        try {
-            const r = await fetch('/api/v1/retrieval/reindex', { method: 'POST' });
-            const d = await r.json().catch(() => ({}));
-            if (!r.ok) throw new Error(d.error || 'HTTP ' + r.status);
-            showToast('Reindex started. ' + (d.message || ''), 'ok');
-        } catch (e) {
-            showToast('Reindex failed: ' + e.message, 'error');
-        } finally {
-            btn.disabled  = false;
-            btn.innerHTML =
-                '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>' +
-                ' Rebuild Index';
-        }
-    };
-})();
-</script>
 {% endblock %}

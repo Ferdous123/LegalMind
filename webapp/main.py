@@ -398,8 +398,15 @@ async def page_draft(request: Request, doc_id: str, draft_id: Optional[str] = No
                 draft_type_label = get_draft_label(draft.get("draft_type", ""))
                 verification_summary = draft.get("firewall_summary", {})
         else:
-            # Auto-find most recent draft for this document
-            draft_paths = sorted(PROCESSED_DIR.glob(f"draft_{doc_id}_*.json"), reverse=True)
+            # Auto-find the most recently *generated* draft. Sort by mtime,
+            # not filename — alphabetical order would arbitrarily prefer
+            # e.g. "title_review_summary" over "case_fact_summary"
+            # regardless of which was actually produced for this document.
+            draft_paths = sorted(
+                PROCESSED_DIR.glob(f"draft_{doc_id}_*.json"),
+                key=lambda p: p.stat().st_mtime,
+                reverse=True,
+            )
             if draft_paths:
                 draft = json.loads(draft_paths[0].read_text(encoding="utf-8"))
                 citations = draft.get("citations", {})
