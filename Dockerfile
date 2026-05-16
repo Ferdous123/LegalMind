@@ -28,7 +28,8 @@ COPY . .
 # Model cache mounted as volume at runtime
 VOLUME ["/models", "/app/data"]
 
-ENV LEGALMIND_MODEL_CACHE=/models
+ENV LEGALMIND_MODEL_DIR=/models
+ENV HF_HUB_DISABLE_SYMLINKS_WARNING=1
 
 EXPOSE 8000
 

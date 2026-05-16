@@ -1,290 +1,262 @@
 /**
- * LegalMind — editor.js
- * Inline field editing and correction submission.
+ * LegalMind — editor.js (WYSIWYG)
+ * Click-to-edit-in-place over the rendered-markdown view.
  *
- * Usage — mark any element with these data attributes:
- *   data-editable="true"
- *   data-field-path="parties.defendant"      (dot-notation path within the draft)
- *   data-doc-id="doc_abc123"                 (document ID)
- *   data-draft-type="case_fact_summary"      (draft template type)
- *   data-generated-text="original text"      (original model output for this field)
- *   data-source-chunk="source OCR text"      (optional: raw OCR from which text came)
+ * Trigger: any element with data-editable="true". Inside it, prefer a
+ * .rendered-markdown child as the contenteditable surface (so the edit
+ * area excludes the trigger button itself).
  *
- * Vanilla JS, ES2020+. No external dependencies.
- * Requires showToast() from app.js to be loaded first.
+ * On save: turn the edited HTML back into markdown via Turndown.js and
+ * POST the correction. The HTML view is then kept as-is (no re-render
+ * round-trip), so the operator sees exactly what they just typed.
+ *
+ * Required: marked.js + turndown.js + turndown-plugin-gfm loaded in the
+ * page (drafts.html provides both).  Requires showToast() from base.html.
  */
 
 'use strict';
 
-/* =========================================================
-   Constants
-   ========================================================= */
-
 const CORRECTIONS_ENDPOINT = '/api/v1/corrections';
 
-// Pencil icon SVG (inline, no external refs)
 const EDIT_TRIGGER_ICON = `<svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
   <path d="M8.5 1.5l2 2L4 10H2v-2l6.5-6.5z" stroke="currentColor" stroke-width="1.2"
         stroke-linecap="round" stroke-linejoin="round"/>
 </svg>`;
 
+const CHECK_ICON = `<svg viewBox="0 0 16 16" width="13" height="13" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <path d="M3 8.5l3 3 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>`;
+
+const X_ICON = `<svg viewBox="0 0 16 16" width="13" height="13" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+</svg>`;
+
+/* =========================================================
+   Turndown setup (HTML -> Markdown)
+   ========================================================= */
+
+let _turndown = null;
+function getTurndown() {
+    if (_turndown) return _turndown;
+    if (typeof TurndownService === 'undefined') return null;
+    _turndown = new TurndownService({
+        headingStyle: 'atx',          // # H1
+        hr: '---',
+        bulletListMarker: '-',
+        codeBlockStyle: 'fenced',
+        emDelimiter: '*',
+    });
+    // GFM tables / strikethrough / task lists if the plugin loaded
+    if (typeof turndownPluginGfm !== 'undefined') {
+        try { _turndown.use(turndownPluginGfm.gfm); } catch(_) {}
+    }
+    // Keep our citation-ref spans as plain [E1] tokens, not arbitrary HTML
+    _turndown.addRule('citationRef', {
+        filter: (node) => node.nodeName === 'SPAN' && node.classList.contains('citation-ref'),
+        replacement: (content) => content,
+    });
+    return _turndown;
+}
+
 /* =========================================================
    Field initialisation
    ========================================================= */
 
-/**
- * Initialise all elements marked as editable in the document.
- * Safe to call multiple times — will skip already-initialised fields.
- */
 function initEditableFields() {
     document.querySelectorAll('[data-editable="true"]').forEach(initField);
 }
 
-/**
- * Attach the edit trigger to a single field element.
- *
- * @param {HTMLElement} element - The field element.
- */
 function initField(element) {
     if (element.dataset.editorInit === 'true') return;
     element.dataset.editorInit = 'true';
-
-    // Ensure the element is positioned relatively so the trigger can anchor
-    if (getComputedStyle(element).position === 'static') {
-        element.classList.add('field-editable');
-    } else {
-        element.classList.add('field-editable');
-    }
+    element.classList.add('field-editable');
 
     const trigger = buildEditTrigger();
-
     trigger.addEventListener('click', (evt) => {
         evt.stopPropagation();
         evt.preventDefault();
         enterEditMode(element);
     });
-
     element.appendChild(trigger);
 }
 
-/**
- * Build the small "Edit" button that appears on field hover.
- *
- * @returns {HTMLButtonElement}
- */
 function buildEditTrigger() {
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'edit-trigger';
-    btn.setAttribute('aria-label', 'Edit this field');
+    btn.setAttribute('aria-label', 'Edit this section');
     btn.innerHTML = `${EDIT_TRIGGER_ICON}<span>Edit</span>`;
     return btn;
 }
 
 /* =========================================================
-   Edit mode
+   Edit mode (contenteditable)
    ========================================================= */
 
-/**
- * Replace the field's display content with an inline editing widget
- * (textarea + Save / Cancel buttons).
- *
- * @param {HTMLElement} element - The field element.
- */
 function enterEditMode(element) {
-    // Prevent double-entry
     if (element.dataset.editing === 'true') return;
     element.dataset.editing = 'true';
 
-    const originalText =
-        element.dataset.generatedText ??
-        element.dataset.currentText ??
-        extractFieldText(element);
+    // Prefer the rendered-markdown surface so the edit area doesn't
+    // include the trigger button. Fall back to the element itself.
+    const surface = element.querySelector('.rendered-markdown') || element;
 
-    // Snapshot the current rendered content so we can restore on cancel
-    const originalInnerHTML = element.innerHTML;
+    const originalHTML = surface.innerHTML;
+    const originalMarkdown = element.dataset.generatedText || '';
 
-    // Build the editing widget
-    const wrapper = document.createElement('div');
-    wrapper.className = 'field-editing';
+    // Hide the trigger while editing (we have the floating toolbar instead)
+    const trigger = element.querySelector(':scope > .edit-trigger');
+    if (trigger) trigger.style.display = 'none';
 
-    const textarea = document.createElement('textarea');
-    textarea.value = originalText;
-    textarea.rows = Math.max(2, Math.ceil(originalText.length / 80));
-    textarea.setAttribute('aria-label', 'Edit field value');
-    textarea.setAttribute('spellcheck', 'true');
+    // Strip any prior "Edited" badge so it doesn't get baked into the
+    // contenteditable area while typing
+    surface.querySelectorAll('.badge-edited').forEach(el => el.remove());
 
-    const actions = document.createElement('div');
-    actions.className = 'field-editing-actions';
+    // Activate contenteditable
+    surface.contentEditable = 'true';
+    surface.classList.add('editing-surface');
+    surface.setAttribute('spellcheck', 'true');
 
-    const saveBtn = document.createElement('button');
-    saveBtn.type = 'button';
-    saveBtn.className = 'btn-save-edit';
-    saveBtn.textContent = 'Update';
+    // Floating toolbar (sticky at top of the editable surface)
+    const toolbar = document.createElement('div');
+    toolbar.className = 'edit-toolbar';
+    toolbar.innerHTML = `
+      <span class="edit-toolbar-status">Editing — changes save as a correction</span>
+      <button type="button" class="btn-edit-cancel" aria-label="Cancel edit">${X_ICON}<span>Cancel</span></button>
+      <button type="button" class="btn-edit-save" aria-label="Save correction">${CHECK_ICON}<span>Save</span></button>
+    `;
+    element.insertBefore(toolbar, surface);
 
-    const cancelBtn = document.createElement('button');
-    cancelBtn.type = 'button';
-    cancelBtn.className = 'btn-cancel-edit';
-    cancelBtn.textContent = 'Cancel';
+    const saveBtn = toolbar.querySelector('.btn-edit-save');
+    const cancelBtn = toolbar.querySelector('.btn-edit-cancel');
+    const statusEl = toolbar.querySelector('.edit-toolbar-status');
 
-    actions.append(saveBtn, cancelBtn);
-    wrapper.append(textarea, actions);
+    // Focus and place caret at end
+    setTimeout(() => {
+        surface.focus();
+        try {
+            const range = document.createRange();
+            range.selectNodeContents(surface);
+            range.collapse(false);
+            const sel = window.getSelection();
+            sel.removeAllRanges();
+            sel.addRange(range);
+        } catch(_) {}
+    }, 30);
 
-    // Replace field content with the editing widget
-    element.innerHTML = '';
-    element.appendChild(wrapper);
-
-    textarea.focus();
-    textarea.setSelectionRange(textarea.value.length, textarea.value.length);
-
-    // --- Event handlers ---
+    const cleanup = () => {
+        surface.contentEditable = 'false';
+        surface.classList.remove('editing-surface');
+        surface.removeAttribute('spellcheck');
+        toolbar.remove();
+        if (trigger) trigger.style.display = '';
+        delete element.dataset.editing;
+        document.removeEventListener('keydown', onKey);
+    };
 
     const handleSave = async () => {
-        const newText = textarea.value.trim();
-        if (!newText) {
-            textarea.focus();
+        const td = getTurndown();
+        if (!td) {
+            (window.showToast || console.error)('Markdown converter not loaded — refresh the page and retry.', 'error');
+            return;
+        }
+
+        // Convert the edited HTML back to markdown
+        let newMarkdown = '';
+        try {
+            // Clean up the surface clone before converting so we don't
+            // capture the toolbar / trigger if they accidentally got in
+            const clone = surface.cloneNode(true);
+            clone.querySelectorAll('.edit-trigger, .edit-toolbar, .badge-edited').forEach(n => n.remove());
+            newMarkdown = td.turndown(clone.innerHTML).trim();
+        } catch (err) {
+            console.warn('turndown failed:', err);
+            newMarkdown = surface.innerText.trim();
+        }
+
+        if (!newMarkdown) {
+            statusEl.textContent = 'Cannot save empty content';
+            statusEl.style.color = 'rgb(var(--signal-fail))';
+            return;
+        }
+        if (newMarkdown === originalMarkdown.trim()) {
+            statusEl.textContent = 'No changes';
+            // Bail out without saving
+            setTimeout(cleanup, 400);
             return;
         }
 
         saveBtn.disabled = true;
         cancelBtn.disabled = true;
-        saveBtn.textContent = 'Saving...';
+        statusEl.textContent = 'Saving correction…';
 
-        await saveCorrection(element, newText, originalText, originalInnerHTML);
+        const payload = {
+            document_id: element.dataset.docId || null,
+            draft_type: element.dataset.draftType || null,
+            field_path: element.dataset.fieldPath || 'content_markdown',
+            source_ocr_chunk: element.dataset.sourceChunk || '',
+            generated_text: originalMarkdown,
+            edited_text: newMarkdown,
+            correction_type: detectCorrectionType(originalMarkdown, newMarkdown),
+        };
+
+        try {
+            const resp = await fetch(CORRECTIONS_ENDPOINT, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+            });
+            if (!resp.ok) {
+                let detail = `HTTP ${resp.status}`;
+                try {
+                    const body = await resp.json();
+                    detail = body?.detail || body?.message || detail;
+                } catch(_) {}
+                throw new Error(detail);
+            }
+            // Update the stored "generated" markdown to the new value so
+            // subsequent edits compare against the latest saved version
+            element.dataset.generatedText = newMarkdown;
+            element.dataset.currentText = newMarkdown;
+
+            (window.showToast || console.info)('Correction saved. Future drafts will reflect this change.', 'success');
+
+            // Re-stamp the "Edited" badge on the wrapper
+            markFieldEdited(element);
+            cleanup();
+        } catch (err) {
+            console.error('saveCorrection failed:', err);
+            saveBtn.disabled = false;
+            cancelBtn.disabled = false;
+            statusEl.textContent = 'Save failed: ' + err.message;
+            statusEl.style.color = 'rgb(var(--signal-fail))';
+        }
     };
 
     const handleCancel = () => {
-        exitEditMode(element, originalInnerHTML);
+        surface.innerHTML = originalHTML;
+        cleanup();
+    };
+
+    const onKey = (evt) => {
+        if (evt.key === 'Escape') {
+            evt.preventDefault();
+            handleCancel();
+        } else if (evt.key === 'Enter' && (evt.ctrlKey || evt.metaKey)) {
+            evt.preventDefault();
+            handleSave();
+        }
     };
 
     saveBtn.addEventListener('click', handleSave);
     cancelBtn.addEventListener('click', handleCancel);
-
-    // Allow Ctrl+Enter to save, Escape to cancel
-    textarea.addEventListener('keydown', (evt) => {
-        if (evt.key === 'Enter' && (evt.ctrlKey || evt.metaKey)) {
-            evt.preventDefault();
-            handleSave();
-        } else if (evt.key === 'Escape') {
-            evt.preventDefault();
-            handleCancel();
-        }
-    });
-}
-
-/**
- * Exit editing mode, restoring prior HTML if needed.
- *
- * @param {HTMLElement} element       - The field element.
- * @param {string}      restoredHtml  - HTML to restore into element.
- */
-function exitEditMode(element, restoredHtml) {
-    delete element.dataset.editing;
-    element.innerHTML = restoredHtml;
-}
-
-/**
- * Extract the visible text content of a field, excluding the edit trigger
- * button text so we don't capture "Edit" in the original value.
- *
- * @param {HTMLElement} element
- * @returns {string}
- */
-function extractFieldText(element) {
-    const clone = element.cloneNode(true);
-    clone.querySelectorAll('.edit-trigger').forEach((el) => el.remove());
-    return clone.textContent.trim();
-}
-
-/* =========================================================
-   Correction submission
-   ========================================================= */
-
-/**
- * POST the corrected text to the server and update the field's display.
- *
- * @param {HTMLElement} fieldEl       - The field element (currently in edit mode).
- * @param {string}      newText       - The corrected text entered by the user.
- * @param {string}      originalText  - The original generated text.
- * @param {string}      originalHtml  - The field's pre-edit innerHTML (for restore).
- */
-async function saveCorrection(fieldEl, newText, originalText, originalHtml) {
-    const payload = {
-        document_id: fieldEl.dataset.docId ?? null,
-        draft_type: fieldEl.dataset.draftType ?? null,
-        field_path: fieldEl.dataset.fieldPath ?? null,
-        source_ocr_chunk: fieldEl.dataset.sourceChunk ?? '',
-        generated_text: originalText,
-        edited_text: newText,
-        correction_type: detectCorrectionType(originalText, newText),
-    };
-
-    try {
-        const resp = await fetch(CORRECTIONS_ENDPOINT, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload),
-        });
-
-        if (resp.ok) {
-            // Update the stored generated text to reflect the latest saved value
-            fieldEl.dataset.generatedText = newText;
-            fieldEl.dataset.currentText = newText;
-
-            // Restore the field to display mode showing the new text
-            const displayHtml = buildUpdatedFieldHtml(fieldEl, newText);
-            exitEditMode(fieldEl, displayHtml);
-            markFieldEdited(fieldEl);
-
-            const toast = window.showToast ?? showToastFallback;
-            toast('Correction saved. Future drafts will reflect this change.', 'success');
-        } else {
-            let serverMessage = null;
-            try {
-                const body = await resp.json();
-                serverMessage = body?.detail ?? body?.message ?? null;
-            } catch {
-                // Response body not JSON — ignore
-            }
-            const msg = serverMessage ?? 'Failed to save correction. Please try again.';
-            const toast = window.showToast ?? showToastFallback;
-            toast(msg, 'error');
-            // Restore to original on failure so no data is lost
-            exitEditMode(fieldEl, originalHtml);
-        }
-    } catch (networkErr) {
-        console.error('[editor.js] saveCorrection network error:', networkErr);
-        const toast = window.showToast ?? showToastFallback;
-        toast('Network error — correction could not be submitted.', 'error');
-        exitEditMode(fieldEl, originalHtml);
-    }
-}
-
-/**
- * Build the inner HTML for a field that has just been successfully updated.
- * Re-attaches the edit trigger so the field remains editable.
- *
- * @param {HTMLElement} fieldEl  - The field element.
- * @param {string}      newText  - The corrected text.
- * @returns {string}
- */
-function buildUpdatedFieldHtml(fieldEl, newText) {
-    const escaped = escapeHtml(newText);
-    const trigger = buildEditTrigger();
-    return `${escaped}${trigger.outerHTML}`;
+    document.addEventListener('keydown', onKey);
 }
 
 /* =========================================================
    Heuristic: correction type detection
    ========================================================= */
 
-/**
- * Classify the nature of the correction.
- *
- * @param {string} original - Original generated text.
- * @param {string} edited   - User-edited text.
- * @returns {'omission'|'style'|'error'}
- */
 function detectCorrectionType(original, edited) {
     if (!original || original.length < 10) return 'omission';
     if (edited.length > original.length * 1.5) return 'omission';
@@ -293,60 +265,16 @@ function detectCorrectionType(original, edited) {
 }
 
 /* =========================================================
-   Post-edit badge
+   Edited badge
    ========================================================= */
 
-/**
- * Append a small "Edited" badge to a field after a successful correction.
- *
- * @param {HTMLElement} element - The field element.
- */
 function markFieldEdited(element) {
-    // Remove any existing badge first to avoid duplicates
     element.querySelectorAll('.badge-edited').forEach((el) => el.remove());
-
     const badge = document.createElement('span');
     badge.className = 'badge-edited';
-    badge.setAttribute('title', 'This field has been manually corrected');
+    badge.setAttribute('title', 'This section has been manually corrected');
     badge.textContent = 'Edited';
     element.appendChild(badge);
-}
-
-/* =========================================================
-   Fallback toast (used if app.js is not loaded)
-   ========================================================= */
-
-/**
- * Minimal fallback toast using a console message.
- * In production, app.js should always be loaded first.
- *
- * @param {string} message
- * @param {'success'|'error'} [type='success']
- */
-function showToastFallback(message, type = 'success') {
-    if (type === 'error') {
-        console.error('[LegalMind]', message);
-    } else {
-        console.info('[LegalMind]', message);
-    }
-}
-
-/* =========================================================
-   Utility — HTML escape (mirrors app.js version)
-   ========================================================= */
-
-/**
- * @param {string} str
- * @returns {string}
- */
-function escapeHtml(str) {
-    if (typeof str !== 'string') return String(str ?? '');
-    return str
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#x27;');
 }
 
 /* =========================================================
@@ -354,12 +282,9 @@ function escapeHtml(str) {
    ========================================================= */
 
 document.addEventListener('DOMContentLoaded', initEditableFields);
-
-// Also re-init after HTMX swaps new content into the DOM
 document.body.addEventListener('htmx:afterSwap', initEditableFields);
 
-// Expose for manual invocation (e.g., after dynamic content insertion)
-window.LegalMind = Object.assign(window.LegalMind ?? {}, {
+window.LegalMind = Object.assign(window.LegalMind || {}, {
     initEditableFields,
     initField,
     enterEditMode,

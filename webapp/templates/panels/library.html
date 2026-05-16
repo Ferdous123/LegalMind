@@ -30,6 +30,62 @@
     </div>
 </div>
 
+<!-- ── Job Queue + Pipeline Progress ───────────────────────────────── -->
+<div class="card" id="queue-panel" style="margin-bottom:16px;display:none;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <div class="card-head" style="margin:0;">Job Queue</div>
+        <div style="display:flex;align-items:center;gap:8px;">
+            <button id="cancel-btn" class="btn btn-ghost btn-sm" style="display:none;color:rgb(var(--signal-fail));"
+                    onclick="cancelJob()">
+                Cancel
+            </button>
+            <span id="queue-status" style="font-size:11px;font-family:'JetBrains Mono',monospace;
+                                           color:rgb(var(--body-muted));"></span>
+        </div>
+    </div>
+
+    <!-- Mini pipeline animation (3 stages for draft: retrieve → generate → verify) -->
+    <div style="display:flex;align-items:center;gap:0;margin-bottom:12px;padding:8px 12px;
+                background:rgb(var(--surface-raised));border-radius:8px;">
+        <div class="stage-node" style="flex:none;">
+            <div class="stage-badge" id="q-stage-retrieve"><div class="stage-dot"></div></div>
+            <div style="text-align:center;margin-top:4px;"><div class="stage-label">retrieve</div></div>
+        </div>
+        <div class="stage-connector" id="q-conn-retrieve" style="flex:1;min-width:40px;">
+            <div class="stage-connector-fill"></div>
+        </div>
+        <div class="stage-node" style="flex:none;">
+            <div class="stage-badge" id="q-stage-generate"><div class="stage-dot"></div></div>
+            <div style="text-align:center;margin-top:4px;"><div class="stage-label">generate</div></div>
+        </div>
+        <div class="stage-connector" id="q-conn-generate" style="flex:1;min-width:40px;">
+            <div class="stage-connector-fill"></div>
+        </div>
+        <div class="stage-node" style="flex:none;">
+            <div class="stage-badge" id="q-stage-verify"><div class="stage-dot"></div></div>
+            <div style="text-align:center;margin-top:4px;"><div class="stage-label">verify</div></div>
+        </div>
+    </div>
+
+    <!-- Progress message -->
+    <div id="queue-progress" style="font-size:12px;font-family:'JetBrains Mono',monospace;
+                                     color:rgb(var(--body-muted));margin-bottom:8px;display:none;"></div>
+
+    <!-- Queue list -->
+    <div id="queue-list" style="display:none;border-top:1px solid rgb(var(--border));padding-top:8px;">
+        <div style="font-size:11px;font-weight:600;color:rgb(var(--body-muted));text-transform:uppercase;
+                    letter-spacing:.05em;margin-bottom:6px;">Pending</div>
+        <div id="queue-items"></div>
+    </div>
+
+    <!-- Done list -->
+    <div id="done-list" style="display:none;border-top:1px solid rgb(var(--border));padding-top:8px;margin-top:8px;">
+        <div style="font-size:11px;font-weight:600;color:rgb(var(--body-muted));text-transform:uppercase;
+                    letter-spacing:.05em;margin-bottom:6px;">Completed</div>
+        <div id="done-items"></div>
+    </div>
+</div>
+
 <!-- ── 2-column layout ──────────────────────────────────────────────── -->
 <div style="display:grid;grid-template-columns:1fr minmax(0,320px);gap:16px;align-items:start;">
 
@@ -70,7 +126,8 @@
                     {% for doc in documents %}
                     <tr class="lib-row"
                         data-filename="{{ doc.filename | lower }}"
-                        hx-get="/api/v1/documents/{{ doc.document_id }}/detail"
+                        data-docid="{{ doc.id | default(doc.document_id) }}"
+                        hx-get="/api/v1/documents/{{ doc.id | default(doc.document_id) }}/detail"
                         hx-target="#detail-panel"
                         hx-swap="innerHTML"
                         hx-trigger="click">
@@ -79,7 +136,7 @@
                             title="{{ doc.filename }}">
                             {{ doc.filename | truncate(38) }}
                         </td>
-                        <td>{{ doc.draft_type | default('—') }}</td>
+                        <td>{{ doc.draft_type | default('document') }}</td>
                         <td style="font-family:'JetBrains Mono',monospace;color:rgb(var(--body-muted));">
                             {{ doc.page_count | default('—') }}
                         </td>
@@ -107,18 +164,28 @@
                             {% endif %}
                         </td>
                         <td style="font-family:'JetBrains Mono',monospace;color:rgb(var(--body-muted));">
-                            {% if doc.created_at %}{{ doc.created_at[:10] }}{% else %}—{% endif %}
+                            {% if doc.upload_timestamp %}{{ doc.upload_timestamp[:10] }}{% elif doc.created_at %}{{ doc.created_at[:10] }}{% else %}—{% endif %}
                         </td>
                         <td style="text-align:right;">
-                            <div style="display:flex;align-items:center;justify-content:flex-end;gap:6px;">
-                                <a href="/documents/{{ doc.document_id }}/draft"
+                            <div style="display:flex;align-items:center;justify-content:flex-end;gap:6px;position:relative;">
+                                {% if doc.has_draft %}
+                                <a href="/documents/{{ doc.id | default(doc.document_id) }}/draft"
                                    onclick="event.stopPropagation()"
-                                   class="btn btn-ghost btn-sm">
+                                   class="btn btn-ghost btn-sm"
+                                   title="View {{ doc.draft_types_available | length }} draft{% if doc.draft_types_available | length != 1 %}s{% endif %}">
                                     Draft
                                 </a>
-                                <button class="btn btn-primary btn-sm"
-                                        onclick="event.stopPropagation(); generateDraft('{{ doc.document_id }}', '{{ doc.draft_type | default('') }}')">
-                                    &#9889; Generate
+                                {% else %}
+                                <span class="btn btn-ghost btn-sm"
+                                      style="opacity:.35;cursor:not-allowed;pointer-events:none;"
+                                      title="No draft yet — click Generate">
+                                    Draft
+                                </span>
+                                {% endif %}
+                                <button class="btn btn-primary btn-sm gen-btn"
+                                        data-docid="{{ doc.id | default(doc.document_id) }}"
+                                        onclick="event.stopPropagation(); showDraftTypeMenu(this)">
+                                    Generate
                                 </button>
                             </div>
                         </td>
@@ -153,6 +220,196 @@
 (function () {
     'use strict';
 
+    /* ── State ─────────────────────────────────────────────────────── */
+    const STAGES = ['retrieve','generate','verify'];
+    let _sse = null;
+    let _activeJobDocId = null;
+
+    /* ── DOM helpers ───────────────────────────────────────────────── */
+    const $ = id => document.getElementById(id);
+    const qPanel    = () => $('queue-panel');
+    const qProgress = () => $('queue-progress');
+    const qStatus   = () => $('queue-status');
+    const cancelBtn = () => $('cancel-btn');
+
+    function showQueuePanel() { qPanel().style.display = ''; }
+    function hideQueuePanel() { qPanel().style.display = 'none'; }
+
+    function setProgress(msg) {
+        const el = qProgress();
+        el.textContent = msg;
+        el.style.display = msg ? '' : 'none';
+    }
+
+    /* ── Mini pipeline animation ───────────────────────────────────── */
+    function resetStages() {
+        STAGES.forEach(s => {
+            const b = $('q-stage-' + s);
+            if (b) b.classList.remove('s-active','s-done');
+        });
+        ['q-conn-retrieve','q-conn-generate'].forEach(id => {
+            const c = $(id);
+            if (c) c.classList.remove('s-done','s-flowing');
+        });
+    }
+
+    function activateStage(stage) {
+        const idx = STAGES.indexOf(stage);
+        if (idx < 0) return;
+        for (let i = 0; i < idx; i++) {
+            const b = $('q-stage-' + STAGES[i]);
+            if (b) { b.classList.remove('s-active'); b.classList.add('s-done'); }
+        }
+        // Connectors
+        if (idx >= 1) { const c = $('q-conn-retrieve'); if(c){c.classList.remove('s-flowing');c.classList.add('s-done');} }
+        if (idx >= 2) { const c = $('q-conn-generate'); if(c){c.classList.remove('s-flowing');c.classList.add('s-done');} }
+        // Flowing connector into current
+        if (idx === 1) { const c = $('q-conn-retrieve'); if(c){c.classList.remove('s-done');c.classList.add('s-flowing');} }
+        if (idx === 2) { const c = $('q-conn-generate'); if(c){c.classList.remove('s-done');c.classList.add('s-flowing');} }
+        const b = $('q-stage-' + stage);
+        if (b) { b.classList.remove('s-done'); b.classList.add('s-active'); }
+    }
+
+    function completeStage(stage) {
+        const b = $('q-stage-' + stage);
+        if (b) { b.classList.remove('s-active'); b.classList.add('s-done'); }
+        const idx = STAGES.indexOf(stage);
+        if (idx === 1) { const c = $('q-conn-retrieve'); if(c){c.classList.remove('s-flowing');c.classList.add('s-done');} }
+        if (idx === 2) { const c = $('q-conn-generate'); if(c){c.classList.remove('s-flowing');c.classList.add('s-done');} }
+    }
+
+    function completeAll() {
+        STAGES.forEach(s => { const b=$('q-stage-'+s); if(b){b.classList.remove('s-active');b.classList.add('s-done');} });
+        ['q-conn-retrieve','q-conn-generate'].forEach(id => {
+            const c=$(id); if(c){c.classList.remove('s-flowing');c.classList.add('s-done');}
+        });
+    }
+
+    /* ── SSE connection ────────────────────────────────────────────── */
+    function ensureSSE() {
+        if (_sse && _sse.readyState !== EventSource.CLOSED) return;
+        _sse = new EventSource('/api/v1/events/pipeline');
+        _sse.onmessage = function(ev) {
+            let data;
+            try { data = JSON.parse(ev.data); } catch(_) { return; }
+            if (data.stage === 'connected' || data.stage === 'ping') return;
+            handleSSE(data);
+        };
+        _sse.onerror = function() { _sse.close(); _sse = null; };
+    }
+
+    function handleSSE(data) {
+        const stage  = data.stage || '';
+        const status = data.status || '';
+        const msg    = data.message || '';
+
+        // Queue-level events
+        if (stage === 'queue') {
+            if (status === 'job_started') {
+                const info = JSON.parse(msg);
+                _activeJobDocId = info.document_id;
+                resetStages();
+                cancelBtn().style.display = '';
+                qStatus().textContent = 'Running: ' + (info.filename || info.document_id);
+                setProgress('Starting…');
+                refreshQueueList();
+            } else if (status === 'job_done') {
+                const info = JSON.parse(msg);
+                completeAll();
+                cancelBtn().style.display = 'none';
+                qStatus().textContent = 'Done (' + info.duration_sec + 's)';
+                setProgress('Draft ready. Click "Draft" to view.');
+                showToast('Draft generated successfully.', 'ok');
+                _activeJobDocId = null;
+                refreshQueueList();
+                setTimeout(() => { resetStages(); hideQueueIfEmpty(); }, 4000);
+            } else if (status === 'job_failed') {
+                const info = JSON.parse(msg);
+                cancelBtn().style.display = 'none';
+                qStatus().textContent = 'Failed';
+                setProgress('Error: ' + (info.error || 'Unknown'));
+                showToast('Generation failed: ' + (info.error || 'Unknown'), 'error');
+                _activeJobDocId = null;
+                resetStages();
+                refreshQueueList();
+            } else if (status === 'job_queued') {
+                refreshQueueList();
+            } else if (status === 'cancel_requested') {
+                setProgress('Cancelling…');
+            }
+            return;
+        }
+
+        // Pipeline stage events
+        if (stage === 'all' && status === 'complete') {
+            completeAll();
+            return;
+        }
+        if (['retrieve','generate','verify'].includes(stage)) {
+            if (status === 'active' || status === 'running') {
+                activateStage(stage);
+                if (msg) setProgress(msg);
+            } else if (status === 'complete') {
+                completeStage(stage);
+                if (msg) setProgress(msg);
+            }
+        }
+    }
+
+    /* ── Queue list rendering ──────────────────────────────────────── */
+    async function refreshQueueList() {
+        try {
+            const res = await fetch('/api/v1/queue');
+            const q = await res.json();
+            renderQueueItems(q);
+        } catch(_) {}
+    }
+
+    function renderQueueItems(q) {
+        const queueDiv = $('queue-items');
+        const queueList = $('queue-list');
+        const doneDiv = $('done-items');
+        const doneList = $('done-list');
+
+        // Queued items
+        if (q.queued && q.queued.length > 0) {
+            queueList.style.display = '';
+            queueDiv.innerHTML = q.queued.map((j, i) => `
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:4px 0;
+                            font-size:12px;color:rgb(var(--body-secondary));">
+                    <span style="font-family:'JetBrains Mono',monospace;">#${i+1} ${esc(j.filename)} (${j.draft_type.replace(/_/g,' ')})</span>
+                    <button class="btn btn-ghost btn-sm" style="font-size:10px;padding:2px 6px;"
+                            onclick="removeFromQueue('${j.id}')">Remove</button>
+                </div>
+            `).join('');
+        } else {
+            queueList.style.display = 'none';
+        }
+
+        // Done items
+        if (q.done && q.done.length > 0) {
+            doneList.style.display = '';
+            doneDiv.innerHTML = q.done.slice(0, 5).map(j => `
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:3px 0;
+                            font-size:11px;color:rgb(var(--body-muted));">
+                    <span style="font-family:'JetBrains Mono',monospace;">${esc(j.filename)} — ${j.duration_sec}s</span>
+                    <a href="/documents/${j.document_id}/draft" class="btn btn-ghost btn-sm"
+                       style="font-size:10px;padding:2px 6px;">View</a>
+                </div>
+            `).join('');
+        } else {
+            doneList.style.display = 'none';
+        }
+    }
+
+    function hideQueueIfEmpty() {
+        fetch('/api/v1/queue').then(r=>r.json()).then(q => {
+            if (!q.in_progress && (!q.queued || q.queued.length === 0) && (!q.done || q.done.length === 0)) {
+                hideQueuePanel();
+            }
+        }).catch(()=>{});
+    }
+
     /* ── Client-side filter ─────────────────────────────────────────── */
     window.filterDocs = function(q) {
         const lq   = (q || '').toLowerCase().trim();
@@ -164,7 +421,7 @@
             row.style.display = show ? '' : 'none';
             if (show) visible++;
         });
-        const badge = document.getElementById('doc-count-badge');
+        const badge = $('doc-count-badge');
         if (badge) {
             const total = rows.length;
             badge.textContent = lq
@@ -182,44 +439,130 @@
         });
     });
 
-    /* ── Generate draft ─────────────────────────────────────────────── */
-    window.generateDraft = async function(docId, draftType) {
+    /* ── Draft type menu ──────────────────────────────────────────── */
+    const DRAFT_TYPES = [
+        {% for dt in draft_types %}
+        { id: '{{ dt.id }}', label: '{{ dt.label }}' },
+        {% endfor %}
+    ];
+
+    window.showDraftTypeMenu = function(btn) {
+        // Close any existing menu
+        closeDraftMenu();
+
+        const docId = btn.dataset.docid;
+        const rect = btn.getBoundingClientRect();
+
+        const menu = document.createElement('div');
+        menu.id = 'draft-type-menu';
+        menu.style.cssText = `position:fixed;z-index:9999;top:${rect.bottom+4}px;right:${window.innerWidth - rect.right}px;
+            background:#fff;border:1px solid rgb(var(--border));border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.12);
+            padding:6px 0;min-width:220px;`;
+
+        menu.innerHTML = `
+            <div style="padding:6px 12px 4px;font-size:11px;font-weight:600;color:rgb(var(--body-muted));
+                        text-transform:uppercase;letter-spacing:.04em;">Select Draft Type</div>
+            ${DRAFT_TYPES.map(dt => `
+                <button class="draft-menu-item" data-docid="${docId}" data-type="${dt.id}"
+                        style="display:block;width:100%;text-align:left;padding:8px 12px;font-size:13px;
+                               color:rgb(var(--body-primary));border:none;background:none;cursor:pointer;"
+                        onmouseover="this.style.background='rgb(var(--gold-dim))'"
+                        onmouseout="this.style.background='none'"
+                        onclick="enqueueDraft('${docId}','${dt.id}'); closeDraftMenu();">
+                    ${dt.label}
+                </button>
+            `).join('')}
+        `;
+
+        document.body.appendChild(menu);
+
+        // Close on outside click
+        setTimeout(() => {
+            document.addEventListener('click', _closeDraftMenuOnOutside, { once: true });
+        }, 10);
+    };
+
+    function _closeDraftMenuOnOutside(e) {
+        const menu = $('draft-type-menu');
+        if (menu && !menu.contains(e.target)) closeDraftMenu();
+    }
+
+    window.closeDraftMenu = function() {
+        const menu = $('draft-type-menu');
+        if (menu) menu.remove();
+        document.removeEventListener('click', _closeDraftMenuOnOutside);
+    };
+
+    /* ── Generate draft (enqueue) ──────────────────────────────────── */
+    window.enqueueDraft = async function(docId, draftType) {
+        showQueuePanel();
+        ensureSSE();
+
         try {
-            showToast('Generating draft…', 'info');
-            const res  = await fetch('/api/v1/drafts/generate', {
+            const res = await fetch('/api/v1/drafts/generate', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ document_id: docId, draft_type: draftType }),
             });
             const data = await res.json();
-            if (!res.ok) throw new Error(data.error || 'HTTP ' + res.status);
+            if (!res.ok) throw new Error(data.detail || data.error || 'HTTP ' + res.status);
 
-            showToast('Draft generated successfully.', 'ok');
-
-            const draftId = data.draft_id || data.id || null;
-            if (draftId) {
-                legalModal({
-                    title: 'Draft Ready',
-                    body: 'Your draft has been generated and is ready to review.',
-                    confirmLabel: 'View Draft',
-                }).then(confirmed => {
-                    if (confirmed) {
-                        window.location.href = '/documents/' + docId + '/draft';
-                    }
-                });
+            if (data.status === 'queued') {
+                showToast('Job queued (position #' + data.position + ')', 'info');
+                qStatus().textContent = 'Queued (#' + data.position + ')';
+            } else if (data.status === 'already_queued') {
+                showToast('Already in queue (position #' + data.position + ')', 'info');
+            } else if (data.status === 'in_progress') {
+                showToast('Already running', 'info');
             }
+            refreshQueueList();
         } catch (err) {
-            showToast('Generation failed: ' + err.message, 'error');
+            showToast('Failed to queue: ' + err.message, 'error');
         }
     };
 
-    /* ── Confidence bar color helper (used in dynamic content) ─────── */
-    window.confColor = function(c) {
-        c = parseFloat(c) || 0;
-        if (c >= 0.8) return 'rgb(var(--signal-ok))';
-        if (c >= 0.5) return 'rgb(var(--signal-warn))';
-        return 'rgb(var(--signal-fail))';
+    /* ── Cancel job ────────────────────────────────────────────────── */
+    window.cancelJob = async function() {
+        try {
+            const res = await fetch('/api/v1/queue/cancel', { method: 'POST' });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.detail || 'Cancel failed');
+            showToast('Cancel requested', 'info');
+        } catch(err) {
+            showToast(err.message, 'error');
+        }
     };
+
+    /* ── Remove from queue ─────────────────────────────────────────── */
+    window.removeFromQueue = async function(jobId) {
+        try {
+            await fetch('/api/v1/queue/' + jobId, { method: 'DELETE' });
+            refreshQueueList();
+            showToast('Removed from queue', 'info');
+        } catch(_) {}
+    };
+
+    /* ── Escape HTML ───────────────────────────────────────────────── */
+    function esc(s) {
+        return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    /* ── Init: check queue state on page load ──────────────────────── */
+    (async function init() {
+        try {
+            const res = await fetch('/api/v1/queue');
+            const q = await res.json();
+            if (q.in_progress || (q.queued && q.queued.length > 0) || (q.done && q.done.length > 0)) {
+                showQueuePanel();
+                ensureSSE();
+                renderQueueItems(q);
+                if (q.in_progress) {
+                    cancelBtn().style.display = '';
+                    qStatus().textContent = 'Running: ' + (q.in_progress.filename || q.in_progress.document_id);
+                }
+            }
+        } catch(_) {}
+    })();
 
 })();
 </script>

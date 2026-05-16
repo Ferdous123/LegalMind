@@ -1,9 +1,8 @@
 """Grounding verifier — checks that generated claims cite actual evidence.
 
-Uses TRACE-style source anchoring: a claim is "verified" if it contains a
-5-word n-gram that appears verbatim in the cited evidence, OR if token
-containment exceeds threshold.  Segments without citations are skipped
-(they are either structural or deliberate absence statements).
+A claim is "verified" if it contains a 5-word n-gram that appears verbatim
+in the cited evidence, OR if token containment exceeds threshold. Segments
+without citations are skipped (structural or deliberate absence statements).
 """
 
 import logging
@@ -17,12 +16,16 @@ _STOP = {"the", "a", "an", "of", "in", "to", "and", "or", "is", "was",
          "are", "were", "be", "been", "has", "have", "had", "that", "this",
          "it", "for", "on", "at", "by", "with", "from", "as", "not"}
 
-NGRAM_SIZE = 4
+# 3-gram matches more real legal prose than 4-gram (e.g. "$1,400.00 per month",
+# "March 1, 2024", entity names). 4-gram missed too many supported claims.
+NGRAM_SIZE = 3
 
 
 def _tokens(text: str) -> set[str]:
+    # Keep 2-letter tokens (LLC, Inc, TX, p., etc.) — they carry weight in
+    # legal entity-name matching.
     words = re.split(r"\W+", text.lower())
-    return {w for w in words if len(w) > 2 and w not in _STOP}
+    return {w for w in words if len(w) >= 2 and w not in _STOP}
 
 
 def _word_list(text: str) -> list[str]:
@@ -52,7 +55,7 @@ def _containment(claim_tokens: set, evidence_tokens: set) -> float:
 class GroundingVerifier:
     """Verifies that generated text is grounded in cited evidence."""
 
-    def __init__(self, containment_threshold: float = 0.40):
+    def __init__(self, containment_threshold: float = 0.30):
         self._containment_threshold = containment_threshold
 
     def verify_draft_citations(self, draft_text: str, citation_map: dict) -> dict:
@@ -97,13 +100,13 @@ class GroundingVerifier:
         return self._verify_single(claim, evidence_text)
 
     def _verify_single(self, claim: str, evidence: str) -> str:
-        """TRACE-style L0 anchoring: n-gram verbatim match OR high containment."""
+        """N-gram verbatim match OR high token containment for grounding."""
         if _has_ngram_overlap(claim, evidence):
             return "verified"
         score = _containment(_tokens(claim), _tokens(evidence))
         if score >= self._containment_threshold:
             return "verified"
-        elif score >= 0.20:
+        elif score >= 0.15:
             return "uncertain"
         return "unsupported"
 

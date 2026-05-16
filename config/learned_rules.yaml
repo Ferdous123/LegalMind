@@ -1,19 +1,33 @@
 metadata:
-  last_extraction: '2026-05-15T15:20:06.175539+00:00'
-  total_rules: 3
-  trigger_count: 10
+  last_extraction: '2026-05-16T01:52:19.349333+00:00'
+  total_rules: 6
+  trigger_count: 11
 rules:
 - active: true
-  extracted_at: '2026-05-15T15:01:14.840776+00:00'
-  text: When extracting or formatting dates, always convert all variations (e.g.,
-    "Month Day, Year" or "Month Day Year") into the ISO 8601 standard format (YYYY-MM-DD).
+  extracted_at: '2026-05-15T12:30:00+00:00'
+  text: Always extract the complete legal entity name including organizational type
+    (LLC, Inc., LP) and jurisdiction when identifying parties from legal documents.
 - active: true
-  extracted_at: '2026-05-15T15:01:14.840776+00:00'
-  text: Ensure proper capitalization for all proper nouns, including names, company
-    names, and specific locations, when generating text.
+  extracted_at: '2026-05-15T12:30:00+00:00'
+  text: When multiple defendants or parties are listed in a filing, extract each individually
+    rather than combining them into a single entry.
 - active: true
-  extracted_at: '2026-05-15T15:01:14.840776+00:00'
-  text: When identifying multiple parties, the system must accurately parse and list
-    all named entities, ensuring correct pluralization and distinguishing between
-    corporate and individual roles. Do not default to only extracting the first or
-    most prominent entity when multiple parties are present in the source text.
+  extracted_at: '2026-05-15T12:30:00+00:00'
+  text: For date fields, extract the full date as stated in the source document (e.g.,
+    "March 14, 2024") rather than approximating with just a year.
+- active: true
+  extracted_at: '2026-05-16T01:52:19.349333+00:00'
+  text: When extracting structured data, the AI must prioritize extracting specific,
+    named entities (like addresses or governing laws) over generating generic metadata
+    tables or summaries.
+- active: true
+  extracted_at: '2026-05-16T01:52:19.349333+00:00'
+  text: When extracting specific data points, prioritize direct extraction from the
+    source text over inferring or generalizing the data type, especially for dates
+    and monetary values. If the source provides a concrete value, use that value directly
+    instead of assigning a placeholder or status.
+- active: true
+  extracted_at: '2026-05-16T01:52:19.349333+00:00'
+  text: When extracting entity names, the system must retain the full, formal legal
+    designation, including corporate suffixes (e.g., LLC, Inc.) and associated qualifiers
+    (e.g., "individually," "by and through its counsel").

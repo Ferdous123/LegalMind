@@ -155,6 +155,13 @@ class DocumentStructurer:
                 ) != "manual_review":
                     self._set_nested(base_result, dotted_key, resolved_value)
 
+            # Guarantee the output is schema-shaped before metadata is
+            # attached. A degraded scan (OCR levels 4-5) can make pass_results[0]
+            # come back as {"_parse_error": True, "_raw_response": ...} — that
+            # would leave base_result without the expected top-level keys and
+            # KeyError any downstream consumer that does structured_fields["parties"].
+            base_result = self._ensure_schema_shape(base_result, draft_type)
+
             # Attach cascade metadata
             base_result["_cascade_meta"] = {
                 "confidence_map": cascade_result.confidence_map,
@@ -194,9 +201,29 @@ class DocumentStructurer:
 
         if result.get("_parse_error"):
             logger.warning("Structured extraction returned unparseable JSON")
-            return schema
+            return self._ensure_schema_shape({}, draft_type)
 
-        return result
+        return self._ensure_schema_shape(result, draft_type)
+
+    @staticmethod
+    def _ensure_schema_shape(result: dict, draft_type: str) -> dict:
+        """Return a dict that always carries every top-level schema key.
+
+        Drops JSON-parse artifacts (`_parse_error`, `_raw_response`) and
+        backfills any missing schema key with its empty default, so no
+        downstream consumer can KeyError on a sparse/garbled extraction
+        (common on heavily degraded scans).
+        """
+        import copy
+        schema = FIELD_SCHEMAS.get(draft_type, FIELD_SCHEMAS["case_fact_summary"])
+        if not isinstance(result, dict):
+            return copy.deepcopy(schema)
+        out = {k: v for k, v in result.items()
+               if k not in ("_parse_error", "_raw_response")}
+        for key, default_val in schema.items():
+            if key not in out or out[key] in (None, ""):
+                out[key] = copy.deepcopy(default_val)
+        return out
 
     def get_schema(self, draft_type: str) -> dict:
         """Get the field schema for a given draft type."""

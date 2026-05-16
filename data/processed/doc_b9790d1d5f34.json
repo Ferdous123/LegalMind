@@ -1,0 +1,133 @@
+{
+  "id": "doc_b9790d1d5f34",
+  "filename": "doc_1_lease_agreement.pdf",
+  "upload_timestamp": "2026-05-16T01:18:23.308843+00:00",
+  "pages": [
+    {
+      "page_number": 1,
+      "text": "RESIDENTIAL LEASE AGREEMENT Landlord: Hargrove Property Holdings LLC Tenant: Marcus Delacroix-Webb Premises: 214 Finchley Court Apt 7 Thornfield TX 77031 Term: March 1 2024 to February 28 2025 Rent: $1,400.00/month Security Deposit: $2,800.00 Governing Law: State of Thornfield",
+      "confidence": 0.95,
+      "ocr_used": false,
+      "ocr_error": ""
+    }
+  ],
+  "structured_fields": {
+    "parties": {
+      "plaintiffs": "[{\"name\": \"Hargrove Property Holdings LLC\", \"role\": \"Landlord\", \"source_span\": \"Landlord: Hargrove Property Holdings LLC\"}]",
+      "defendants": [],
+      "other_parties": "[{\"name\": \"Hargrove Property Holdings LLC\", \"role\": \"Landlord\", \"source_span\": \"Landlord: Hargrove Property Holdings LLC\"}, {\"name\": \"Marcus Delacroix-Webb\", \"role\": \"Tenant\", \"source_span\": \"Tenant: Marcus Delacroix-Webb\"}]"
+    },
+    "key_dates": "[{\"event\": lease Term Start\", \"date\": march 1 2024\", \"source_span\": \"Term: march 1 2024 to February 28 2025\"}, {\"event\": lease Term End\", \"date\": \"February 28 2025\", \"source_span\": \"Term: march 1 2024 to February 28 2025\"}]",
+    "claims": [],
+    "procedural_history": [],
+    "evidence_items": [],
+    "relief_sought": [],
+    "_cascade_meta": {
+      "confidence_map": {
+        "parties.plaintiffs": 0.704,
+        "parties.defendants": 0.3,
+        "parties.other_parties": 0.9,
+        "key_dates": 0.902,
+        "claims": 0.0,
+        "procedural_history": 0.0,
+        "evidence_items": 0.0,
+        "relief_sought": 0.0
+      },
+      "resolution_methods": {
+        "parties.plaintiffs": "source_anchor",
+        "parties.defendants": "manual_review",
+        "parties.other_parties": "majority_vote",
+        "key_dates": "source_anchor",
+        "claims": "manual_review",
+        "procedural_history": "manual_review",
+        "evidence_items": "manual_review",
+        "relief_sought": "manual_review"
+      },
+      "corpus_corrections": [
+        {
+          "field": "key_dates",
+          "original": "\"Lease",
+          "corrected": "lease",
+          "confidence": 0.9090909090909091
+        },
+        {
+          "field": "key_dates",
+          "original": "\"March",
+          "corrected": "march",
+          "confidence": 0.9090909090909091
+        },
+        {
+          "field": "key_dates",
+          "original": "March",
+          "corrected": "march",
+          "confidence": 1.0
+        },
+        {
+          "field": "key_dates",
+          "original": "\"Lease",
+          "corrected": "lease",
+          "confidence": 0.9090909090909091
+        },
+        {
+          "field": "key_dates",
+          "original": "March",
+          "corrected": "march",
+          "confidence": 1.0
+        },
+        {
+          "field": "key_dates",
+          "original": "\"Lease",
+          "corrected": "lease",
+          "confidence": 0.9090909090909091
+        },
+        {
+          "field": "key_dates",
+          "original": "\"March",
+          "corrected": "march",
+          "confidence": 0.9090909090909091
+        },
+        {
+          "field": "key_dates",
+          "original": "March",
+          "corrected": "march",
+          "confidence": 1.0
+        },
+        {
+          "field": "key_dates",
+          "original": "\"Lease",
+          "corrected": "lease",
+          "confidence": 0.9090909090909091
+        },
+        {
+          "field": "key_dates",
+          "original": "March",
+          "corrected": "march",
+          "confidence": 1.0
+        }
+      ],
+      "unresolved_fields": [
+        "parties.defendants",
+        "claims",
+        "procedural_history",
+        "evidence_items",
+        "relief_sought"
+      ],
+      "passes_executed": 3
+    }
+  },
+  "chunks": [
+    {
+      "id": "chunk_c5685d0a",
+      "text": "RESIDENTIAL LEASE AGREEMENT Landlord: Hargrove Property Holdings LLC Tenant: Marcus Delacroix-Webb Premises: 214 Finchley Court Apt 7 Thornfield TX 77031 Term: March 1 2024 to February 28 2025 Rent: $1,400.00/month Security Deposit: $2,800.00 Governing Law: State of Thornfield",
+      "document_id": "doc_b9790d1d5f34",
+      "page_number": 1,
+      "char_start": 0,
+      "char_end": 277
+    }
+  ],
+  "full_text": "RESIDENTIAL LEASE AGREEMENT Landlord: Hargrove Property Holdings LLC Tenant: Marcus Delacroix-Webb Premises: 214 Finchley Court Apt 7 Thornfield TX 77031 Term: March 1 2024 to February 28 2025 Rent: $1,400.00/month Security Deposit: $2,800.00 Governing Law: State of Thornfield",
+  "ocr_used": false,
+  "confidence": 0.95,
+  "page_count": 1,
+  "processing_errors": []
+}

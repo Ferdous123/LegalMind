@@ -3,10 +3,13 @@
 {% block content %}
 
 <!-- ── Header ───────────────────────────────────────────────────────── -->
-<div style="margin-bottom:24px;">
+<div style="margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;">
     <h1 style="font-size:20px;font-weight:700;color:rgb(var(--body-primary));margin:0;">
         Audit &amp; Learning
     </h1>
+    <p style="font-size:12px;color:rgb(var(--body-muted));margin:0;">
+        Corrections improve future drafts. Click any row to inspect source evidence.
+    </p>
 </div>
 
 <!-- ── 4-stat cards ──────────────────────────────────────────────────── -->
@@ -92,20 +95,27 @@
                     <tbody>
                         {% for corr in corrections %}
                         {% if loop.index <= 20 %}
-                        <tr>
+                        <tr class="corr-row" style="cursor:pointer;"
+                            data-corr-id="{{ corr.id | default('') }}"
+                            data-source-chunk="{{ corr.source_ocr_chunk | default('') | e }}"
+                            data-generated="{{ corr.generated_text | default('') | e }}"
+                            data-edited="{{ corr.edited_text | default('') | e }}"
+                            data-field="{{ corr.field_path | default('') }}"
+                            data-doc-id="{{ corr.document_id | default('') }}"
+                            onclick="showCorrectionDetail(this)">
                             <td style="font-family:'JetBrains Mono',monospace;
                                        color:rgb(var(--body-muted));white-space:nowrap;">
-                                <span class="corr-ts" data-iso="{{ corr.created_at or corr.timestamp or '' }}">
-                                    {{ ((corr.created_at or corr.timestamp or '')[:16]) | replace('T',' ') or '—' }}
+                                <span class="corr-ts" data-iso="{{ corr.timestamp or '' }}">
+                                    {{ ((corr.timestamp or '')[:16]) | replace('T',' ') or '—' }}
                                 </span>
                             </td>
                             <td style="max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"
-                                title="{{ corr.document_filename | default('') }}">
-                                {{ (corr.document_filename | default('')) | truncate(16) }}
+                                title="{{ corr.document_id | default('') }}">
+                                {{ (corr.document_id | default(''))[:16] }}
                             </td>
                             <td style="font-family:'JetBrains Mono',monospace;
                                        max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
-                                {{ (corr.field_name | default('')) | truncate(16) }}
+                                {{ (corr.field_path | default(''))[:20] }}
                             </td>
                             <td>
                                 {% set ct = corr.correction_type | default('') %}
@@ -123,12 +133,12 @@
                             </td>
                             <td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"
                                 title="{{ ((corr.generated_text | default('')) + ' → ' + (corr.edited_text | default(''))) }}">
-                                <span style="color:rgb(var(--body-muted));">
+                                <span style="color:rgb(var(--body-muted));text-decoration:line-through;">
                                     {{ (corr.generated_text | default(''))[:30] }}
                                 </span>
                                 {% if corr.edited_text %}
                                 <span style="color:rgb(var(--gold));margin:0 4px;">→</span>
-                                <span style="color:rgb(var(--body-secondary));">
+                                <span style="color:rgb(var(--body-secondary));font-weight:500;">
                                     {{ (corr.edited_text | default(''))[:30] }}
                                 </span>
                                 {% endif %}
@@ -230,6 +240,44 @@
             </span>
         </div>
 
+        <!-- Correction Detail Popover (shown when row clicked) -->
+        <div id="corr-detail-panel" style="display:none;padding:16px 20px;border-bottom:1px solid rgb(var(--ink-800));background:rgb(var(--ink-900));">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+                <span style="font-size:13px;font-weight:600;color:rgb(var(--body-primary));">Correction Detail</span>
+                <button onclick="document.getElementById('corr-detail-panel').style.display='none'"
+                        style="background:none;border:none;color:rgb(var(--body-muted));cursor:pointer;font-size:16px;">
+                    &times;
+                </button>
+            </div>
+            <div style="font-size:11px;color:rgb(var(--body-muted));margin-bottom:8px;">
+                <strong>Field:</strong> <span id="corr-detail-field" style="font-family:'JetBrains Mono',monospace;"></span>
+                &nbsp;&middot;&nbsp;
+                <strong>Document:</strong> <span id="corr-detail-doc" style="font-family:'JetBrains Mono',monospace;"></span>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr;gap:10px;">
+                <div style="background:rgb(var(--ink-800));border:1px solid rgb(var(--ink-700));border-radius:6px;padding:10px;">
+                    <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.5px;color:rgb(var(--body-muted));margin-bottom:4px;">
+                        Source Text (where this came from)
+                    </div>
+                    <p id="corr-detail-source" style="font-size:12px;color:rgb(var(--body-secondary));line-height:1.5;margin:0;font-style:italic;"></p>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+                    <div style="background:rgba(220,38,38,0.05);border:1px solid rgba(220,38,38,0.2);border-radius:6px;padding:10px;">
+                        <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.5px;color:rgb(var(--signal-fail));margin-bottom:4px;">
+                            AI Generated (incorrect)
+                        </div>
+                        <p id="corr-detail-generated" style="font-size:12px;color:rgb(var(--body-secondary));line-height:1.5;margin:0;text-decoration:line-through;"></p>
+                    </div>
+                    <div style="background:rgba(5,150,105,0.05);border:1px solid rgba(5,150,105,0.2);border-radius:6px;padding:10px;">
+                        <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.5px;color:rgb(var(--signal-ok));margin-bottom:4px;">
+                            Operator Corrected (applied)
+                        </div>
+                        <p id="corr-detail-edited" style="font-size:12px;color:rgb(var(--body-secondary));line-height:1.5;margin:0;font-weight:500;"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         {% if not learned_rules %}
         <div class="empty-state" style="padding:40px 16px;">
             <svg class="empty-icon" viewBox="0 0 24 24" fill="none"
@@ -247,43 +295,21 @@
             {% for rule in learned_rules %}
             <div class="card-sm">
                 <p style="font-size:12px;color:rgb(var(--body-primary));line-height:1.5;margin:0 0 8px;">
-                    {{ rule.rule_text | default('') }}
+                    {{ rule.text | default(rule.rule_text | default('')) }}
                 </p>
                 <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
-
-                    {% set rt = rule.rule_type | default('') %}
-                    {% if rt == 'omission' %}
-                        <span class="badge badge-gold">{{ rt }}</span>
-                    {% elif rt == 'error' %}
-                        <span class="badge badge-fail">{{ rt }}</span>
-                    {% elif rt == 'style' %}
-                        <span class="badge badge-muted">{{ rt }}</span>
-                    {% elif rt == 'restructure' %}
-                        <span class="badge badge-warn">{{ rt }}</span>
-                    {% elif rt %}
-                        <span class="badge badge-muted">{{ rt }}</span>
-                    {% else %}
-                        <span></span>
+                    {% if rule.active is defined %}
+                        {% if rule.active %}
+                            <span class="badge badge-ok">active</span>
+                        {% else %}
+                            <span class="badge badge-muted">consolidated</span>
+                        {% endif %}
                     {% endif %}
 
-                    {% if rule.confidence is defined %}
-                    {% set rc = rule.confidence | float %}
-                    <div style="display:flex;align-items:center;gap:6px;">
-                        <div class="conf-track" style="width:48px;">
-                            <div class="conf-fill"
-                                 style="width:{{ (rc * 100) | round(0) | int }}%;
-                                        background:{% if rc >= 0.8 %}rgb(var(--signal-ok))
-                                                    {% elif rc >= 0.5 %}rgb(var(--signal-warn))
-                                                    {% else %}rgb(var(--signal-fail)){% endif %};">
-                            </div>
-                        </div>
-                        <span style="font-size:10px;font-family:'JetBrains Mono',monospace;
-                                     color:{% if rc >= 0.8 %}rgb(var(--signal-ok))
-                                            {% elif rc >= 0.5 %}rgb(var(--signal-warn))
-                                            {% else %}rgb(var(--signal-fail)){% endif %};">
-                            {{ (rc * 100) | round(0) | int }}%
-                        </span>
-                    </div>
+                    {% if rule.extracted_at %}
+                    <span style="font-size:10px;font-family:'JetBrains Mono',monospace;color:rgb(var(--body-muted));">
+                        {{ rule.extracted_at[:10] }}
+                    </span>
                     {% endif %}
                 </div>
             </div>
@@ -298,6 +324,29 @@
 <script>
 (function () {
     'use strict';
+
+    /* ── Show correction detail (source evidence) ──────────────────── */
+    window.showCorrectionDetail = function(row) {
+        const panel = document.getElementById('corr-detail-panel');
+        if (!panel) return;
+
+        // Populate detail fields
+        document.getElementById('corr-detail-field').textContent = row.dataset.field || '—';
+        document.getElementById('corr-detail-doc').textContent = row.dataset.docId || '—';
+        document.getElementById('corr-detail-source').textContent = row.dataset.sourceChunk || '(No source text recorded)';
+        document.getElementById('corr-detail-generated').textContent = row.dataset.generated || '—';
+        document.getElementById('corr-detail-edited').textContent = row.dataset.edited || '—';
+
+        // Show the panel
+        panel.style.display = 'block';
+
+        // Highlight active row
+        document.querySelectorAll('.corr-row').forEach(r => r.style.background = '');
+        row.style.background = 'rgba(var(--gold), 0.05)';
+
+        // Scroll panel into view
+        panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    };
 
     /* ── Extract rules ──────────────────────────────────────────────── */
     window.extractRules = async function() {
@@ -327,7 +376,6 @@
         const tbody = document.querySelector('#corrections-table tbody');
         if (!tbody) return;
 
-        // Re-request with no limit — simplest approach: reload with query param
         const url = new URL(window.location.href);
         url.searchParams.set('show_all', '1');
         window.location.href = url.toString();

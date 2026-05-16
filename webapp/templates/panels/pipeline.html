@@ -203,27 +203,28 @@
                             title="{{ doc.filename }}">
                             {{ doc.filename | truncate(38) }}
                         </td>
-                        <td>{{ doc.draft_type | default('—') }}</td>
+                        <td>{{ doc.draft_type | default('document') }}</td>
                         <td>
-                            {% set s = doc.status | default('unknown') %}
-                            {% if s == 'complete' %}
-                                <span class="badge badge-ok">complete</span>
-                            {% elif s == 'processing' %}
-                                <span class="badge badge-gold">processing</span>
-                            {% elif s == 'error' %}
+                            {% if doc.processing_errors is defined and doc.processing_errors %}
                                 <span class="badge badge-fail">error</span>
+                            {% elif doc.confidence is defined and doc.confidence %}
+                                <span class="badge badge-ok">complete</span>
                             {% else %}
-                                <span class="badge badge-muted">{{ s }}</span>
+                                <span class="badge badge-muted">processed</span>
                             {% endif %}
                         </td>
                         <td style="font-family:'JetBrains Mono',monospace;color:rgb(var(--body-muted));">
-                            {% if doc.created_at %}{{ doc.created_at[:10] }}{% else %}—{% endif %}
+                            {% if doc.upload_timestamp %}{{ doc.upload_timestamp[:10] }}{% elif doc.created_at %}{{ doc.created_at[:10] }}{% else %}—{% endif %}
                         </td>
                         <td style="text-align:right;">
-                            {% if doc.id %}
+                            {% if doc.id and doc.has_draft %}
                             <a href="/documents/{{ doc.id }}/draft" class="btn btn-ghost btn-sm">
                                 View Draft
                             </a>
+                            {% elif doc.id %}
+                            <span class="btn btn-ghost btn-sm"
+                                  style="opacity:.35;cursor:not-allowed;pointer-events:none;"
+                                  title="No draft yet">No draft</span>
                             {% endif %}
                         </td>
                     </tr>
@@ -508,14 +509,14 @@
         // Remove skeleton rows
         tbody.querySelectorAll('.skeleton-row').forEach(r => r.remove());
 
-        const s   = doc.status || 'processing';
-        const dt  = (doc.created_at || '').slice(0, 10) || '—';
+        const s   = doc.processing_errors && doc.processing_errors.length ? 'error' : 'complete';
+        const dt  = (doc.upload_timestamp || doc.created_at || '').slice(0, 10) || '—';
         const row = document.createElement('tr');
         row.innerHTML =
             '<td style="font-family:\'JetBrains Mono\',monospace;color:rgb(var(--body-primary));' +
             'max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" ' +
             'title="' + escH(doc.filename) + '">' + escH((doc.filename || '').slice(0,38)) + '</td>' +
-            '<td>' + escH(doc.draft_type || '—') + '</td>' +
+            '<td>' + escH(doc.draft_type || 'document') + '</td>' +
             '<td>' + statusBadge(s) + '</td>' +
             '<td style="font-family:\'JetBrains Mono\',monospace;color:rgb(var(--body-muted));">' + escH(dt) + '</td>' +
             '<td style="text-align:right;">' +

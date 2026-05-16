@@ -47,7 +47,7 @@ from code.llm_interface.gpu_guard import get_gpu_info
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
-# Pipeline SSE event bus  (TRACE subscriber-list pattern)
+# Pipeline SSE event bus
 # ---------------------------------------------------------------------------
 # Each SSE connection gets its own asyncio.Queue. _sse_broadcast() is awaited
 # from the upload handler and puts the event into every subscriber's queue.
@@ -58,8 +58,77 @@ _sse_subscribers: list[asyncio.Queue] = []
 _sse_log = Path(__file__).resolve().parent.parent / "logs" / "pipeline_events.jsonl"
 
 # One active pipeline job at a time (upload or draft generation).
-# Concurrent requests receive 409 — same pattern as TRACE.
+# Concurrent requests receive 409 — single pipeline job at a time.
 _pipeline_lock: asyncio.Lock = asyncio.Lock()
+
+# ---------------------------------------------------------------------------
+# Job Queue
+# ---------------------------------------------------------------------------
+# In-memory queue: jobs go through queued → in_progress → done/failed.
+# A background worker pulls from the queue and runs one job at a time.
+# SSE events are broadcast for each stage so the UI can animate the pipeline.
+
+import threading
+import uuid as _uuid
+
+_job_queue_state: dict = {
+    "queued": [],        # [{id, document_id, draft_type, filename, requested_at}]
+    "in_progress": None, # {id, document_id, draft_type, filename, started_at} or None
+    "done": [],          # [{id, document_id, draft_type, filename, completed_at, duration_sec}]
+    "failed": [],        # [{id, document_id, draft_type, filename, error, completed_at}]
+}
+_job_queue_lock = threading.Lock()
+_job_queue_event: asyncio.Event = None  # set in lifespan
+_job_cancel_requested: bool = False
+_job_worker_task: asyncio.Task = None
+_job_active_proc: dict = {}  # {"proc": Popen, "job_id": str} — for cancellation
+
+# Persist the queue across uvicorn --reload restarts. Without this, every
+# code edit wipes the queued/done/failed lists from memory and orphans any
+# subprocess started before the reload.
+_QUEUE_STATE_FILE = Path(__file__).resolve().parent.parent / "data" / "queue_state.json"
+
+
+def _save_queue_state() -> None:
+    """Snapshot _job_queue_state to disk. Caller MUST hold _job_queue_lock."""
+    try:
+        _QUEUE_STATE_FILE.parent.mkdir(parents=True, exist_ok=True)
+        _QUEUE_STATE_FILE.write_text(
+            json.dumps(_job_queue_state, default=str), encoding="utf-8"
+        )
+    except Exception as exc:
+        logger.warning("Could not persist queue state: %s", exc)
+
+
+def _load_queue_state() -> None:
+    """Restore queued/done/failed from disk on startup. Drops any in-flight
+    job — its subprocess was already killed by the reload, and the new
+    worker can't adopt orphaned children safely."""
+    if not _QUEUE_STATE_FILE.exists():
+        return
+    try:
+        data = json.loads(_QUEUE_STATE_FILE.read_text(encoding="utf-8"))
+        with _job_queue_lock:
+            _job_queue_state["queued"] = list(data.get("queued", []))
+            _job_queue_state["done"] = list(data.get("done", []))[:50]
+            _job_queue_state["failed"] = list(data.get("failed", []))[:50]
+            # If an in_progress job was persisted, move it to failed with
+            # a clear reason — its subprocess died with the previous worker.
+            ip = data.get("in_progress")
+            if ip:
+                _job_queue_state["failed"].insert(0, {
+                    **ip,
+                    "error": "Worker reloaded mid-job; subprocess terminated.",
+                    "completed_at": datetime.now().isoformat(),
+                    "status": "failed",
+                })
+            _job_queue_state["in_progress"] = None
+        logger.info("Restored queue state: %d queued, %d done, %d failed",
+                    len(_job_queue_state["queued"]),
+                    len(_job_queue_state["done"]),
+                    len(_job_queue_state["failed"]))
+    except Exception as exc:
+        logger.warning("Could not load queue state: %s", exc)
 
 
 async def _sse_broadcast(stage: str, status: str, message: str = "") -> None:
@@ -103,8 +172,23 @@ PAGES_DIR = Path(__file__).resolve().parent.parent / "data" / "pages"
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator:
+    global _job_queue_event, _job_worker_task
     ensure_dirs()
+    _load_queue_state()
+    _job_queue_event = asyncio.Event()
+    # If there were queued jobs from a previous worker, kick the worker.
+    if _job_queue_state["queued"]:
+        _job_queue_event.set()
+    _job_worker_task = asyncio.create_task(_job_queue_worker())
     yield
+    _job_worker_task.cancel()
+    try:
+        await _job_worker_task
+    except asyncio.CancelledError:
+        pass
+    # Save final state on shutdown
+    with _job_queue_lock:
+        _save_queue_state()
 
 
 app = FastAPI(title="LegalMind", version="1.0.0", lifespan=lifespan)
@@ -119,6 +203,34 @@ app.add_middleware(
 
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
+
+
+def _static_version() -> str:
+    """Compute a fingerprint over our custom JS so templates can cache-bust
+    automatically when we edit them. Returns the max mtime of webapp/static/js
+    rendered as a compact int. Falls back to process start time on error."""
+    try:
+        js_dir = STATIC_DIR / "js"
+        if js_dir.exists():
+            latest = max((p.stat().st_mtime for p in js_dir.rglob("*.js")), default=0.0)
+            return str(int(latest))
+    except Exception:
+        pass
+    return str(int(datetime.now().timestamp()))
+
+
+# Expose static_v as a Jinja global so every template can `?v={{ static_v }}`
+templates.env.globals["static_v"] = _static_version
+
+
+@app.middleware("http")
+async def no_cache_middleware(request: Request, call_next):
+    response = await call_next(request)
+    if "/static/" not in str(request.url):
+        response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Expires"] = "0"
+    return response
 
 
 # ---------------------------------------------------------------------------
@@ -140,12 +252,21 @@ async def panel_page(request: Request, panel_id: str):
     ctx = {"panels": PANELS, "active_panel": panel_id, "request": request}
 
     if panel_id == "pipeline":
-        # Add recent documents
+        # Recent documents. Filter out draft_*.json FIRST, then take the
+        # newest 10 — otherwise the slice is consumed by draft files (every
+        # doc writes a draft that sorts newer), leaving only a handful of
+        # actual documents visible.
         docs = []
         try:
-            for path in sorted(PROCESSED_DIR.glob("*.json"), reverse=True)[:10]:
-                if not path.stem.startswith("draft_"):
-                    docs.append(json.loads(path.read_text(encoding="utf-8")))
+            doc_paths = [
+                p for p in sorted(PROCESSED_DIR.glob("*.json"), reverse=True)
+                if not p.stem.startswith("draft_")
+            ][:10]
+            for path in doc_paths:
+                doc = json.loads(path.read_text(encoding="utf-8"))
+                doc["has_draft"] = _doc_has_draft(doc.get("id", ""))
+                doc["draft_types_available"] = _doc_draft_types(doc.get("id", ""))
+                docs.append(doc)
         except Exception:
             pass
         ctx["recent_docs"] = docs
@@ -156,7 +277,10 @@ async def panel_page(request: Request, panel_id: str):
         try:
             for path in sorted(PROCESSED_DIR.glob("*.json"), reverse=True):
                 if not path.stem.startswith("draft_"):
-                    docs.append(json.loads(path.read_text(encoding="utf-8")))
+                    doc = json.loads(path.read_text(encoding="utf-8"))
+                    doc["has_draft"] = _doc_has_draft(doc.get("id", ""))
+                    doc["draft_types_available"] = _doc_draft_types(doc.get("id", ""))
+                    docs.append(doc)
         except Exception:
             pass
         ctx["documents"] = docs
@@ -273,6 +397,14 @@ async def page_draft(request: Request, doc_id: str, draft_id: Optional[str] = No
                 citations = draft.get("citations", {})
                 draft_type_label = get_draft_label(draft.get("draft_type", ""))
                 verification_summary = draft.get("firewall_summary", {})
+        else:
+            # Auto-find most recent draft for this document
+            draft_paths = sorted(PROCESSED_DIR.glob(f"draft_{doc_id}_*.json"), reverse=True)
+            if draft_paths:
+                draft = json.loads(draft_paths[0].read_text(encoding="utf-8"))
+                citations = draft.get("citations", {})
+                draft_type_label = get_draft_label(draft.get("draft_type", ""))
+                verification_summary = draft.get("firewall_summary", {})
     except Exception as exc:
         logger.warning("Draft page load failed: %s", exc)
     return templates.TemplateResponse(request, "drafts.html", {
@@ -381,14 +513,27 @@ async def upload_document(
     file: UploadFile = File(...),
     draft_type: str = Form(...),
 ) -> dict:
-    if _pipeline_lock.locked():
-        raise HTTPException(
-            status_code=409,
-            detail="Pipeline already running. Wait for the current job to finish."
-        )
+    # Stash the file payload BEFORE we wait on the lock — otherwise the
+    # UploadFile's spooled-temp buffer may be invalidated by the time we
+    # actually read it (some ASGI servers reap it after the handler yields).
+    filename = file.filename
+    payload = await file.read()
 
+    # Hold the lock for the full inline ingest+draft pipeline. If another
+    # upload is in flight, this request blocks here instead of returning
+    # 409. From the client's POV it's a slow upload, not a rejection —
+    # the SSE stream keeps showing live progress for whichever upload is
+    # currently active.
     async with _pipeline_lock:
-        return await _run_upload(file, draft_type)
+        # Wrap the already-buffered bytes in a fake "file-like" so
+        # _run_upload can keep its same signature.
+        class _BufferedFile:
+            def __init__(self, name: str, data: bytes):
+                self.filename = name
+                self._data = data
+            async def read(self) -> bytes:
+                return self._data
+        return await _run_upload(_BufferedFile(filename, payload), draft_type)
 
 
 async def _run_upload(file: UploadFile, draft_type: str) -> dict:
@@ -402,6 +547,18 @@ async def _run_upload(file: UploadFile, draft_type: str) -> dict:
         await _sse_broadcast("ingest", "error", str(exc))
         raise HTTPException(status_code=500, detail=f"File save failed: {exc}") from exc
     await _sse_broadcast("ingest", "complete", "File saved")
+
+    # Start every upload from a clean GPU. The previous document's OCR /
+    # extraction model can leave the ModelManager's VRAM budget maxed; the
+    # next upload's model load then fails (VRAMBudgetExceeded → empty OCR →
+    # no draft → "Generation skipped"). Reclearing here makes each document
+    # independent. (The end-of-upload reclear only helps the next *draft
+    # job*, not the next upload's own OCR/extract stage.)
+    try:
+        from code.llm_interface.model_manager import ModelManager
+        await asyncio.to_thread(ModelManager.instance().reclear_gpu)
+    except Exception as exc:
+        logger.warning("Pre-ingest GPU reclear failed: %s", exc)
 
     # Stage 2: ocr + extract — run full ingestion pipeline in thread
     await _sse_broadcast("ocr", "active", "Running OCR & text extraction…")
@@ -496,6 +653,14 @@ async def _run_upload(file: UploadFile, draft_type: str) -> dict:
     else:
         await _sse_broadcast("verify", "complete", "No draft to verify")
 
+    # Free GPU after inline generation so the next subprocess-based
+    # draft job (Generate button) has a clear runway on the RTX 3080.
+    try:
+        from code.llm_interface.model_manager import ModelManager
+        await asyncio.to_thread(ModelManager.instance().reclear_gpu)
+    except Exception as exc:
+        logger.warning("Post-upload GPU reclear failed: %s", exc)
+
     # Signal complete
     await _sse_broadcast("all", "complete", "Processing complete")
 
@@ -566,68 +731,409 @@ async def get_document_detail_partial(request: Request, doc_id: str):
 
 
 # ---------------------------------------------------------------------------
-# Draft API
+# Job Queue Worker
+# ---------------------------------------------------------------------------
+
+
+async def _job_queue_worker():
+    """Background worker: pulls jobs from queue, runs one at a time."""
+    global _job_cancel_requested
+    while True:
+        await _job_queue_event.wait()
+        _job_queue_event.clear()
+
+        while True:
+            job = None
+            with _job_queue_lock:
+                if not _job_queue_state["queued"]:
+                    break
+                job = _job_queue_state["queued"].pop(0)
+                job["started_at"] = datetime.now().isoformat()
+                _job_queue_state["in_progress"] = job
+                _save_queue_state()
+
+            _job_cancel_requested = False
+            await _sse_broadcast("queue", "job_started", json.dumps({
+                "job_id": job["id"], "document_id": job["document_id"],
+                "draft_type": job["draft_type"], "filename": job["filename"],
+            }))
+
+            start_time = datetime.now()
+            try:
+                await _run_draft_job(job)
+                duration = (datetime.now() - start_time).total_seconds()
+                with _job_queue_lock:
+                    _job_queue_state["in_progress"] = None
+                    _job_queue_state["done"].insert(0, {
+                        **job, "completed_at": datetime.now().isoformat(),
+                        "duration_sec": round(duration, 1), "status": "done",
+                    })
+                    if len(_job_queue_state["done"]) > 50:
+                        _job_queue_state["done"] = _job_queue_state["done"][:50]
+                    _save_queue_state()
+                await _sse_broadcast("queue", "job_done", json.dumps({
+                    "job_id": job["id"], "document_id": job["document_id"],
+                    "duration_sec": round(duration, 1),
+                }))
+            except Exception as exc:
+                logger.exception("Job %s failed", job["id"])
+                with _job_queue_lock:
+                    _job_queue_state["in_progress"] = None
+                    _job_queue_state["failed"].insert(0, {
+                        **job, "error": str(exc),
+                        "completed_at": datetime.now().isoformat(), "status": "failed",
+                    })
+                    if len(_job_queue_state["failed"]) > 50:
+                        _job_queue_state["failed"] = _job_queue_state["failed"][:50]
+                    _save_queue_state()
+                await _sse_broadcast("queue", "job_failed", json.dumps({
+                    "job_id": job["id"], "error": str(exc)[:200],
+                }))
+                await _sse_broadcast("all", "complete", "Job failed: " + str(exc)[:100])
+
+
+async def _run_draft_job(job: dict):
+    """Execute a single draft generation job in a subprocess.
+
+    llama-cpp-python's CUDA context / mmap locks / chat_handler buffers leak
+    on Windows. Per-job subprocess isolation forces OS-level cleanup on
+    subprocess exit. The webapp stays alive, only the worker subprocess
+    turns over.
+    """
+    global _job_cancel_requested
+    document_id = job["document_id"]
+    draft_type = job["draft_type"]
+
+    import subprocess as _sp
+    import tempfile
+
+    repo_root = Path(__file__).resolve().parent.parent
+
+    # Verify document exists before launching subprocess
+    doc_path = PROCESSED_DIR / f"{document_id}.json"
+    if not doc_path.exists():
+        await _sse_broadcast("retrieve", "error", "Document not found")
+        raise RuntimeError(f"Document not found: {document_id}")
+
+    # Free webapp-side GPU before launching subprocess. The webapp's
+    # ModelManager may still hold the Qwen3-VL model from a prior ingestion
+    # (~6GB). The subprocess loads its own 6.1GB copy — with the webapp also
+    # holding 6.1GB, the RTX 3080's 10GB total is exhausted and llama.cpp
+    # aborts on CUDA OOM (exit code 1, empty stderr). Reclearing here drops
+    # the webapp's GPU allocation so the subprocess has a clear runway.
+    try:
+        from code.llm_interface.model_manager import ModelManager
+        await asyncio.to_thread(ModelManager.instance().reclear_gpu)
+    except Exception as exc:
+        logger.warning("Pre-subprocess GPU reclear failed: %s", exc)
+
+    await _sse_broadcast("retrieve", "active", "Loading document & retrieving evidence…")
+
+    # Create temp file for result + log file for subprocess stdout/stderr
+    fd, result_path = tempfile.mkstemp(
+        prefix=f"legalmind_draft_{document_id}_", suffix=".json"
+    )
+    os.close(fd)
+    log_path = Path(result_path).with_suffix(".log")
+
+    # Python code to run in subprocess — full pipeline: retrieve → generate → verify
+    runner_code = f"""
+import sys, json, os, time
+sys.path.insert(0, r{str(repo_root)!r})
+os.environ.setdefault("HF_HUB_DISABLE_SYMLINKS_WARNING", "1")
+
+if sys.platform == "win32":
+    cuda_bin = r"C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v12.6\\bin"
+    if os.path.exists(cuda_bin):
+        os.add_dll_directory(cuda_bin)
+        os.environ["PATH"] = cuda_bin + os.pathsep + os.environ.get("PATH", "")
+
+result = {{"status": "failed", "error": None, "duration_sec": 0}}
+t0 = time.time()
+try:
+    from code.pipeline.ingestion import ProcessedDocument
+    from code.generation.drafter import DraftGenerator
+    from code.firewall.runner import FirewallRunner
+
+    doc = ProcessedDocument.load({document_id!r})
+    if doc is None:
+        raise RuntimeError("Document not found")
+
+    # Generate
+    gen = DraftGenerator()
+    output = gen.generate_draft({document_id!r}, {draft_type!r}, doc.full_text, 8)
+
+    # Verify
+    runner = FirewallRunner()
+    fw_results = runner.verify_draft(
+        output.content_markdown,
+        doc.structured_fields,
+        output.citations or {{}},
+        doc.confidence,
+    )
+    fw_summary = runner.get_summary(fw_results)
+
+    # Build result dict
+    draft_dict = {{
+        "id": f"draft_{document_id}_{draft_type}",
+        "draft_type": output.draft_type,
+        "document_id": output.document_id,
+        "content_markdown": output.content_markdown,
+        "content_structured": output.content_structured,
+        "citations": output.citations,
+        "verification_status": output.verification_status,
+        "generation_timestamp": str(output.generation_timestamp),
+        "exemplars_used": output.exemplars_used,
+        "rules_applied": output.rules_applied,
+        "evidence_count": output.evidence_count,
+        "confidence_overall": output.confidence_overall,
+        "firewall_results": [{{
+            "field_path": r.field_path, "status": r.status,
+            "confidence_score": r.confidence_score, "confidence_level": r.confidence_level,
+            "similarity": r.similarity, "evidence_snippet": r.evidence_snippet,
+            "reasons": r.reasons,
+        }} for r in fw_results],
+        "firewall_summary": fw_summary,
+    }}
+
+    # Save draft to disk
+    from config.paths import PROCESSED_DIR
+    draft_path = PROCESSED_DIR / f"draft_{document_id}_{draft_type}.json"
+    draft_path.write_text(json.dumps(draft_dict, default=str), encoding="utf-8")
+
+    result["status"] = "done"
+    result["duration_sec"] = round(time.time() - t0, 1)
+
+except Exception as exc:
+    result["status"] = "failed"
+    result["error"] = f"{{type(exc).__name__}}: {{exc}}"
+    result["duration_sec"] = round(time.time() - t0, 1)
+
+with open(r{result_path!r}, "w", encoding="utf-8") as f:
+    json.dump(result, f)
+"""
+
+    env = os.environ.copy()
+    creationflags = 0
+    if sys.platform == "win32":
+        import subprocess as _sp2
+        creationflags = _sp2.CREATE_NEW_PROCESS_GROUP
+
+    # Write runner to a tempfile rather than passing via -c. llama.cpp emits
+    # a large volume to stderr while loading; if stderr were a PIPE, the
+    # ~64KB Windows pipe buffer fills, the subprocess blocks writing, and
+    # the whole job deadlocks. Redirecting to a log file avoids the buffer
+    # entirely and gives us a real artifact to surface on failure.
+    fd_py, runner_path = tempfile.mkstemp(
+        prefix=f"legalmind_runner_{document_id}_", suffix=".py"
+    )
+    os.close(fd_py)
+    Path(runner_path).write_text(runner_code, encoding="utf-8")
+    log_fh = open(log_path, "w", encoding="utf-8")
+
+    proc = _sp.Popen(
+        [sys.executable, "-u", runner_path],
+        env=env,
+        cwd=str(repo_root),
+        stdout=log_fh, stderr=_sp.STDOUT,
+        creationflags=creationflags,
+    )
+
+    # Register for cancellation
+    _job_active_proc["proc"] = proc
+    _job_active_proc["job_id"] = job["id"]
+
+    await _sse_broadcast("retrieve", "complete", "Subprocess launched")
+    await _sse_broadcast("generate", "active",
+                         f"Generating {draft_type.replace('_', ' ')} (model loading)…")
+
+    try:
+        # Poll subprocess — check for cancel every 2 seconds
+        while proc.poll() is None:
+            if _job_cancel_requested:
+                proc.terminate()
+                try:
+                    proc.wait(timeout=5)
+                except _sp.TimeoutExpired:
+                    proc.kill()
+                raise RuntimeError("Cancelled by operator")
+            await asyncio.sleep(2)
+
+        # Close the log handle so the subprocess's final writes flush to disk
+        try:
+            log_fh.close()
+        except Exception:
+            pass
+
+        if proc.returncode != 0:
+            log_excerpt = _tail_log(log_path, head_lines=80, tail_lines=80)
+            raise RuntimeError(
+                f"Subprocess exit code {proc.returncode}. "
+                f"Log excerpt (full log: {log_path}):\n{log_excerpt}"
+            )
+
+        # Read result
+        if not Path(result_path).exists() or Path(result_path).stat().st_size == 0:
+            log_excerpt = _tail_log(log_path, head_lines=40, tail_lines=80)
+            raise RuntimeError(
+                f"Subprocess exited 0 but produced no result file. "
+                f"Log excerpt (full log: {log_path}):\n{log_excerpt}"
+            )
+        result_data = json.loads(Path(result_path).read_text(encoding="utf-8"))
+
+        if result_data["status"] == "done":
+            await _sse_broadcast("generate", "complete", "Draft generated")
+            await _sse_broadcast("verify", "complete",
+                                 f"Complete ({result_data['duration_sec']}s)")
+            await _sse_broadcast("all", "complete", "Processing complete")
+        else:
+            error_msg = result_data.get("error", "Unknown error")
+            log_excerpt = _tail_log(log_path, head_lines=20, tail_lines=40)
+            await _sse_broadcast("generate", "error", error_msg)
+            raise RuntimeError(f"{error_msg}\nLog excerpt:\n{log_excerpt}")
+
+    finally:
+        _job_active_proc.clear()
+        try:
+            log_fh.close()
+        except Exception:
+            pass
+        try:
+            Path(result_path).unlink(missing_ok=True)
+        except Exception:
+            pass
+        try:
+            Path(runner_path).unlink(missing_ok=True)
+        except Exception:
+            pass
+        # Keep the log file on failure so the operator can inspect it.
+        # Successful runs delete it to avoid clutter.
+        try:
+            if proc.returncode == 0 and Path(log_path).exists():
+                Path(log_path).unlink(missing_ok=True)
+        except Exception:
+            pass
+
+
+def _tail_log(log_path: Path, head_lines: int = 40, tail_lines: int = 80) -> str:
+    """Return the first head_lines and last tail_lines of a log file."""
+    try:
+        if not Path(log_path).exists():
+            return "(log file missing)"
+        lines = Path(log_path).read_text(encoding="utf-8", errors="replace").splitlines()
+        if len(lines) <= head_lines + tail_lines:
+            return "\n".join(lines)
+        head = lines[:head_lines]
+        tail = lines[-tail_lines:]
+        return "\n".join(head + [f"... ({len(lines) - head_lines - tail_lines} lines elided) ..."] + tail)
+    except Exception as exc:
+        return f"(could not read log: {exc})"
+
+
+# ---------------------------------------------------------------------------
+# Draft API (queue-based)
 # ---------------------------------------------------------------------------
 
 
 @app.post("/api/v1/drafts/generate")
 async def generate_draft(body: dict) -> dict:
+    """Enqueue a draft generation job. Returns immediately with job ID."""
     document_id: str = body.get("document_id", "")
     draft_type: str = body.get("draft_type", "")
     if not document_id or not draft_type:
         raise HTTPException(status_code=422, detail="document_id and draft_type required")
 
-    # Load the source document for full_text and structured_fields
-    try:
-        from code.pipeline.ingestion import ProcessedDocument
-
-        doc = await asyncio.to_thread(ProcessedDocument.load, document_id)
-    except Exception as exc:
-        raise HTTPException(status_code=500, detail=str(exc)) from exc
-
+    # Validate document exists
+    from code.pipeline.ingestion import ProcessedDocument
+    doc = await asyncio.to_thread(ProcessedDocument.load, document_id)
     if doc is None:
         raise HTTPException(status_code=404, detail="Document not found")
 
-    try:
-        gen = DraftGenerator()
-        output = await asyncio.to_thread(
-            gen.generate_draft,
-            document_id,
-            draft_type,
-            doc.full_text,
-            8,
-        )
-    except Exception as exc:
-        logger.exception("Draft generation failed for doc %s", document_id)
-        raise HTTPException(status_code=500, detail=f"Generation failed: {exc}") from exc
+    # Check for duplicates in queue
+    with _job_queue_lock:
+        for j in _job_queue_state["queued"]:
+            if j["document_id"] == document_id and j["draft_type"] == draft_type:
+                return {"id": j["id"], "status": "already_queued", "position": _job_queue_state["queued"].index(j) + 1}
+        ip = _job_queue_state["in_progress"]
+        if ip and ip["document_id"] == document_id and ip["draft_type"] == draft_type:
+            return {"id": ip["id"], "status": "in_progress"}
 
-    try:
-        runner = FirewallRunner()
-        results = await asyncio.to_thread(
-            runner.verify_draft,
-            output.content_markdown,
-            doc.structured_fields,
-            output.citations or {},
-            doc.confidence,
-        )
-        fw_summary = runner.get_summary(results)
-        firewall_results = [_vr_to_dict(r) for r in results]
-    except Exception as exc:
-        logger.warning("Firewall check failed: %s", exc)
-        fw_summary = {}
-        firewall_results = []
+    job_id = f"job_{_uuid.uuid4().hex[:12]}"
+    job = {
+        "id": job_id,
+        "document_id": document_id,
+        "draft_type": draft_type,
+        "filename": doc.filename,
+        "requested_at": datetime.now().isoformat(),
+    }
 
-    draft_dict = _draft_to_dict(output)
-    draft_dict["firewall_results"] = firewall_results
-    draft_dict["firewall_summary"] = fw_summary
+    with _job_queue_lock:
+        _job_queue_state["queued"].append(job)
+        position = len(_job_queue_state["queued"])
+        _save_queue_state()
 
-    draft_path = PROCESSED_DIR / f"draft_{document_id}_{draft_type}.json"
-    try:
-        draft_path.write_text(json.dumps(draft_dict, default=str), encoding="utf-8")
-    except Exception as exc:
-        logger.warning("Could not save draft to disk: %s", exc)
+    _job_queue_event.set()
 
-    return draft_dict
+    await _sse_broadcast("queue", "job_queued", json.dumps({
+        "job_id": job_id, "document_id": document_id,
+        "draft_type": draft_type, "filename": doc.filename,
+        "position": position,
+    }))
+
+    return {"id": job_id, "status": "queued", "position": position}
+
+
+@app.get("/api/v1/queue")
+async def get_queue_state() -> dict:
+    """Return current queue state: queued, in_progress, done, failed."""
+    with _job_queue_lock:
+        return {
+            "queued": list(_job_queue_state["queued"]),
+            "in_progress": _job_queue_state["in_progress"],
+            "done": _job_queue_state["done"][:10],
+            "failed": _job_queue_state["failed"][:10],
+        }
+
+
+@app.post("/api/v1/queue/cancel")
+async def cancel_current_job() -> dict:
+    """Cancel the currently running job (terminates subprocess)."""
+    global _job_cancel_requested
+    with _job_queue_lock:
+        ip = _job_queue_state["in_progress"]
+        if not ip:
+            raise HTTPException(status_code=409, detail="No job currently running")
+    _job_cancel_requested = True
+    # Also terminate the subprocess immediately
+    proc = _job_active_proc.get("proc")
+    if proc and proc.poll() is None:
+        proc.terminate()
+    await _sse_broadcast("queue", "cancel_requested", json.dumps({"job_id": ip["id"]}))
+    return {"ok": True, "job_id": ip["id"], "message": "Cancel requested"}
+
+
+@app.delete("/api/v1/queue/{job_id}")
+async def remove_queued_job(job_id: str) -> dict:
+    """Remove a job from the queue (only if still queued, not in_progress)."""
+    with _job_queue_lock:
+        for i, j in enumerate(_job_queue_state["queued"]):
+            if j["id"] == job_id:
+                _job_queue_state["queued"].pop(i)
+                return {"ok": True, "removed": job_id}
+    raise HTTPException(status_code=404, detail="Job not found in queue")
+
+
+@app.delete("/api/v1/queue")
+async def clear_queue(scope: str = "queued") -> dict:
+    """Clear queue entries. scope: queued, done, failed, all."""
+    with _job_queue_lock:
+        if scope in ("queued", "all"):
+            _job_queue_state["queued"].clear()
+        if scope in ("done", "all"):
+            _job_queue_state["done"].clear()
+        if scope in ("failed", "all"):
+            _job_queue_state["failed"].clear()
+    return {"ok": True, "cleared": scope}
 
 
 @app.get("/api/v1/drafts/{draft_id}")
@@ -651,6 +1157,23 @@ async def get_draft(draft_id: str) -> dict:
 
 @app.post("/api/v1/corrections")
 async def save_correction(body: dict) -> dict:
+    # editor.js only knows the field_path and the markdown text it just edited
+    # — it does NOT have the relevant source-text chunk. Without a non-empty
+    # source_ocr_chunk the exemplar retriever (BM25 over chunk text) can
+    # never match this correction against future similar docs, which breaks
+    # the learning loop. Fall back to the document's full_text so retrieval
+    # has something meaningful to score against.
+    if not body.get("source_ocr_chunk"):
+        doc_id = body.get("document_id", "")
+        if doc_id:
+            try:
+                from code.pipeline.ingestion import ProcessedDocument
+                doc = await asyncio.to_thread(ProcessedDocument.load, doc_id)
+                if doc and doc.full_text:
+                    body["source_ocr_chunk"] = doc.full_text[:1500]
+            except Exception as exc:
+                logger.warning("Could not enrich correction with source text: %s", exc)
+
     try:
         correction = Correction(**body)
     except Exception as exc:
@@ -662,18 +1185,21 @@ async def save_correction(body: dict) -> dict:
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc)) from exc
 
-    # Pattern extraction and consolidation triggered in background so the
-    # HTTP response is not delayed by potentially heavy LLM inference.
+    # Pattern extraction and consolidation triggered in background. We
+    # instantiate the checker AFTER the save above so it sees the fresh
+    # count — the old code created the extractor in module init and asked
+    # `should_trigger()` before the new correction had been persisted, which
+    # made the trigger race-prone.
     try:
         extractor = PatternExtractor()
-        if extractor.should_trigger():
+        if await asyncio.to_thread(extractor.should_trigger):
             asyncio.create_task(_run_pattern_extraction(extractor))
     except Exception as exc:
         logger.warning("Pattern extractor check failed: %s", exc)
 
     try:
         consolidator = PromptConsolidator()
-        if consolidator.should_trigger():
+        if await asyncio.to_thread(consolidator.should_trigger):
             asyncio.create_task(_run_consolidation(consolidator))
     except Exception as exc:
         logger.warning("Prompt consolidator check failed: %s", exc)
@@ -700,20 +1226,118 @@ async def list_corrections(draft_type: Optional[str] = None) -> list[dict]:
 # ---------------------------------------------------------------------------
 
 
+async def _run_extraction_subprocess() -> dict:
+    """Run pattern extraction in an isolated subprocess.
+
+    extract_patterns() loads the reasoning LLM. Doing that in-process (even
+    via to_thread) contends with the webapp's own ModelManager on the single
+    RTX 3080 and, on Windows, llama-cpp's CUDA context / mmap locks routinely
+    deadlock or OOM-kill the worker — which takes the whole server down.
+    Same failure mode and same fix as draft generation: spawn a short-lived
+    subprocess, let the OS reclaim the CUDA context on its exit.
+    """
+    import subprocess as _sp
+    import tempfile
+
+    repo_root = Path(__file__).resolve().parent.parent
+
+    # Free any model the webapp is holding so the subprocess has a clear GPU.
+    try:
+        from code.llm_interface.model_manager import ModelManager
+        await asyncio.to_thread(ModelManager.instance().reclear_gpu)
+    except Exception as exc:
+        logger.warning("Pre-extraction GPU reclear failed: %s", exc)
+
+    fd, result_path = tempfile.mkstemp(prefix="legalmind_extract_", suffix=".json")
+    os.close(fd)
+    log_path = Path(result_path).with_suffix(".log")
+
+    runner_code = f"""
+import sys, json, os, time
+sys.path.insert(0, r{str(repo_root)!r})
+os.environ.setdefault("HF_HUB_DISABLE_SYMLINKS_WARNING", "1")
+if sys.platform == "win32":
+    cuda_bin = r"C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v12.6\\bin"
+    if os.path.exists(cuda_bin):
+        os.add_dll_directory(cuda_bin)
+        os.environ["PATH"] = cuda_bin + os.pathsep + os.environ.get("PATH", "")
+result = {{"status": "failed", "error": None, "rules": [], "duration_sec": 0}}
+t0 = time.time()
+try:
+    from code.learning.pattern_extractor import PatternExtractor
+    rules = PatternExtractor().extract_patterns(True)
+    result["status"] = "done"
+    result["rules"] = list(rules or [])
+    result["duration_sec"] = round(time.time() - t0, 1)
+except Exception as exc:
+    result["status"] = "failed"
+    result["error"] = f"{{type(exc).__name__}}: {{exc}}"
+    result["duration_sec"] = round(time.time() - t0, 1)
+with open(r{result_path!r}, "w", encoding="utf-8") as f:
+    json.dump(result, f)
+"""
+    fd_py, runner_path = tempfile.mkstemp(prefix="legalmind_extract_runner_", suffix=".py")
+    os.close(fd_py)
+    Path(runner_path).write_text(runner_code, encoding="utf-8")
+    log_fh = open(log_path, "w", encoding="utf-8")
+
+    creationflags = 0
+    if sys.platform == "win32":
+        creationflags = _sp.CREATE_NEW_PROCESS_GROUP
+
+    proc = _sp.Popen(
+        [sys.executable, "-u", runner_path],
+        env=os.environ.copy(), cwd=str(repo_root),
+        stdout=log_fh, stderr=_sp.STDOUT, creationflags=creationflags,
+    )
+    try:
+        while proc.poll() is None:
+            await asyncio.sleep(2)
+        try:
+            log_fh.close()
+        except Exception:
+            pass
+        if proc.returncode != 0 or not Path(result_path).exists():
+            tail = _tail_log(log_path, 40, 60)
+            raise RuntimeError(
+                f"Extraction subprocess exit {proc.returncode}. Log:\n{tail}"
+            )
+        data = json.loads(Path(result_path).read_text(encoding="utf-8"))
+        if data["status"] != "done":
+            raise RuntimeError(data.get("error", "unknown extraction error"))
+        return data
+    finally:
+        try:
+            log_fh.close()
+        except Exception:
+            pass
+        for p in (result_path, runner_path):
+            try:
+                Path(p).unlink(missing_ok=True)
+            except Exception:
+                pass
+        try:
+            if proc.returncode == 0:
+                Path(log_path).unlink(missing_ok=True)
+        except Exception:
+            pass
+
+
 @app.post("/api/v1/learning/rules")
 async def trigger_pattern_extraction() -> dict:
     """Manually trigger pattern extraction from accumulated corrections.
 
     Used by the Audit page's 'Trigger Pattern Extraction' button via HTMX.
-    Passes force=True so extraction runs regardless of correction count —
-    useful for demo and review where fewer than TRIGGER_INTERVAL edits exist.
+    Runs in an isolated subprocess (loads the reasoning LLM) so it cannot
+    take the server down. force=True so it runs regardless of count.
     """
     try:
-        extractor = PatternExtractor()
-        patterns = await asyncio.to_thread(extractor.extract_patterns, True)
-        rule_count = len(patterns)
-        return {"status": "ok", "rules_extracted": rule_count,
-                "message": f"Extraction complete — {rule_count} rule(s) generated."}
+        data = await _run_extraction_subprocess()
+        rules = data.get("rules", [])
+        return {"status": "ok", "rules_extracted": len(rules),
+                "rules": rules,
+                "message": f"Extraction complete — {len(rules)} rule(s) generated "
+                           f"({data.get('duration_sec', 0)}s)."}
     except Exception as exc:
         logger.exception("Manual pattern extraction failed")
         raise HTTPException(status_code=500, detail=f"Pattern extraction failed: {exc}") from exc
@@ -870,7 +1494,7 @@ async def gpu_reset() -> dict:
 
 @app.get("/api/v1/events/pipeline")
 async def pipeline_events(request: Request):
-    """Stream pipeline events to the browser using the TRACE subscriber pattern.
+    """Stream pipeline events to the browser via Server-Sent Events.
 
     On connect: subscriber queue is created and a "connected/ready" sentinel is
     sent immediately so the browser knows the stream is live before it POSTs
@@ -955,7 +1579,7 @@ async def save_prompt(prompt_id: str, body: dict) -> dict:
 @app.get("/api/v1/corpus/terms")
 async def get_corpus_terms() -> dict:
     from code.corpus.term_data import LEGAL_TERMS
-    categories = [{"name": cat, "terms": list(terms)} for cat, terms in LEGAL_TERMS.items()]
+    builtin = {cat: list(terms) for cat, terms in LEGAL_TERMS.items()}
 
     # Load learned terms
     learned = []
@@ -965,7 +1589,7 @@ async def get_corpus_terms() -> dict:
         except Exception:
             learned = []
 
-    return {"categories": categories, "learned": learned, "total": sum(len(c["terms"]) for c in categories)}
+    return {"builtin": builtin, "learned": learned, "total": sum(len(v) for v in builtin.values())}
 
 
 @app.post("/api/v1/corpus/terms")
@@ -1014,10 +1638,81 @@ async def delete_corpus_term(term: str) -> dict:
 
 @app.get("/api/v1/documents/{doc_id}/pages/{page_num}")
 async def get_document_page_image(doc_id: str, page_num: int):
+    # Preferred path: PDFs get rendered to JPEGs at ingest time.
     page_path = PAGES_DIR / doc_id / f"page_{page_num:03d}.jpg"
-    if not page_path.exists():
-        raise HTTPException(status_code=404, detail="Page image not found")
-    return FileResponse(str(page_path), media_type="image/jpeg")
+    if page_path.exists():
+        return FileResponse(str(page_path), media_type="image/jpeg")
+
+    # Fallback: for image uploads (PNG/JPG/etc) the original upload IS the
+    # single page — serve it directly from data/uploads/{filename}. We
+    # consult the processed doc JSON for the original filename.
+    if page_num == 1:
+        doc_json = PROCESSED_DIR / f"{doc_id}.json"
+        if doc_json.exists():
+            try:
+                meta = json.loads(doc_json.read_text(encoding="utf-8"))
+                filename = meta.get("filename", "")
+                if filename:
+                    upload_path = UPLOADS_DIR / filename
+                    if upload_path.exists():
+                        suffix = upload_path.suffix.lower()
+                        mime = {
+                            ".png": "image/png",
+                            ".jpg": "image/jpeg", ".jpeg": "image/jpeg",
+                            ".tif": "image/tiff", ".tiff": "image/tiff",
+                            ".bmp": "image/bmp", ".webp": "image/webp",
+                            ".gif": "image/gif",
+                        }.get(suffix)
+                        if mime:
+                            return FileResponse(str(upload_path), media_type=mime)
+            except Exception as exc:
+                logger.warning("Page-image fallback failed for %s: %s", doc_id, exc)
+
+    raise HTTPException(status_code=404, detail="Page image not found")
+
+
+@app.get("/api/v1/documents/{doc_id}/text-span")
+async def get_document_text_span(
+    doc_id: str, start: int = 0, end: int = 0, pad: int = 600
+) -> dict:
+    """Return the cited text span plus surrounding context from full_text.
+
+    Used by the citation eye-button for .txt documents (which have no page
+    image): the modal renders {before}{span}{after} with the span
+    highlighted, so the operator can see exactly where the claim came from.
+    """
+    doc_json = PROCESSED_DIR / f"{doc_id}.json"
+    if not doc_json.exists():
+        raise HTTPException(status_code=404, detail="Document not found")
+    try:
+        meta = json.loads(doc_json.read_text(encoding="utf-8"))
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+
+    full = meta.get("full_text", "") or ""
+    n = len(full)
+    if n == 0:
+        raise HTTPException(status_code=404, detail="No document text available")
+
+    # Clamp the requested range into the text
+    s = max(0, min(start, n))
+    e = max(s, min(end, n)) if end else s
+    if e <= s:
+        e = min(n, s + 400)  # no usable end → show a reasonable window
+
+    ctx_start = max(0, s - pad)
+    ctx_end = min(n, e + pad)
+
+    return {
+        "filename": meta.get("filename", ""),
+        "before": full[ctx_start:s],
+        "span": full[s:e],
+        "after": full[e:ctx_end],
+        "truncated_before": ctx_start > 0,
+        "truncated_after": ctx_end < n,
+        "char_start": s,
+        "char_end": e,
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -1026,9 +1721,13 @@ async def get_document_page_image(doc_id: str, page_num: int):
 
 
 async def _run_pattern_extraction(extractor: PatternExtractor) -> None:
+    # Route through the same isolated subprocess as the manual endpoint —
+    # extract_patterns() loads the reasoning LLM and must never run in the
+    # server process (it crashes the worker on the shared GPU).
     try:
-        patterns = await asyncio.to_thread(extractor.extract_patterns)
-        logger.info("Pattern extraction produced %d patterns", len(patterns))
+        data = await _run_extraction_subprocess()
+        logger.info("Background pattern extraction produced %d rule(s)",
+                    len(data.get("rules", [])))
     except Exception as exc:
         logger.warning("Background pattern extraction failed: %s", exc)
 
@@ -1039,6 +1738,32 @@ async def _run_consolidation(consolidator: PromptConsolidator) -> None:
         logger.info("Prompt consolidation complete")
     except Exception as exc:
         logger.warning("Background consolidation failed: %s", exc)
+
+
+def _doc_has_draft(doc_id: str) -> bool:
+    """True if any generated draft file exists for this doc."""
+    if not doc_id:
+        return False
+    try:
+        return any(PROCESSED_DIR.glob(f"draft_{doc_id}_*.json"))
+    except Exception:
+        return False
+
+
+def _doc_draft_types(doc_id: str) -> list[str]:
+    """Return the list of draft_types that have been generated for this doc."""
+    if not doc_id:
+        return []
+    types: list[str] = []
+    try:
+        for p in PROCESSED_DIR.glob(f"draft_{doc_id}_*.json"):
+            stem = p.stem  # e.g. "draft_doc_xyz_case_fact_summary"
+            prefix = f"draft_{doc_id}_"
+            if stem.startswith(prefix):
+                types.append(stem[len(prefix):])
+    except Exception:
+        pass
+    return sorted(set(types))
 
 
 def _doc_to_dict(doc) -> dict:
@@ -1054,6 +1779,8 @@ def _doc_to_dict(doc) -> dict:
         "confidence": doc.confidence,
         "page_count": doc.page_count,
         "processing_errors": doc.processing_errors,
+        "has_draft": _doc_has_draft(doc.id),
+        "draft_types_available": _doc_draft_types(doc.id),
     }
 
 

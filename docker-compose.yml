@@ -7,8 +7,8 @@ services:
       - ./data:/app/data
       - model-cache:/models:ro
     environment:
-      - LEGALMIND_MODEL_CACHE=/models
-      - MODEL_CACHE_PATH=${MODEL_CACHE_PATH:-F:/Research_Paper_Projects/LLMs}
+      - LEGALMIND_MODEL_DIR=/models
+      - HF_HUB_DISABLE_SYMLINKS_WARNING=1
     deploy:
       resources:
         reservations:
@@ -24,4 +24,4 @@ volumes:
     driver_opts:
       type: none
       o: bind
-      device: ${MODEL_CACHE_PATH:-F:/Research_Paper_Projects/LLMs}
+      device: ${MODEL_CACHE_PATH:-/path/to/your/models}

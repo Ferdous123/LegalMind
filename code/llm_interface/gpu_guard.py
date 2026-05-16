@@ -1,6 +1,6 @@
 """GPU memory guard — VRAM info for system status display.
 
-Load decisions use analytical tracking in ModelManager (TRACE-style), not nvidia-smi.
+Load decisions use analytical tracking in ModelManager, not nvidia-smi.
 This module only provides nvidia-smi data for health/settings display.
 """
 

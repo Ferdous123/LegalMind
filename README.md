@@ -4,6 +4,26 @@ AI-powered legal document intelligence platform for Pearson Specter Litt. Ingest
 
 ---
 
+## 📦 Assessment Submission — start here
+
+All required deliverables are in **[`deliverables/`](deliverables/)**. Begin with
+**[`deliverables/00_SUBMISSION_INDEX.md`](deliverables/00_SUBMISSION_INDEX.md)** —
+it maps every "What to Submit" item and every rubric point to its file, and
+gives a 15-minute reviewer path.
+
+| Required item | File |
+|---|---|
+| Setup & run | [`deliverables/01_README.md`](deliverables/01_README.md) |
+| Architecture overview | [`deliverables/02_ARCHITECTURE.md`](deliverables/02_ARCHITECTURE.md) |
+| Assumptions & tradeoffs | [`deliverables/03_ASSUMPTIONS_AND_TRADEOFFS.md`](deliverables/03_ASSUMPTIONS_AND_TRADEOFFS.md) |
+| Sample inputs & outputs | [`deliverables/04_SAMPLE_INPUTS_AND_OUTPUTS.md`](deliverables/04_SAMPLE_INPUTS_AND_OUTPUTS.md) |
+| Evaluation approach & results | [`deliverables/05_EVALUATION.md`](deliverables/05_EVALUATION.md) |
+
+`docs/decisions.md` is a candid running root-cause / decision log kept
+deliberately to show the engineering process.
+
+---
+
 ## Quick Start
 
 ### Option 1: Docker (recommended)
@@ -48,7 +68,21 @@ docker compose down
 
 ---
 
-### Option 2: Manual Setup
+### Option 2: One-Click (Windows)
+
+```cmd
+:: First time setup (installs dependencies, checks models)
+setup.bat
+
+:: Start the server
+run.bat
+```
+
+The web UI will be at `http://localhost:8000`.
+
+---
+
+### Option 3: Manual Setup
 
 **Prerequisites**: Python 3.11+, CUDA 12.6 toolkit (for GPU inference), Git.
 
@@ -108,9 +142,9 @@ Upload -> Ingest (OCR or text extract) -> Structure -> Chunk -> Index
 
 Each stage is independently testable. The system is designed for a single RTX 3080 (10 GB VRAM): models are loaded and unloaded sequentially by a singleton `ModelManager`.
 
-See [ARCHITECTURE.md](ARCHITECTURE.md) for the full component breakdown and data flow diagram.
+See [`deliverables/02_ARCHITECTURE.md`](deliverables/02_ARCHITECTURE.md) for the full component breakdown and data flow diagram.
 
-See [docs/assumptions.md](docs/assumptions.md) for design decisions and tradeoffs.
+See [`deliverables/03_ASSUMPTIONS_AND_TRADEOFFS.md`](deliverables/03_ASSUMPTIONS_AND_TRADEOFFS.md) for design decisions and tradeoffs.
 
 ---
 
@@ -123,9 +157,11 @@ See [docs/assumptions.md](docs/assumptions.md) for design decisions and tradeoff
 - Page-level confidence flags preserve traceability
 
 ### Evidence Retrieval
-- All document text is chunked (512-token target, 64-token overlap) and stored locally
-- Retrieval uses BM25 keyword search — no embedding model or network required
+- All document text is chunked (512-token target, 64-token overlap) and stored in ChromaDB
+- Hybrid retrieval: semantic search (sentence-transformers embeddings on CPU) + BM25 keyword matching
+- Results fused using Reciprocal Rank Fusion (RRF) for superior relevance
 - Returns top-K evidence chunks with relevance scores and verbatim source spans
+- Falls back to BM25-only if embedding model unavailable
 
 ### Grounded Draft Generation
 - Four draft output types (see below)
@@ -139,9 +175,10 @@ See [docs/assumptions.md](docs/assumptions.md) for design decisions and tradeoff
 - **Layer 3 (Prompt consolidation)**: When 10+ new rules accumulate, they are folded into the base system prompt; redundant exemplars are archived
 
 ### Verification Firewall
-- Per-claim source anchoring: verifies cited evidence semantically supports the claim
-- Confidence scoring using logprob-based scoring (with embedding similarity fallback)
-- Status per field: `verified`, `uncertain`, `unsupported`, `manual_review`
+- Per-claim source anchoring: verifies each `[E]`-cited markdown claim against its cited evidence (deterministic 3-gram verbatim OR ≥0.30 token containment — auditable, no extra model)
+- Also scores structured fields; internal `_cascade_meta` is excluded from verification
+- Status per claim/field: `verified`, `uncertain`, `unsupported`, `manual_review`
+- The draft viewer's verification badge is **clickable** — lists each claim by status with its evidence snippet
 
 ---
 
@@ -161,10 +198,12 @@ See [docs/assumptions.md](docs/assumptions.md) for design decisions and tradeoff
 ### Via Web UI
 
 1. Navigate to `http://localhost:7860` (manual) or `http://localhost:8000` (Docker)
-2. Go to **Documents** and upload a PDF or image file
-3. Select a draft type and click **Process**
-4. Review the generated draft; click any field to edit it
-5. Submit corrections — they are immediately stored and influence future generations
+2. Go to the **Pipeline** panel and drag in a PDF or image file
+3. Select a draft type and process; watch the live SSE pipeline
+4. Open the draft — it renders as formatted markdown. Hover any section, click
+   **Edit**, and correct it **in place** (WYSIWYG); Save submits a correction
+5. Corrections are stored immediately (Layer 1 exemplars) and, via the **Audit**
+   panel, drive rule extraction that improves future drafts
 
 ### Via API
 
@@ -229,13 +268,13 @@ legalmind/
 │   ├── processed/        # ProcessedDocument JSON files
 │   ├── corrections/      # JSONL correction log
 │   └── sample/           # Synthetic demo documents + expected outputs
-├── scripts/              # Seed data and evaluation scripts
+├── scripts/              # Seed data, evaluation, corpus/demo processors
 ├── tests/                # Pytest test suite
-├── docs/                 # Assumptions, evaluation methodology
+├── deliverables/         # Assessment submission set (00–05)
+├── docs/                 # decisions.md (running RCA log) + deliverable pointers
 ├── Dockerfile
 ├── docker-compose.yml
-├── requirements.txt
-└── ARCHITECTURE.md
+└── requirements.txt
 ```
 
 ---
@@ -261,7 +300,7 @@ python scripts/seed_sample_data.py
 python scripts/run_evaluation.py
 ```
 
-See [docs/evaluation.md](docs/evaluation.md) for a full description of metrics, methodology, and a results table.
+See [`deliverables/05_EVALUATION.md`](deliverables/05_EVALUATION.md) for the full methodology and the measured controlled-A/B results.
 
 ---
 
@@ -279,7 +318,9 @@ Environment variables:
 
 | Variable | Default | Description |
 |---|---|---|
-| `LEGALMIND_MODEL_CACHE` | `/models` | Directory containing GGUF model files |
+| `LEGALMIND_MODEL_DIR` | (from models.yaml) | Directory containing GGUF model files |
+| `LEGALMIND_MODEL_CACHE` | `/models` | Docker-only: mount point for model cache |
+| `HF_HUB_DISABLE_SYMLINKS_WARNING` | - | Set to `1` to suppress HuggingFace warnings |
 
 ---
 

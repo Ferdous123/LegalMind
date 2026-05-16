@@ -765,6 +765,9 @@ Date: October 15, 2024
 
 
 def main() -> None:
+    import sys
+    sys.path.insert(0, str(REPO_ROOT))
+
     SAMPLE_DIR.mkdir(parents=True, exist_ok=True)
     EXPECTED_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -786,14 +789,115 @@ def main() -> None:
         written_expected.append(expected_filename)
 
     print("Sample data seeded successfully.")
-    print()
-    print(f"Documents written to: {SAMPLE_DIR}")
-    for name in written_docs:
-        print(f"  {name}")
-    print()
-    print(f"Expected outputs written to: {EXPECTED_DIR}")
-    for name in written_expected:
-        print(f"  {name}")
+    print(f"  {len(written_docs)} documents written to {SAMPLE_DIR}")
+    print(f"  {len(written_expected)} expected outputs written to {EXPECTED_DIR}")
+
+    # Prebuilt processed JSONs in data/sample/prebuilt/ are NOT copied to
+    # data/processed/ by default — operators want the library to reflect only
+    # documents they have actually uploaded. Pass --copy-prebuilt to opt in
+    # (e.g. for a quick demo against canned sample drafts).
+    import sys as _sys
+    if "--copy-prebuilt" in _sys.argv:
+        try:
+            from config.paths import ensure_dirs, PROCESSED_DIR
+            ensure_dirs()
+
+            import shutil
+            prebuilt_dir = SAMPLE_DIR / "prebuilt"
+            if prebuilt_dir.exists():
+                copied = 0
+                for f in prebuilt_dir.glob("*.json"):
+                    dest = PROCESSED_DIR / f.name
+                    if not dest.exists():
+                        shutil.copy2(f, dest)
+                        copied += 1
+                print(f"  {copied} prebuilt documents/drafts copied to processed/ (--copy-prebuilt)")
+            else:
+                print("  [WARN] No prebuilt data directory found")
+
+            from code.retrieval.indexer import DocumentIndexer
+            indexer = DocumentIndexer()
+            indexed = 0
+            for f in PROCESSED_DIR.glob("*.json"):
+                if f.stem.startswith("draft_"):
+                    continue
+                try:
+                    doc_data = json.loads(f.read_text(encoding="utf-8"))
+                    chunks = doc_data.get("chunks", [])
+                    if chunks:
+                        indexer.index_document(doc_data["id"], chunks)
+                        indexed += 1
+                except Exception:
+                    pass
+            if indexed:
+                print(f"  {indexed} documents indexed in ChromaDB")
+        except Exception as e:
+            print(f"  [WARN] Prebuilt data setup: {e}")
+    else:
+        print("  Prebuilt processed docs left untouched (pass --copy-prebuilt to seed them)")
+
+    # Seed sample corrections for the learning system demo
+    try:
+        from code.learning.correction_store import Correction, CorrectionStore
+        store = CorrectionStore()
+
+        if store.get_count() == 0:
+            sample_corrections = [
+                Correction(
+                    document_id="sample_doc_1",
+                    draft_type="case_fact_summary",
+                    field_path="parties.defendant",
+                    source_ocr_chunk="NORWOOD FABRICATION GROUP LLC and GERALD P. NORWOOD individually Defendants",
+                    generated_text="Defendant: Norwood Fabrication Group LLC",
+                    edited_text="Defendants: Norwood Fabrication Group LLC (Delaware LLC); Gerald P. Norwood (individually)",
+                    correction_type="omission",
+                ),
+                Correction(
+                    document_id="sample_doc_1",
+                    draft_type="case_fact_summary",
+                    field_path="key_dates.filing",
+                    source_ocr_chunk="Date: March 14, 2024",
+                    generated_text="Filing date: unclear",
+                    edited_text="Filing date: March 14, 2024",
+                    correction_type="error",
+                ),
+                Correction(
+                    document_id="sample_doc_2",
+                    draft_type="case_fact_summary",
+                    field_path="parties.plaintiff",
+                    source_ocr_chunk="Plaintiff Synthex Industrial Partners Inc by and through its counsel",
+                    generated_text="Plaintiff: Synthex",
+                    edited_text="Plaintiff: Synthex Industrial Partners, Inc.",
+                    correction_type="omission",
+                ),
+                Correction(
+                    document_id="sample_doc_3",
+                    draft_type="title_review_summary",
+                    field_path="chain_of_title.grantee",
+                    source_ocr_chunk="FIDELITY MERIDIAN TRUST a Thornfield statutory trust Grantee",
+                    generated_text="Grantee: Fidelity Trust",
+                    edited_text="Grantee: Fidelity Meridian Trust (Thornfield statutory trust)",
+                    correction_type="error",
+                ),
+                Correction(
+                    document_id="sample_doc_4",
+                    draft_type="notice_summary",
+                    field_path="deadlines.action_1",
+                    source_ocr_chunk="ACTION 1 IMMEDIATE Within 48 hours of receipt of this Notice",
+                    generated_text="Deadline: Not specified",
+                    edited_text="Deadline: Within 48 hours of receipt",
+                    correction_type="omission",
+                ),
+            ]
+            for c in sample_corrections:
+                store.save_correction(c)
+            print(f"  {len(sample_corrections)} sample corrections seeded")
+        else:
+            print(f"  Corrections already exist ({store.get_count()}), skipping seed")
+    except Exception as e:
+        print(f"  [WARN] Correction seeding skipped: {e}")
+
+    print("\nDone. Start the server with: run.bat")
 
 
 if __name__ == "__main__":

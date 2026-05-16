@@ -1,4 +1,6 @@
-# Python
+# ── Development-only: never committed ──────────────────────────────────────
+
+# Python build / cache
 __pycache__/
 *.py[cod]
 *$py.class
@@ -13,37 +15,52 @@ build/
 venv/
 env/
 
-# IDE
+# IDE / OS
 .vscode/
 .idea/
 *.swp
 *.swo
-
-# OS
 .DS_Store
 Thumbs.db
 
-# Data (too large for git, created at runtime)
-data/uploads/
-data/processed/
-data/corrections/
-data/palace/
-data/chromadb/
-data/pages/
-logs/
-
-# Model files (never committed — mounted as volume)
+# Model weights — huge, mounted as a volume, never in git
 *.gguf
 
-# Environment
+# Secrets / local env
 .env
 .env.local
 
-# Claude Code (development-only)
+# Claude Code / internal dev notes (not part of the submission)
 .claude/
+CLAUDE.md
+HANDOFF.md
 NEXT_SESSION.md
+.mcp.json
 
 # Test artifacts
 .pytest_cache/
 .coverage
 htmlcov/
+
+# Logs & transient experiment scratch (regenerated at runtime)
+logs/
+data/queue_state.json
+*.bak
+*.expbak
+
+# ── Regenerable runtime data: excluded to keep the repo lean ───────────────
+# Binary vector index — rebuilds automatically from data/processed/ chunks.
+data/chroma/
+data/chromadb/
+data/palace/
+
+# ── COMMITTED so the employer sees the fully-populated system ──────────────
+# Everything below is intentionally NOT ignored:
+#   data/processed/          extracted document JSON + generated drafts
+#   data/corrections/        operator correction history (learning input)
+#   data/pages/              rendered PDF page images (citation viewer)
+#   data/uploads/            uploaded source files (image-doc citation "eye")
+#   data/sample/             synthetic inputs + expected outputs (deliverable)
+#   data/learned_terms.json  learned vocabulary state
+#   config/learned_rules.yaml  rules learned from operator edits
+# (no ignore rules here — listed for reviewer clarity only)

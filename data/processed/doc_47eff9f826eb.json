@@ -1,0 +1,88 @@
+{
+  "id": "doc_47eff9f826eb",
+  "filename": "doc_5_document_checklist.pdf",
+  "upload_timestamp": "2026-05-16T01:32:52.686028+00:00",
+  "pages": [
+    {
+      "page_number": 1,
+      "text": "DOCUMENT CHECKLIST - COMMERCIAL REAL ESTATE ACQUISITION Transaction: ACQ-2024-PSL-0087 Property: 88 Westbrook Plaza Caldwell City TX 77036 Buyer: Westbrook Commercial Holdings LLC Seller: Alcott-Meridian Properties Inc. Escrow Officer: Howard V. Kincaid Jr. Expected Closing: November 30 2024 Total items: 32 Received: 16 Pending: 13 Missing: 2",
+      "confidence": 0.95,
+      "ocr_used": false,
+      "ocr_error": ""
+    }
+  ],
+  "structured_fields": {
+    "documents_present": [],
+    "documents_missing": [],
+    "documents_partial": [],
+    "verification": [],
+    "cross_references": {
+      "date_consistency": "Consistent executed Closing: November 30 2024)",
+      "party_consistency": "Consistent (Buyer: Westbrook Commercial holdings llc LLC, Seller: Alcott-Meridian Properties Inc.)",
+      "amount_consistency": ""
+    },
+    "_cascade_meta": {
+      "confidence_map": {
+        "documents_present": 0.0,
+        "documents_missing": 0.3,
+        "documents_partial": 0.0,
+        "verification": 0.3,
+        "cross_references.date_consistency": 0.782,
+        "cross_references.party_consistency": 0.835,
+        "cross_references.amount_consistency": 0.3
+      },
+      "resolution_methods": {
+        "documents_present": "manual_review",
+        "documents_missing": "manual_review",
+        "documents_partial": "manual_review",
+        "verification": "manual_review",
+        "cross_references.date_consistency": "source_anchor",
+        "cross_references.party_consistency": "source_anchor",
+        "cross_references.amount_consistency": "manual_review"
+      },
+      "corpus_corrections": [
+        {
+          "field": "verification",
+          "original": "\"notarized\":",
+          "corrected": "notarized",
+          "confidence": 0.8571428571428571
+        },
+        {
+          "field": "cross_references.date_consistency",
+          "original": "(Expected",
+          "corrected": "executed",
+          "confidence": 0.8235294117647058
+        },
+        {
+          "field": "cross_references.party_consistency",
+          "original": "Holdings",
+          "corrected": "holdings llc",
+          "confidence": 0.8
+        }
+      ],
+      "unresolved_fields": [
+        "documents_present",
+        "documents_missing",
+        "documents_partial",
+        "verification",
+        "cross_references.amount_consistency"
+      ],
+      "passes_executed": 3
+    }
+  },
+  "chunks": [
+    {
+      "id": "chunk_bdbbf7f8",
+      "text": "DOCUMENT CHECKLIST - COMMERCIAL REAL ESTATE ACQUISITION Transaction: ACQ-2024-PSL-0087 Property: 88 Westbrook Plaza Caldwell City TX 77036 Buyer: Westbrook Commercial Holdings LLC Seller: Alcott-Meridian Properties Inc. Escrow Officer: Howard V. Kincaid Jr. Expected Closing: November 30 2024 Total items: 32 Received: 16 Pending: 13 Missing: 2",
+      "document_id": "doc_47eff9f826eb",
+      "page_number": 1,
+      "char_start": 0,
+      "char_end": 344
+    }
+  ],
+  "full_text": "DOCUMENT CHECKLIST - COMMERCIAL REAL ESTATE ACQUISITION Transaction: ACQ-2024-PSL-0087 Property: 88 Westbrook Plaza Caldwell City TX 77036 Buyer: Westbrook Commercial Holdings LLC Seller: Alcott-Meridian Properties Inc. Escrow Officer: Howard V. Kincaid Jr. Expected Closing: November 30 2024 Total items: 32 Received: 16 Pending: 13 Missing: 2",
+  "ocr_used": false,
+  "confidence": 0.95,
+  "page_count": 1,
+  "processing_errors": []
+}

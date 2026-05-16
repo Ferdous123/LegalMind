@@ -547,6 +547,17 @@ body {
   to { transform: rotate(360deg); }
 }
 
+.spinner-sm {
+  display: inline-block;
+  width: 0.7rem;
+  height: 0.7rem;
+  border: 1.5px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  vertical-align: middle;
+}
+
 .btn-loading {
   position: relative;
   color: transparent !important;

@@ -123,7 +123,24 @@ class DocumentIngester:
         doc.pages = [asdict(p) for p in pages]
         doc.page_count = len(pages)
         doc.ocr_used = any(p.ocr_used for p in pages)
-        doc.full_text = "\n\n".join(p.text for p in pages if p.text)
+
+        # Build full_text AND record where each page lands inside it, so the
+        # chunker can stamp chunks with their true source page (needed for
+        # the citation -> correct page-image link on multi-page PDFs). The
+        # join separator below MUST match the one used to build full_text.
+        _SEP = "\n\n"
+        page_spans: list[tuple[int, int, int]] = []
+        parts: list[str] = []
+        offset = 0
+        for p in pages:
+            if not p.text:
+                continue
+            start = offset
+            end = start + len(p.text)
+            page_spans.append((p.page_number, start, end))
+            parts.append(p.text)
+            offset = end + len(_SEP)
+        doc.full_text = _SEP.join(parts)
 
         # Step 2: Calculate overall confidence
         if pages:
@@ -137,8 +154,9 @@ class DocumentIngester:
             doc.processing_errors.append(f"Structuring failed: {e}")
             doc.structured_fields = {}
 
-        # Step 4: Chunk for retrieval
-        chunks = self._chunker.chunk(doc.full_text, doc.id)
+        # Step 4: Chunk for retrieval (page-aware so citations map to the
+        # real source page, not a char-offset estimate)
+        chunks = self._chunker.chunk(doc.full_text, doc.id, page_spans=page_spans)
         doc.chunks = [asdict(c) for c in chunks]
 
         # Step 5: Save

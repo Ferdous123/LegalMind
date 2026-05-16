@@ -1,0 +1,1060 @@
+{
+  "id": "doc_38484b97ed41",
+  "filename": "img_3_level_2.png",
+  "upload_timestamp": "2026-05-16T02:45:32.876849+00:00",
+  "pages": [
+    {
+      "page_number": 1,
+      "text": ": GENERAL WARRANTY DEED\n\nSTATE OF THORNFIELD\nCOUNTY OF CALDWELL\n\nKNOW ALL PERSONS BY THESE PRESENTS:\n\nThat BERTRAM H. LOCKWOOD and DOROTHY M. LOCKWOOD, husband and wife\nDOLLARS ($420,000.00) in hand paid by FIDELITY MERIDIAN TRUST, a Thornfield\nstatutory trust (\"Grantee\"), the receipt and sufficiency of which are hereby\nacknowledged, do hereby GRANT, BARGAIN, SELL and CONVEY unto Grantee, and\nGrantee's successors and assigns forever, all that certain lot or parcel of land\nsituated in Caldwell County, Thornfield, described as follows:\n\nLEGAL DESCRIPTION:\n\nLot 14, Block 7, of CEDARBROOK ESTATES, SECOND FILING, a subdivision in Caldwell\nCounty, Thornfield, according to the Plat thereof recorded in Volume 82, Page 341,\nof the Plat Records of Caldwell County, Thornfield.\n\nStreet Address: 1407 Cedarbrook Lane, Caldwell City, TX 77031\n\nCHAIN OF TITLE SUMMARY (attached as Exhibit A):\n\n1. Original Grant: The State of Thornfield granted the parcel to Elias Monroe\nWhitfield by Patent No. T-1188, dated September 12, 1901, recorded in\nVolume 2, Page 88, Deed Records of Caldwell County.\n\n2. Whitfield to Carmichael: Elias Monroe Whitfield conveyed to Robert J.\nCarmichael by Warranty Deed dated March 3, 1924, recorded in Volume 14,\nPage 212, Deed Records of Caldwell County.\n\n3. Carmichael to Voss Development Corp.: Robert J. Carmichael and Edna L.\nCarmichael conveyed to Voss Development Corporation by Warranty Deed dated\nJune 18, 1952, recorded in Volume 31, Page 88, Deed Records of Caldwell County.\n\n4. Voss Development Corp. to Lockwood (Original): Voss Development Corporation\nconveyed Lot 14, Block 7, Cedarbrook Estates Second Filing, to Harold G.\nLockwood by Warranty Deed dated November 9, 1967, recorded in Volume 48,\nPage 117, Deed Records of Caldwell County.\n\n5. Lockwood (Original) to Lockwood (Current Grantors): Harold G. Lockwood\ndevised the property to Bertram H. Lockwood and Dorothy M. Lockwood by\nLast Will and Testament, probated in Caldwell County Probate Court Case\nNo. P-1989-0441, Order dated February 2, 1990, recorded in Volume 71,\nPage 209, Deed Records of Caldwell County.\n\nENCUMBRANCES AND EXCEPTIONS:\n\nThis conveyance is made subject to the following:\n1. A Deed of Trust lien in favour of Caldwell Savings Bank recorded in Volume\n89, Page 34, Deed of Trust Records of Caldwell County, dated January 15, 2008,\nin the original principal amount of $185,000.00 (to be released at closing).\n2. A ten-foot utility easement along the western boundary of the property,\nrecorded in Volume 52, Page 17, Easement Records of Caldwell County.\n3. Restrictive covenants applicable to Cedarbrook Estates Second Filing, recorded\nin Volume 82, Page 344, Deed Records of Caldwell County.\n4. Ad valorem taxes for the current year, not yet due and payable.\n\nTO HAVE AND TO HOLD the above-described premises, together with all and singular\nthe appurtenances thereunto belonging or in anywise appertaining, to the only\nproper use, benefit, and behoof of the said Grantee, Grantee's successors and\nassigns forever.",
+      "confidence": 0.9,
+      "ocr_used": true,
+      "ocr_error": ""
+    }
+  ],
+  "structured_fields": {
+    "property_description": {
+      "legal_description": "lot 14, Block 7, of CEDARBROOK ESTATES, SECOND FILING, a subdivision in Caldwell County, thornfield according to the plat thereof recorded in Volume 82, Page 341, of the plat recorded of Caldwell County, thornfield",
+      "address": "1407 Cedarbrook Lane, Caldwell City, tax 77031",
+      "parcel_number": "lot 14, Block 7",
+      "jurisdiction": "Caldwell County, thornfield"
+    },
+    "chain_of_title": "[{\"grantor\": \"The State of Thornfield\", \"grantee\": \"Elias Monroe Whitfield\", \"date\": \"September 12, 1901\", \"instrument_type\": \"Patent\", \"recording_info\": \"Volume 2, Page 88, Deed Records of Caldwell County\", \"source_span\": \"1. Original Grant: The State of Thornfield granted the parcel to Elias Monroe Whitfield by Patent No. T-1188, dated September 12, 1901, recorded in Volume 2, Page 88, Deed Records of Caldwell County.\"}, {\"grantor\": \"Elias Monroe Whitfield\", \"grantee\": \"Robert J. Carmichael\", \"date\": \"March 3, 1924\", \"instrument_type\": \"Warranty Deed\", \"recording_info\": \"Volume 14, Page 212, Deed Records of Caldwell County\", \"source_span\": \"2. Whitfield to Carmichael: Elias Monroe Whitfield conveyed to Robert J. Carmichael by Warranty Deed dated March 3, 1924, recorded in Volume 14, Page 212, Deed Records of Caldwell County.\"}, {\"grantor\": \"Robert J. Carmichael and Edna L. Carmichael\", \"grantee\": \"Voss Development Corporation\", \"date\": \"June 18, 1952\", \"instrument_type\": \"Warranty Deed\", \"recording_info\": \"Volume 31, Page 88, Deed Records of Caldwell County\", \"source_span\": \"3. Carmichael to Voss Development Corp.: Robert J. Carmichael and Edna L. Carmichael conveyed to Voss Development Corporation by Warranty Deed dated June 18, 1952, recorded in Volume 31, Page 88, Deed Records of Caldwell County.\"}, {\"grantor\": \"Voss Development Corporation\", \"grantee\": \"Harold G. Lockwood\", \"date\": \"November 9, 1967\", \"instrument_type\": \"Warranty Deed\", \"recording_info\": \"Volume 48, Page 117, Deed Records of Caldwell County\", \"source_span\": \"4. Voss Development Corp. to Lockwood (Original): Voss Development Corporation conveyed Lot 14, Block 7, Cedarbrook Estates Second Filing, to Harold G. Lockwood by Warranty Deed dated November 9, 1967, recorded in Volume 48, Page 117, Deed Records of Caldwell County.\"}, {\"grantor\": \"Harold G. Lockwood\", \"grantee\": \"Bertram H. Lockwood and Dorothy M. Lockwood\", \"date\": \"February 2, 1990\", \"instrument_type\": \"Last Will and Testament\", \"recording_info\": \"Volume 71, Page 209, Deed Records of Caldwell County\", \"source_span\": \"5. Lockwood (Original) to Lockwood (Current Grantors): Harold G. Lockwood devised the property to Bertram H. Lockwood and Dorothy M. Lockwood by Last Will and Testament, probated in Caldwell County Probate Court Case No. P-1989-0441, Order dated February 2, 1990, recorded in Volume 71, Page 209, Deed Records of Caldwell County.\"}]",
+    "encumbrances": "[{\"type\": deed of trustee lien \"holder\": \"Caldwell Savings Bank\", \"amount\": \"$185,000.00\", \"date\": \"January 15, 2008\", \"status\": \"to be released at closing\", \"source_span\": \"1. A deed of trustee lien in favour of Caldwell Savings Bank recorded in Volume 89, Page 34, deed of trustee recorded of Caldwell County, dated January 15, 2008, in the original principal amount of $185,000.00 (to be released at closing).\"}, {\"type\": \"utility easement \"holder\": \"\", \"amount\": \"\", \"date\": recorded in Volume 52, Page 17, easement recorded of Caldwell County\", \"status\": \"\", \"source_span\": \"2. A ten-foot utility easement along the western boundary of the property recorded in Volume 52, Page 17, easement recorded of Caldwell County.\"}, {\"type\": \"restrictive covenant \"holder\": \"\", \"amount\": \"\", \"date\": recorded in Volume 82, Page 344, deed recorded of Caldwell County\", \"status\": \"\", \"source_span\": \"3. Restrictive covenant applicable to Cedarbrook Estates Second Filing, recorded in Volume 82, Page 344, deed recorded of Caldwell County.\"}, {\"type\": \"ad valorem taxes\", \"holder\": \"\", \"amount\": \"\", \"date\": \"\", \"status\": \"not yet due and payable\", \"source_span\": \"4. Ad valorem taxes for the current year, not yet due and payable.\"}]",
+    "defects": [],
+    "current_owner": {
+      "name": "BERTRAM H. LOCKWOOD and DOROTHY M. LOCKWOOD",
+      "source_span": "That BERTRAM H. LOCKWOOD and DOROTHY M. LOCKWOOD, husband and wife"
+    },
+    "_cascade_meta": {
+      "confidence_map": {
+        "property_description.legal_description": 0.9,
+        "property_description.address": 0.9,
+        "property_description.parcel_number": 0.962,
+        "property_description.jurisdiction": 0.9,
+        "chain_of_title": 0.953,
+        "encumbrances": 0.947,
+        "defects": 0.3,
+        "current_owner.name": 0.9,
+        "current_owner.source_span": 0.9
+      },
+      "resolution_methods": {
+        "property_description.legal_description": "majority_vote",
+        "property_description.address": "majority_vote",
+        "property_description.parcel_number": "source_anchor",
+        "property_description.jurisdiction": "majority_vote",
+        "chain_of_title": "source_anchor",
+        "encumbrances": "source_anchor",
+        "defects": "manual_review",
+        "current_owner.name": "majority_vote",
+        "current_owner.source_span": "majority_vote"
+      },
+      "corpus_corrections": [
+        {
+          "field": "property_description.legal_description",
+          "original": "Lot",
+          "corrected": "lot",
+          "confidence": 1.0
+        },
+        {
+          "field": "property_description.legal_description",
+          "original": "Thornfield,",
+          "corrected": "thornfield",
+          "confidence": 0.9523809523809523
+        },
+        {
+          "field": "property_description.legal_description",
+          "original": "Plat",
+          "corrected": "plat",
+          "confidence": 1.0
+        },
+        {
+          "field": "property_description.legal_description",
+          "original": "Plat",
+          "corrected": "plat",
+          "confidence": 1.0
+        },
+        {
+          "field": "property_description.legal_description",
+          "original": "Records",
+          "corrected": "recorded",
+          "confidence": 0.8
+        },
+        {
+          "field": "property_description.legal_description",
+          "original": "Thornfield.",
+          "corrected": "thornfield",
+          "confidence": 0.9523809523809523
+        },
+        {
+          "field": "property_description.address",
+          "original": "TX",
+          "corrected": "tax",
+          "confidence": 0.8
+        },
+        {
+          "field": "property_description.jurisdiction",
+          "original": "Thornfield",
+          "corrected": "thornfield",
+          "confidence": 1.0
+        },
+        {
+          "field": "chain_of_title",
+          "original": "Thornfield\",",
+          "corrected": "thornfield",
+          "confidence": 0.9090909090909091
+        },
+        {
+          "field": "chain_of_title",
+          "original": "\"grantee\":",
+          "corrected": "grantee",
+          "confidence": 0.8235294117647058
+        },
+        {
+          "field": "chain_of_title",
+          "original": "Deed",
+          "corrected": "deed",
+          "confidence": 1.0
+        },
+        {
+          "field": "chain_of_title",
+          "original": "Records",
+          "corrected": "recorded",
+          "confidence": 0.8
+        },
+        {
+          "field": "chain_of_title",
+          "original": "Thornfield",
+          "corrected": "thornfield",
+          "confidence": 1.0
+        },
+        {
+          "field": "chain_of_title",
+          "original": "Deed",
+          "corrected": "deed",
+          "confidence": 1.0
+        },
+        {
+          "field": "chain_of_title",
+          "original": "Records",
+          "corrected": "recorded",
+          "confidence": 0.8
+        },
+        {
+          "field": "chain_of_title",
+          "original": "\"grantee\":",
+          "corrected": "grantee",
+          "confidence": 0.8235294117647058
+        },
+        {
+          "field": "chain_of_title",
+          "original": "\"March",
+          "corrected": "march",
+          "confidence": 0.9090909090909091
+        },
+        {
+          "field": "chain_of_title",
+          "original": "\"Warranty",
+          "corrected": "warrant",
+          "confidence": 0.875
+        },
+        {
+          "field": "chain_of_title",
+          "original": "Deed\",",
+          "corrected": "deed",
+          "confidence": 0.8
+        },
+        {
+          "field": "chain_of_title",
+          "original": "Deed",
+          "corrected": "deed",
+          "confidence": 1.0
+        },
+        {
+          "field": "chain_of_title",
+          "original": "Records",
+          "corrected": "recorded",
+          "confidence": 0.8
+        },
+        {
+          "field": "chain_of_title",
+          "original": "Warranty",
+          "corrected": "warrant",
+          "confidence": 0.9333333333333333
+        },
+        {
+          "field": "chain_of_title",
+          "original": "Deed",
+          "corrected": "deed",
+          "confidence": 1.0
+        },
+        {
+          "field": "chain_of_title",
+          "original": "March",
+          "corrected": "march",
+          "confidence": 1.0
+        },
+        {
+          "field": "chain_of_title",
+          "original": "Deed",
+          "corrected": "deed",
+          "confidence": 1.0
+        },
+        {
+          "field": "chain_of_title",
+          "original": "Records",
+          "corrected": "recorded",
+          "confidence": 0.8
+        },
+        {
+          "field": "chain_of_title",
+          "original": "\"grantee\":",
+          "corrected": "grantee",
+          "confidence": 0.8235294117647058
+        },
+        {
+          "field": "chain_of_title",
+          "original": "\"Warranty",
+          "corrected": "warrant",
+          "confidence": 0.875
+        },
+        {
+          "field": "chain_of_title",
+          "original": "Deed\",",
+          "corrected": "deed",
+          "confidence": 0.8
+        },
+        {
+          "field": "chain_of_title",
+          "original": "Deed",
+          "corrected": "deed",
+          "confidence": 1.0
+        },
+        {
+          "field": "chain_of_title",
+          "original": "Records",
+          "corrected": "recorded",
+          "confidence": 0.8
+        },
+        {
+          "field": "chain_of_title",
+          "original": "Warranty",
+          "corrected": "warrant",
+          "confidence": 0.9333333333333333
+        },
+        {
+          "field": "chain_of_title",
+          "original": "Deed",
+          "corrected": "deed",
+          "confidence": 1.0
+        },
+        {
+          "field": "chain_of_title",
+          "original": "Deed",
+          "corrected": "deed",
+          "confidence": 1.0
+        },
+        {
+          "field": "chain_of_title",
+          "original": "Records",
+          "corrected": "recorded",
+          "confidence": 0.8
+        },
+        {
+          "field": "chain_of_title",
+          "original": "\"grantee\":",
+          "corrected": "grantee",
+          "confidence": 0.8235294117647058
+        },
+        {
+          "field": "chain_of_title",
+          "original": "\"Warranty",
+          "corrected": "warrant",
+          "confidence": 0.875
+        },
+        {
+          "field": "chain_of_title",
+          "original": "Deed\",",
+          "corrected": "deed",
+          "confidence": 0.8
+        },
+        {
+          "field": "chain_of_title",
+          "original": "Deed",
+          "corrected": "deed",
+          "confidence": 1.0
+        },
+        {
+          "field": "chain_of_title",
+          "original": "Records",
+          "corrected": "recorded",
+          "confidence": 0.8
+        },
+        {
+          "field": "chain_of_title",
+          "original": "Lot",
+          "corrected": "lot",
+          "confidence": 1.0
+        },
+        {
+          "field": "chain_of_title",
+          "original": "Warranty",
+          "corrected": "warrant",
+          "confidence": 0.9333333333333333
+        },
+        {
+          "field": "chain_of_title",
+          "original": "Deed",
+          "corrected": "deed",
+          "confidence": 1.0
+        },
+        {
+          "field": "chain_of_title",
+          "original": "Deed",
+          "corrected": "deed",
+          "confidence": 1.0
+        },
+        {
+          "field": "chain_of_title",
+          "original": "Records",
+          "corrected": "recorded",
+          "confidence": 0.8
+        },
+        {
+          "field": "chain_of_title",
+          "original": "\"grantee\":",
+          "corrected": "grantee",
+          "confidence": 0.8235294117647058
+        },
+        {
+          "field": "chain_of_title",
+          "original": "\"February",
+          "corrected": "february",
+          "confidence": 0.9411764705882353
+        },
+        {
+          "field": "chain_of_title",
+          "original": "Will",
+          "corrected": "will",
+          "confidence": 1.0
+        },
+        {
+          "field": "chain_of_title",
+          "original": "Testament\",",
+          "corrected": "testament",
+          "confidence": 0.9
+        },
+        {
+          "field": "chain_of_title",
+          "original": "Deed",
+          "corrected": "deed",
+          "confidence": 1.0
+        },
+        {
+          "field": "chain_of_title",
+          "original": "Records",
+          "corrected": "recorded",
+          "confidence": 0.8
+        },
+        {
+          "field": "chain_of_title",
+          "original": "Grantors):",
+          "corrected": "grantor",
+          "confidence": 0.8235294117647058
+        },
+        {
+          "field": "chain_of_title",
+          "original": "devised",
+          "corrected": "devisee",
+          "confidence": 0.8571428571428571
+        },
+        {
+          "field": "chain_of_title",
+          "original": "Will",
+          "corrected": "will",
+          "confidence": 1.0
+        },
+        {
+          "field": "chain_of_title",
+          "original": "Testament,",
+          "corrected": "testament",
+          "confidence": 0.9473684210526315
+        },
+        {
+          "field": "chain_of_title",
+          "original": "Order",
+          "corrected": "order",
+          "confidence": 1.0
+        },
+        {
+          "field": "chain_of_title",
+          "original": "February",
+          "corrected": "february",
+          "confidence": 1.0
+        },
+        {
+          "field": "chain_of_title",
+          "original": "Deed",
+          "corrected": "deed",
+          "confidence": 1.0
+        },
+        {
+          "field": "chain_of_title",
+          "original": "Records",
+          "corrected": "recorded",
+          "confidence": 0.8
+        },
+        {
+          "field": "encumbrances",
+          "original": "\"Deed",
+          "corrected": "deed",
+          "confidence": 0.8888888888888888
+        },
+        {
+          "field": "encumbrances",
+          "original": "Trust",
+          "corrected": "trustee",
+          "confidence": 0.8333333333333334
+        },
+        {
+          "field": "encumbrances",
+          "original": "lien\",",
+          "corrected": "lien",
+          "confidence": 0.8
+        },
+        {
+          "field": "encumbrances",
+          "original": "Deed",
+          "corrected": "deed",
+          "confidence": 1.0
+        },
+        {
+          "field": "encumbrances",
+          "original": "Trust",
+          "corrected": "trustee",
+          "confidence": 0.8333333333333334
+        },
+        {
+          "field": "encumbrances",
+          "original": "Deed",
+          "corrected": "deed",
+          "confidence": 1.0
+        },
+        {
+          "field": "encumbrances",
+          "original": "Trust",
+          "corrected": "trustee",
+          "confidence": 0.8333333333333334
+        },
+        {
+          "field": "encumbrances",
+          "original": "Records",
+          "corrected": "recorded",
+          "confidence": 0.8
+        },
+        {
+          "field": "encumbrances",
+          "original": "easement\",",
+          "corrected": "easement",
+          "confidence": 0.8888888888888888
+        },
+        {
+          "field": "encumbrances",
+          "original": "\"recorded",
+          "corrected": "recorded",
+          "confidence": 0.9411764705882353
+        },
+        {
+          "field": "encumbrances",
+          "original": "Easement",
+          "corrected": "easement",
+          "confidence": 1.0
+        },
+        {
+          "field": "encumbrances",
+          "original": "Records",
+          "corrected": "recorded",
+          "confidence": 0.8
+        },
+        {
+          "field": "encumbrances",
+          "original": "property,",
+          "corrected": "property",
+          "confidence": 0.9411764705882353
+        },
+        {
+          "field": "encumbrances",
+          "original": "Easement",
+          "corrected": "easement",
+          "confidence": 1.0
+        },
+        {
+          "field": "encumbrances",
+          "original": "Records",
+          "corrected": "recorded",
+          "confidence": 0.8
+        },
+        {
+          "field": "encumbrances",
+          "original": "covenants\",",
+          "corrected": "covenant",
+          "confidence": 0.8421052631578947
+        },
+        {
+          "field": "encumbrances",
+          "original": "\"recorded",
+          "corrected": "recorded",
+          "confidence": 0.9411764705882353
+        },
+        {
+          "field": "encumbrances",
+          "original": "Deed",
+          "corrected": "deed",
+          "confidence": 1.0
+        },
+        {
+          "field": "encumbrances",
+          "original": "Records",
+          "corrected": "recorded",
+          "confidence": 0.8
+        },
+        {
+          "field": "encumbrances",
+          "original": "covenants",
+          "corrected": "covenant",
+          "confidence": 0.9411764705882353
+        },
+        {
+          "field": "encumbrances",
+          "original": "Deed",
+          "corrected": "deed",
+          "confidence": 1.0
+        },
+        {
+          "field": "encumbrances",
+          "original": "Records",
+          "corrected": "recorded",
+          "confidence": 0.8
+        },
+        {
+          "field": "property_description.legal_description",
+          "original": "Lot",
+          "corrected": "lot",
+          "confidence": 1.0
+        },
+        {
+          "field": "property_description.legal_description",
+          "original": "Thornfield,",
+          "corrected": "thornfield",
+          "confidence": 0.9523809523809523
+        },
+        {
+          "field": "property_description.legal_description",
+          "original": "Plat",
+          "corrected": "plat",
+          "confidence": 1.0
+        },
+        {
+          "field": "property_description.legal_description",
+          "original": "Plat",
+          "corrected": "plat",
+          "confidence": 1.0
+        },
+        {
+          "field": "property_description.legal_description",
+          "original": "Records",
+          "corrected": "recorded",
+          "confidence": 0.8
+        },
+        {
+          "field": "property_description.legal_description",
+          "original": "Thornfield.",
+          "corrected": "thornfield",
+          "confidence": 0.9523809523809523
+        },
+        {
+          "field": "property_description.address",
+          "original": "TX",
+          "corrected": "tax",
+          "confidence": 0.8
+        },
+        {
+          "field": "property_description.parcel_number",
+          "original": "Lot",
+          "corrected": "lot",
+          "confidence": 1.0
+        },
+        {
+          "field": "property_description.jurisdiction",
+          "original": "Thornfield",
+          "corrected": "thornfield",
+          "confidence": 1.0
+        },
+        {
+          "field": "chain_of_title",
+          "original": "Thornfield\",",
+          "corrected": "thornfield",
+          "confidence": 0.9090909090909091
+        },
+        {
+          "field": "chain_of_title",
+          "original": "\"grantee\":",
+          "corrected": "grantee",
+          "confidence": 0.8235294117647058
+        },
+        {
+          "field": "chain_of_title",
+          "original": "Deed",
+          "corrected": "deed",
+          "confidence": 1.0
+        },
+        {
+          "field": "chain_of_title",
+          "original": "Records",
+          "corrected": "recorded",
+          "confidence": 0.8
+        },
+        {
+          "field": "chain_of_title",
+          "original": "Thornfield",
+          "corrected": "thornfield",
+          "confidence": 1.0
+        },
+        {
+          "field": "chain_of_title",
+          "original": "Deed",
+          "corrected": "deed",
+          "confidence": 1.0
+        },
+        {
+          "field": "chain_of_title",
+          "original": "Records",
+          "corrected": "recorded",
+          "confidence": 0.8
+        },
+        {
+          "field": "chain_of_title",
+          "original": "\"grantee\":",
+          "corrected": "grantee",
+          "confidence": 0.8235294117647058
+        },
+        {
+          "field": "chain_of_title",
+          "original": "\"March",
+          "corrected": "march",
+          "confidence": 0.9090909090909091
+        },
+        {
+          "field": "chain_of_title",
+          "original": "\"Warranty",
+          "corrected": "warrant",
+          "confidence": 0.875
+        },
+        {
+          "field": "chain_of_title",
+          "original": "Deed\",",
+          "corrected": "deed",
+          "confidence": 0.8
+        },
+        {
+          "field": "chain_of_title",
+          "original": "Deed",
+          "corrected": "deed",
+          "confidence": 1.0
+        },
+        {
+          "field": "chain_of_title",
+          "original": "Records",
+          "corrected": "recorded",
+          "confidence": 0.8
+        },
+        {
+          "field": "chain_of_title",
+          "original": "Warranty",
+          "corrected": "warrant",
+          "confidence": 0.9333333333333333
+        },
+        {
+          "field": "chain_of_title",
+          "original": "Deed",
+          "corrected": "deed",
+          "confidence": 1.0
+        },
+        {
+          "field": "chain_of_title",
+          "original": "March",
+          "corrected": "march",
+          "confidence": 1.0
+        },
+        {
+          "field": "chain_of_title",
+          "original": "Deed",
+          "corrected": "deed",
+          "confidence": 1.0
+        },
+        {
+          "field": "chain_of_title",
+          "original": "Records",
+          "corrected": "recorded",
+          "confidence": 0.8
+        },
+        {
+          "field": "chain_of_title",
+          "original": "\"grantee\":",
+          "corrected": "grantee",
+          "confidence": 0.8235294117647058
+        },
+        {
+          "field": "chain_of_title",
+          "original": "\"Warranty",
+          "corrected": "warrant",
+          "confidence": 0.875
+        },
+        {
+          "field": "chain_of_title",
+          "original": "Deed\",",
+          "corrected": "deed",
+          "confidence": 0.8
+        },
+        {
+          "field": "chain_of_title",
+          "original": "Deed",
+          "corrected": "deed",
+          "confidence": 1.0
+        },
+        {
+          "field": "chain_of_title",
+          "original": "Records",
+          "corrected": "recorded",
+          "confidence": 0.8
+        },
+        {
+          "field": "chain_of_title",
+          "original": "Warranty",
+          "corrected": "warrant",
+          "confidence": 0.9333333333333333
+        },
+        {
+          "field": "chain_of_title",
+          "original": "Deed",
+          "corrected": "deed",
+          "confidence": 1.0
+        },
+        {
+          "field": "chain_of_title",
+          "original": "Deed",
+          "corrected": "deed",
+          "confidence": 1.0
+        },
+        {
+          "field": "chain_of_title",
+          "original": "Records",
+          "corrected": "recorded",
+          "confidence": 0.8
+        },
+        {
+          "field": "chain_of_title",
+          "original": "\"grantee\":",
+          "corrected": "grantee",
+          "confidence": 0.8235294117647058
+        },
+        {
+          "field": "chain_of_title",
+          "original": "\"Warranty",
+          "corrected": "warrant",
+          "confidence": 0.875
+        },
+        {
+          "field": "chain_of_title",
+          "original": "Deed\",",
+          "corrected": "deed",
+          "confidence": 0.8
+        },
+        {
+          "field": "chain_of_title",
+          "original": "Deed",
+          "corrected": "deed",
+          "confidence": 1.0
+        },
+        {
+          "field": "chain_of_title",
+          "original": "Records",
+          "corrected": "recorded",
+          "confidence": 0.8
+        },
+        {
+          "field": "chain_of_title",
+          "original": "Lot",
+          "corrected": "lot",
+          "confidence": 1.0
+        },
+        {
+          "field": "chain_of_title",
+          "original": "Warranty",
+          "corrected": "warrant",
+          "confidence": 0.9333333333333333
+        },
+        {
+          "field": "chain_of_title",
+          "original": "Deed",
+          "corrected": "deed",
+          "confidence": 1.0
+        },
+        {
+          "field": "chain_of_title",
+          "original": "Deed",
+          "corrected": "deed",
+          "confidence": 1.0
+        },
+        {
+          "field": "chain_of_title",
+          "original": "Records",
+          "corrected": "recorded",
+          "confidence": 0.8
+        },
+        {
+          "field": "chain_of_title",
+          "original": "\"grantee\":",
+          "corrected": "grantee",
+          "confidence": 0.8235294117647058
+        },
+        {
+          "field": "chain_of_title",
+          "original": "\"February",
+          "corrected": "february",
+          "confidence": 0.9411764705882353
+        },
+        {
+          "field": "chain_of_title",
+          "original": "Will",
+          "corrected": "will",
+          "confidence": 1.0
+        },
+        {
+          "field": "chain_of_title",
+          "original": "Testament\",",
+          "corrected": "testament",
+          "confidence": 0.9
+        },
+        {
+          "field": "chain_of_title",
+          "original": "Deed",
+          "corrected": "deed",
+          "confidence": 1.0
+        },
+        {
+          "field": "chain_of_title",
+          "original": "Records",
+          "corrected": "recorded",
+          "confidence": 0.8
+        },
+        {
+          "field": "chain_of_title",
+          "original": "Grantors):",
+          "corrected": "grantor",
+          "confidence": 0.8235294117647058
+        },
+        {
+          "field": "chain_of_title",
+          "original": "devised",
+          "corrected": "devisee",
+          "confidence": 0.8571428571428571
+        },
+        {
+          "field": "chain_of_title",
+          "original": "Will",
+          "corrected": "will",
+          "confidence": 1.0
+        },
+        {
+          "field": "chain_of_title",
+          "original": "Testament,",
+          "corrected": "testament",
+          "confidence": 0.9473684210526315
+        },
+        {
+          "field": "chain_of_title",
+          "original": "Order",
+          "corrected": "order",
+          "confidence": 1.0
+        },
+        {
+          "field": "chain_of_title",
+          "original": "February",
+          "corrected": "february",
+          "confidence": 1.0
+        },
+        {
+          "field": "chain_of_title",
+          "original": "Deed",
+          "corrected": "deed",
+          "confidence": 1.0
+        },
+        {
+          "field": "chain_of_title",
+          "original": "Records",
+          "corrected": "recorded",
+          "confidence": 0.8
+        },
+        {
+          "field": "encumbrances",
+          "original": "\"Deed",
+          "corrected": "deed",
+          "confidence": 0.8888888888888888
+        },
+        {
+          "field": "encumbrances",
+          "original": "Trust",
+          "corrected": "trustee",
+          "confidence": 0.8333333333333334
+        },
+        {
+          "field": "encumbrances",
+          "original": "lien\",",
+          "corrected": "lien",
+          "confidence": 0.8
+        },
+        {
+          "field": "encumbrances",
+          "original": "Deed",
+          "corrected": "deed",
+          "confidence": 1.0
+        },
+        {
+          "field": "encumbrances",
+          "original": "Trust",
+          "corrected": "trustee",
+          "confidence": 0.8333333333333334
+        },
+        {
+          "field": "encumbrances",
+          "original": "Deed",
+          "corrected": "deed",
+          "confidence": 1.0
+        },
+        {
+          "field": "encumbrances",
+          "original": "Trust",
+          "corrected": "trustee",
+          "confidence": 0.8333333333333334
+        },
+        {
+          "field": "encumbrances",
+          "original": "Records",
+          "corrected": "recorded",
+          "confidence": 0.8
+        },
+        {
+          "field": "encumbrances",
+          "original": "easement\",",
+          "corrected": "easement",
+          "confidence": 0.8888888888888888
+        },
+        {
+          "field": "encumbrances",
+          "original": "property,",
+          "corrected": "property",
+          "confidence": 0.9411764705882353
+        },
+        {
+          "field": "encumbrances",
+          "original": "Easement",
+          "corrected": "easement",
+          "confidence": 1.0
+        },
+        {
+          "field": "encumbrances",
+          "original": "Records",
+          "corrected": "recorded",
+          "confidence": 0.8
+        },
+        {
+          "field": "encumbrances",
+          "original": "covenants\",",
+          "corrected": "covenant",
+          "confidence": 0.8421052631578947
+        },
+        {
+          "field": "encumbrances",
+          "original": "covenants",
+          "corrected": "covenant",
+          "confidence": 0.9411764705882353
+        },
+        {
+          "field": "encumbrances",
+          "original": "Deed",
+          "corrected": "deed",
+          "confidence": 1.0
+        },
+        {
+          "field": "encumbrances",
+          "original": "Records",
+          "corrected": "recorded",
+          "confidence": 0.8
+        },
+        {
+          "field": "encumbrances",
+          "original": "\"Tax",
+          "corrected": "tax",
+          "confidence": 0.8571428571428571
+        },
+        {
+          "field": "defects",
+          "original": "stated",
+          "corrected": "stayed",
+          "confidence": 0.8333333333333334
+        },
+        {
+          "field": "current_owner.name",
+          "original": "TRUST",
+          "corrected": "trustee",
+          "confidence": 0.8333333333333334
+        },
+        {
+          "field": "current_owner.source_span",
+          "original": "Thornfield",
+          "corrected": "thornfield",
+          "confidence": 1.0
+        },
+        {
+          "field": "current_owner.source_span",
+          "original": "trust",
+          "corrected": "trustee",
+          "confidence": 0.8333333333333334
+        },
+        {
+          "field": "current_owner.source_span",
+          "original": "acknowledged,",
+          "corrected": "acknowledged",
+          "confidence": 0.96
+        }
+      ],
+      "unresolved_fields": [
+        "defects"
+      ],
+      "passes_executed": 3
+    }
+  },
+  "chunks": [
+    {
+      "id": "chunk_eb50e8ad",
+      "text": ": GENERAL WARRANTY DEED\n\nSTATE OF THORNFIELD\nCOUNTY OF CALDWELL\n\nKNOW ALL PERSONS BY THESE PRESENTS:\n\nThat BERTRAM H. LOCKWOOD and DOROTHY M. LOCKWOOD, husband and wife\nDOLLARS ($420,000.00) in hand paid by FIDELITY MERIDIAN TRUST, a Thornfield\nstatutory trust (\"Grantee\"), the receipt and sufficiency of which are hereby\nacknowledged, do hereby GRANT, BARGAIN, SELL and CONVEY unto Grantee, and\nGrantee's successors and assigns forever, all that certain lot or parcel of land\nsituated in Caldwell County, Thornfield, described as follows:\n\nLEGAL DESCRIPTION:\n\nLot 14, Block 7, of CEDARBROOK ESTATES, SECOND FILING, a subdivision in Caldwell\nCounty, Thornfield, according to the Plat thereof recorded in Volume 82, Page 341,\nof the Plat Records of Caldwell County, Thornfield.\n\nStreet Address: 1407 Cedarbrook Lane, Caldwell City, TX 77031\n\nCHAIN OF TITLE SUMMARY (attached as Exhibit A):\n\n1. Original Grant: The State of Thornfield granted the parcel to Elias Monroe\nWhitfield by Patent No. T-1188, dated September 12, 1901, recorded in\nVolume 2, Page 88, Deed Records of Caldwell County.\n\n2. Whitfield to Carmichael: Elias Monroe Whitfield conveyed to Robert J.\nCarmichael by Warranty Deed dated March 3, 1924, recorded in Volume 14,\nPage 212, Deed Records of Caldwell County.\n\n3. Carmichael to Voss Development Corp.: Robert J. Carmichael and Edna L.\nCarmichael conveyed to Voss Development Corporation by Warranty Deed dated\nJune 18, 1952, recorded in Volume 31, Page 88, Deed Records of Caldwell County.\n\n4. Voss Development Corp. to Lockwood (Original): Voss Development Corporation\nconveyed Lot 14, Block 7, Cedarbrook Estates Second Filing, to Harold G.\nLockwood by Warranty Deed dated November 9, 1967, recorded in Volume 48,\nPage 117, Deed Records of Caldwell County.",
+      "document_id": "doc_38484b97ed41",
+      "page_number": 1,
+      "char_start": 0,
+      "char_end": 1777
+    },
+    {
+      "id": "chunk_beeb9248",
+      "text": "opment Corp. to Lockwood (Original): Voss Development Corporation\nconveyed Lot 14, Block 7, Cedarbrook Estates Second Filing, to Harold G.\nLockwood by Warranty Deed dated November 9, 1967, recorded in Volume 48,\nPage 117, Deed Records of Caldwell County.\n\n5. Lockwood (Original) to Lockwood (Current Grantors): Harold G. Lockwood\ndevised the property to Bertram H. Lockwood and Dorothy M. Lockwood by\nLast Will and Testament, probated in Caldwell County Probate Court Case\nNo. P-1989-0441, Order dated February 2, 1990, recorded in Volume 71,\nPage 209, Deed Records of Caldwell County.\n\nENCUMBRANCES AND EXCEPTIONS:\n\nThis conveyance is made subject to the following:\n1. A Deed of Trust lien in favour of Caldwell Savings Bank recorded in Volume\n89, Page 34, Deed of Trust Records of Caldwell County, dated January 15, 2008,\nin the original principal amount of $185,000.00 (to be released at closing).\n2. A ten-foot utility easement along the western boundary of the property,\nrecorded in Volume 52, Page 17, Easement Records of Caldwell County.\n3. Restrictive covenants applicable to Cedarbrook Estates Second Filing, recorded\nin Volume 82, Page 344, Deed Records of Caldwell County.\n4. Ad valorem taxes for the current year, not yet due and payable.\n\nTO HAVE AND TO HOLD the above-described premises, together with all and singular\nthe appurtenances thereunto belonging or in anywise appertaining, to the only\nproper use, benefit, and behoof of the said Grantee, Grantee's successors and\nassigns forever.",
+      "document_id": "doc_38484b97ed41",
+      "page_number": 1,
+      "char_start": 1523,
+      "char_end": 3028
+    }
+  ],
+  "full_text": ": GENERAL WARRANTY DEED\n\nSTATE OF THORNFIELD\nCOUNTY OF CALDWELL\n\nKNOW ALL PERSONS BY THESE PRESENTS:\n\nThat BERTRAM H. LOCKWOOD and DOROTHY M. LOCKWOOD, husband and wife\nDOLLARS ($420,000.00) in hand paid by FIDELITY MERIDIAN TRUST, a Thornfield\nstatutory trust (\"Grantee\"), the receipt and sufficiency of which are hereby\nacknowledged, do hereby GRANT, BARGAIN, SELL and CONVEY unto Grantee, and\nGrantee's successors and assigns forever, all that certain lot or parcel of land\nsituated in Caldwell County, Thornfield, described as follows:\n\nLEGAL DESCRIPTION:\n\nLot 14, Block 7, of CEDARBROOK ESTATES, SECOND FILING, a subdivision in Caldwell\nCounty, Thornfield, according to the Plat thereof recorded in Volume 82, Page 341,\nof the Plat Records of Caldwell County, Thornfield.\n\nStreet Address: 1407 Cedarbrook Lane, Caldwell City, TX 77031\n\nCHAIN OF TITLE SUMMARY (attached as Exhibit A):\n\n1. Original Grant: The State of Thornfield granted the parcel to Elias Monroe\nWhitfield by Patent No. T-1188, dated September 12, 1901, recorded in\nVolume 2, Page 88, Deed Records of Caldwell County.\n\n2. Whitfield to Carmichael: Elias Monroe Whitfield conveyed to Robert J.\nCarmichael by Warranty Deed dated March 3, 1924, recorded in Volume 14,\nPage 212, Deed Records of Caldwell County.\n\n3. Carmichael to Voss Development Corp.: Robert J. Carmichael and Edna L.\nCarmichael conveyed to Voss Development Corporation by Warranty Deed dated\nJune 18, 1952, recorded in Volume 31, Page 88, Deed Records of Caldwell County.\n\n4. Voss Development Corp. to Lockwood (Original): Voss Development Corporation\nconveyed Lot 14, Block 7, Cedarbrook Estates Second Filing, to Harold G.\nLockwood by Warranty Deed dated November 9, 1967, recorded in Volume 48,\nPage 117, Deed Records of Caldwell County.\n\n5. Lockwood (Original) to Lockwood (Current Grantors): Harold G. Lockwood\ndevised the property to Bertram H. Lockwood and Dorothy M. Lockwood by\nLast Will and Testament, probated in Caldwell County Probate Court Case\nNo. P-1989-0441, Order dated February 2, 1990, recorded in Volume 71,\nPage 209, Deed Records of Caldwell County.\n\nENCUMBRANCES AND EXCEPTIONS:\n\nThis conveyance is made subject to the following:\n1. A Deed of Trust lien in favour of Caldwell Savings Bank recorded in Volume\n89, Page 34, Deed of Trust Records of Caldwell County, dated January 15, 2008,\nin the original principal amount of $185,000.00 (to be released at closing).\n2. A ten-foot utility easement along the western boundary of the property,\nrecorded in Volume 52, Page 17, Easement Records of Caldwell County.\n3. Restrictive covenants applicable to Cedarbrook Estates Second Filing, recorded\nin Volume 82, Page 344, Deed Records of Caldwell County.\n4. Ad valorem taxes for the current year, not yet due and payable.\n\nTO HAVE AND TO HOLD the above-described premises, together with all and singular\nthe appurtenances thereunto belonging or in anywise appertaining, to the only\nproper use, benefit, and behoof of the said Grantee, Grantee's successors and\nassigns forever.",
+  "ocr_used": true,
+  "confidence": 0.9,
+  "page_count": 1,
+  "processing_errors": []
+}

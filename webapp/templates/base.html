@@ -544,6 +544,21 @@
     </div>
 </header>
 
+<!-- ── Global pipeline progress banner (survives page navigation) ────── -->
+<div id="global-progress" style="display:none;background:rgb(var(--ink-900));
+     border-bottom:1px solid rgb(var(--ink-800));padding:8px 24px;font-size:12px;
+     display:none;align-items:center;gap:12px;flex-shrink:0;">
+    <div class="pipe-pulse running" style="margin:0;"></div>
+    <span id="gp-stage" style="font-weight:600;color:rgb(var(--gold));text-transform:uppercase;
+         letter-spacing:.06em;font-size:11px;min-width:64px;">stage</span>
+    <span id="gp-file" style="color:rgb(var(--body-primary));font-family:'JetBrains Mono',monospace;
+         max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
+    <span id="gp-msg" style="color:rgb(var(--body-muted));flex:1;overflow:hidden;
+         text-overflow:ellipsis;white-space:nowrap;"></span>
+    <button id="gp-cancel" class="btn btn-ghost btn-sm" style="display:none;color:rgb(var(--signal-fail));
+         border-color:rgb(var(--signal-fail)/.4);" onclick="cancelGlobalJob()">Cancel</button>
+</div>
+
 <!-- ── Main content ────────────────────────────────────────────────── -->
 <main class="content-wrap panel-enter" id="main-content">
     {% block content %}{% endblock %}
@@ -811,7 +826,7 @@ document.body.addEventListener('htmx:afterRequest', e=>{
 })();
 
 /* ── Boot ──────────────────────────────────────────────────────────── */
-document.addEventListener('DOMContentLoaded',()=>{ pollHealth(); setInterval(pollHealth,6000); });
+document.addEventListener('DOMContentLoaded',()=>{ pollHealth(); setInterval(pollHealth,6000); initGlobalProgress(); });
 
 /* ── Global pipeline state (used by pipeline panel) ───────────────── */
 window.setPipelineState = function(running, label) {
@@ -820,6 +835,107 @@ window.setPipelineState = function(running, label) {
     if(p) p.className='pipe-pulse '+(running?'running':'');
     if(l) l.textContent=label||(running?'Processing…':'Idle');
 };
+
+/* ── Global progress banner (persists across page navigation) ─────── */
+let _gpSSE = null;
+let _gpActiveFile = '';
+let _gpInProgressJob = null;
+
+function showGlobalProgress(stage, file, msg) {
+    const el = document.getElementById('global-progress');
+    if (!el) return;
+    document.getElementById('gp-stage').textContent = (stage || '').toUpperCase();
+    if (file) { document.getElementById('gp-file').textContent = file; _gpActiveFile = file; }
+    document.getElementById('gp-msg').textContent = msg || '';
+    el.style.display = 'flex';
+    window.setPipelineState && window.setPipelineState(true, stage);
+}
+
+function hideGlobalProgress(label) {
+    const el = document.getElementById('global-progress');
+    if (!el) return;
+    el.style.display = 'none';
+    document.getElementById('gp-cancel').style.display = 'none';
+    _gpActiveFile = '';
+    _gpInProgressJob = null;
+    window.setPipelineState && window.setPipelineState(false, label || 'Idle');
+}
+
+function ensureGlobalSSE() {
+    if (_gpSSE && _gpSSE.readyState !== EventSource.CLOSED) return;
+    _gpSSE = new EventSource('/api/v1/events/pipeline');
+    _gpSSE.onmessage = function(ev) {
+        let data;
+        try { data = JSON.parse(ev.data); } catch(_) { return; }
+        const stage = data.stage || '';
+        const status = data.status || '';
+        const msg = data.message || '';
+        if (stage === 'connected' || stage === 'ping') return;
+
+        if (stage === 'queue') {
+            if (status === 'job_started' || status === 'job_queued') {
+                try {
+                    const info = JSON.parse(msg);
+                    _gpInProgressJob = info.job_id || null;
+                    showGlobalProgress('queued', info.filename || info.document_id, '');
+                    if (status === 'job_started') {
+                        document.getElementById('gp-cancel').style.display = '';
+                    }
+                } catch(_) {}
+            } else if (status === 'job_done' || status === 'job_failed') {
+                hideGlobalProgress(status === 'job_done' ? 'Done' : 'Failed');
+            }
+            return;
+        }
+
+        if (stage === 'all' && status === 'complete') {
+            hideGlobalProgress('Done');
+            return;
+        }
+
+        // Pipeline stage events — show on the banner
+        if (['ingest','ocr','extract','index','retrieve','generate','verify'].includes(stage)) {
+            if (status === 'active' || status === 'running') {
+                showGlobalProgress(stage, _gpActiveFile, msg);
+            } else if (status === 'complete') {
+                showGlobalProgress(stage, _gpActiveFile, msg + ' ✓');
+            } else if (status === 'error') {
+                showGlobalProgress(stage, _gpActiveFile, 'Error: ' + msg);
+            }
+        }
+    };
+    _gpSSE.onerror = function() {
+        try { _gpSSE.close(); } catch(_) {}
+        _gpSSE = null;
+        // Retry after 3s
+        setTimeout(ensureGlobalSSE, 3000);
+    };
+}
+
+window.cancelGlobalJob = function() {
+    if (!_gpInProgressJob) return;
+    fetch('/api/v1/queue/cancel', { method: 'POST' })
+        .then(r => r.json())
+        .then(d => { showToast('Cancel requested', 'info'); })
+        .catch(err => showToast('Cancel failed: ' + err.message, 'error'));
+};
+
+async function initGlobalProgress() {
+    try {
+        const res = await fetch('/api/v1/queue');
+        const q = await res.json();
+        if (q.in_progress) {
+            _gpInProgressJob = q.in_progress.id || null;
+            showGlobalProgress(
+                'running',
+                q.in_progress.filename || q.in_progress.document_id,
+                (q.in_progress.draft_type || '').replace(/_/g,' '),
+            );
+            document.getElementById('gp-cancel').style.display = '';
+        }
+    } catch(_) {}
+    ensureGlobalSSE();
+}
 </script>
 {% block scripts %}{% endblock %}
 </body>

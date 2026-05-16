@@ -1,0 +1,329 @@
+{
+  "id": "doc_0764075b7671",
+  "filename": "doc_4_compliance_notice.pdf",
+  "upload_timestamp": "2026-05-16T02:17:31.315439+00:00",
+  "pages": [
+    {
+      "page_number": 1,
+      "text": "THORNFIELD DEPARTMENT OF ENVIRONMENTAL QUALITY NOTICE OF VIOLATION AND ORDER TO COMPLY Notice No.: TEQ-NOV-2024-1187 Issued: August 5 2024 Respondent: Pinnacle Chemical Manufacturing Co. Permit: AIR-2019-4422 Violations: Excess VOC emissions Stack 4-B Missing Q2 report Expired monitor calibration Deadlines: 48h Aug 19 Sep 4 Oct 4 2024 Max Penalty: $10,000 per day per violation",
+      "confidence": 0.95,
+      "ocr_used": false,
+      "ocr_error": ""
+    }
+  ],
+  "structured_fields": {
+    "notice_type": "NOTICE OF VIOLATION AND ORDER TO COMPLY",
+    "issuing_party": {
+      "name": "thornfield debarment OF ENVIRONMENTAL QUALITY",
+      "source_span": "THORNFIELD DEPARTMENT OF ENVIRONMENTAL QUALITY NOTICE OF VIOLATION AND ORDER TO COMPLY"
+    },
+    "receiving_party": {
+      "name": "Pinnacle Chemical Manufacturing Co.",
+      "source_span": "Respondent: Pinnacle Chemical Manufacturing Co."
+    },
+    "date_issued": "August 5 2024",
+    "deadlines": "[{\"action\": \"\", \"due_date\": \"Aug 19\", \"consequence\": \"\", \"source_span\": \"Deadlines: 48h Aug 19 Sep 4 Oct 4 2024\"}, {\"action\": \"\", \"due_date\": \"Sep 4\", \"consequence\": \"\", \"source_span\": \"Deadlines: 48h Aug 19 Sep 4 Oct 4 2024\"}, {\"action\": \"\", \"due_date\": \"Oct 4\", \"consequence\": \"\", \"source_span\": \"Deadlines: 48h Aug 19 Sep 4 Oct 4 2024\"}]",
+    "requirements": "[{\"description\": \"Excess VOC emissions Stack 4-B Missing Q2 report Expired monitor calibration\", \"source_span\": \"Violations: Excess VOC emissions Stack 4-B Missing Q2 report Expired monitor calibration\"}]",
+    "legal_basis": [],
+    "response_actions": "[{\"priority\": \"High\", \"action\": \"Comply with the order to Comply regarding listed violation \"deadline\": \"Varies (48h, Aug 19, Sep 4, Oct 4 2024)\", \"source_span\": \"Deadlines: 48h Aug 19 Sep 4 Oct 4 2024\"}]",
+    "_cascade_meta": {
+      "confidence_map": {
+        "notice_type": 0.9,
+        "issuing_party.name": 0.9,
+        "issuing_party.source_span": 1.0,
+        "receiving_party.name": 0.9,
+        "receiving_party.source_span": 1.0,
+        "date_issued": 0.9,
+        "deadlines": 0.895,
+        "requirements": 0.944,
+        "legal_basis": 0.3,
+        "response_actions": 0.906
+      },
+      "resolution_methods": {
+        "notice_type": "majority_vote",
+        "issuing_party.name": "majority_vote",
+        "issuing_party.source_span": "source_anchor",
+        "receiving_party.name": "majority_vote",
+        "receiving_party.source_span": "source_anchor",
+        "date_issued": "majority_vote",
+        "deadlines": "source_anchor",
+        "requirements": "source_anchor",
+        "legal_basis": "manual_review",
+        "response_actions": "source_anchor"
+      },
+      "corpus_corrections": [
+        {
+          "field": "notice_type",
+          "original": "NOTICE",
+          "corrected": "notice",
+          "confidence": 1.0
+        },
+        {
+          "field": "notice_type",
+          "original": "VIOLATION",
+          "corrected": "violation",
+          "confidence": 1.0
+        },
+        {
+          "field": "notice_type",
+          "original": "ORDER",
+          "corrected": "order",
+          "confidence": 1.0
+        },
+        {
+          "field": "issuing_party.name",
+          "original": "THORNFIELD",
+          "corrected": "thornfield",
+          "confidence": 1.0
+        },
+        {
+          "field": "issuing_party.name",
+          "original": "DEPARTMENT",
+          "corrected": "debarment",
+          "confidence": 0.8421052631578947
+        },
+        {
+          "field": "issuing_party.source_span",
+          "original": "THORNFIELD",
+          "corrected": "thornfield",
+          "confidence": 1.0
+        },
+        {
+          "field": "issuing_party.source_span",
+          "original": "DEPARTMENT",
+          "corrected": "debarment",
+          "confidence": 0.8421052631578947
+        },
+        {
+          "field": "issuing_party.source_span",
+          "original": "NOTICE",
+          "corrected": "notice",
+          "confidence": 1.0
+        },
+        {
+          "field": "issuing_party.source_span",
+          "original": "VIOLATION",
+          "corrected": "violation",
+          "confidence": 1.0
+        },
+        {
+          "field": "issuing_party.source_span",
+          "original": "ORDER",
+          "corrected": "order",
+          "confidence": 1.0
+        },
+        {
+          "field": "receiving_party.source_span",
+          "original": "Respondent:",
+          "corrected": "respondent",
+          "confidence": 0.9523809523809523
+        },
+        {
+          "field": "requirements",
+          "original": "Stack",
+          "corrected": "setback",
+          "confidence": 0.8333333333333334
+        },
+        {
+          "field": "requirements",
+          "original": "Expired",
+          "corrected": "expired",
+          "confidence": 1.0
+        },
+        {
+          "field": "requirements",
+          "original": "monitor",
+          "corrected": "monitoring",
+          "confidence": 0.8235294117647058
+        },
+        {
+          "field": "requirements",
+          "original": "\"Violations:",
+          "corrected": "violation",
+          "confidence": 0.8571428571428571
+        },
+        {
+          "field": "requirements",
+          "original": "Stack",
+          "corrected": "setback",
+          "confidence": 0.8333333333333334
+        },
+        {
+          "field": "requirements",
+          "original": "Expired",
+          "corrected": "expired",
+          "confidence": 1.0
+        },
+        {
+          "field": "requirements",
+          "original": "monitor",
+          "corrected": "monitoring",
+          "confidence": 0.8235294117647058
+        },
+        {
+          "field": "notice_type",
+          "original": "NOTICE",
+          "corrected": "notice",
+          "confidence": 1.0
+        },
+        {
+          "field": "notice_type",
+          "original": "VIOLATION",
+          "corrected": "violation",
+          "confidence": 1.0
+        },
+        {
+          "field": "notice_type",
+          "original": "ORDER",
+          "corrected": "order",
+          "confidence": 1.0
+        },
+        {
+          "field": "issuing_party.name",
+          "original": "THORNFIELD",
+          "corrected": "thornfield",
+          "confidence": 1.0
+        },
+        {
+          "field": "issuing_party.name",
+          "original": "DEPARTMENT",
+          "corrected": "debarment",
+          "confidence": 0.8421052631578947
+        },
+        {
+          "field": "issuing_party.source_span",
+          "original": "THORNFIELD",
+          "corrected": "thornfield",
+          "confidence": 1.0
+        },
+        {
+          "field": "issuing_party.source_span",
+          "original": "DEPARTMENT",
+          "corrected": "debarment",
+          "confidence": 0.8421052631578947
+        },
+        {
+          "field": "deadlines",
+          "original": "Penalty:",
+          "corrected": "penalty",
+          "confidence": 0.9333333333333333
+        },
+        {
+          "field": "deadlines",
+          "original": "violation\",",
+          "corrected": "violation",
+          "confidence": 0.9
+        },
+        {
+          "field": "deadlines",
+          "original": "Penalty:",
+          "corrected": "penalty",
+          "confidence": 0.9333333333333333
+        },
+        {
+          "field": "deadlines",
+          "original": "violation\",",
+          "corrected": "violation",
+          "confidence": 0.9
+        },
+        {
+          "field": "deadlines",
+          "original": "(Expired",
+          "corrected": "expired",
+          "confidence": 0.9333333333333333
+        },
+        {
+          "field": "deadlines",
+          "original": "monitor",
+          "corrected": "monitoring",
+          "confidence": 0.8235294117647058
+        },
+        {
+          "field": "deadlines",
+          "original": "Penalty:",
+          "corrected": "penalty",
+          "confidence": 0.9333333333333333
+        },
+        {
+          "field": "deadlines",
+          "original": "violation\",",
+          "corrected": "violation",
+          "confidence": 0.9
+        },
+        {
+          "field": "deadlines",
+          "original": "compliance)\",",
+          "corrected": "compliance",
+          "confidence": 0.8695652173913043
+        },
+        {
+          "field": "deadlines",
+          "original": "Penalty:",
+          "corrected": "penalty",
+          "confidence": 0.9333333333333333
+        },
+        {
+          "field": "deadlines",
+          "original": "violation\",",
+          "corrected": "violation",
+          "confidence": 0.9
+        },
+        {
+          "field": "requirements",
+          "original": "\"Expired",
+          "corrected": "expired",
+          "confidence": 0.9333333333333333
+        },
+        {
+          "field": "requirements",
+          "original": "monitor",
+          "corrected": "monitoring",
+          "confidence": 0.8235294117647058
+        },
+        {
+          "field": "requirements",
+          "original": "\"Expired",
+          "corrected": "expired",
+          "confidence": 0.9333333333333333
+        },
+        {
+          "field": "requirements",
+          "original": "monitor",
+          "corrected": "monitoring",
+          "confidence": 0.8235294117647058
+        },
+        {
+          "field": "response_actions",
+          "original": "Order",
+          "corrected": "order",
+          "confidence": 1.0
+        },
+        {
+          "field": "response_actions",
+          "original": "violations\",",
+          "corrected": "violation",
+          "confidence": 0.8571428571428571
+        }
+      ],
+      "unresolved_fields": [
+        "legal_basis"
+      ],
+      "passes_executed": 3
+    }
+  },
+  "chunks": [
+    {
+      "id": "chunk_cec3dcff",
+      "text": "THORNFIELD DEPARTMENT OF ENVIRONMENTAL QUALITY NOTICE OF VIOLATION AND ORDER TO COMPLY Notice No.: TEQ-NOV-2024-1187 Issued: August 5 2024 Respondent: Pinnacle Chemical Manufacturing Co. Permit: AIR-2019-4422 Violations: Excess VOC emissions Stack 4-B Missing Q2 report Expired monitor calibration Deadlines: 48h Aug 19 Sep 4 Oct 4 2024 Max Penalty: $10,000 per day per violation",
+      "document_id": "doc_0764075b7671",
+      "page_number": 1,
+      "char_start": 0,
+      "char_end": 379
+    }
+  ],
+  "full_text": "THORNFIELD DEPARTMENT OF ENVIRONMENTAL QUALITY NOTICE OF VIOLATION AND ORDER TO COMPLY Notice No.: TEQ-NOV-2024-1187 Issued: August 5 2024 Respondent: Pinnacle Chemical Manufacturing Co. Permit: AIR-2019-4422 Violations: Excess VOC emissions Stack 4-B Missing Q2 report Expired monitor calibration Deadlines: 48h Aug 19 Sep 4 Oct 4 2024 Max Penalty: $10,000 per day per violation",
+  "ocr_used": false,
+  "confidence": 0.95,
+  "page_count": 1,
+  "processing_errors": []
+}

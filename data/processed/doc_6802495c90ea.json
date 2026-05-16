@@ -1,0 +1,256 @@
+{
+  "id": "doc_6802495c90ea",
+  "filename": "doc_2_court_filing.pdf",
+  "upload_timestamp": "2026-05-16T01:52:57.273813+00:00",
+  "pages": [
+    {
+      "page_number": 1,
+      "text": "IN THE DISTRICT COURT OF CALDWELL COUNTY STATE OF THORNFIELD Case No.: CV-2024-08847 SYNTHEX INDUSTRIAL PARTNERS INC v. NORWOOD FABRICATION GROUP LLC COMPLAINT FOR BREACH OF CONTRACT FRAUD AND UNJUST ENRICHMENT Filing Date: March 14 2024 Damages: $680,000.00 compensatory plus punitive Attorneys: Kavanaugh & Ashworth LLP",
+      "confidence": 0.95,
+      "ocr_used": false,
+      "ocr_error": ""
+    }
+  ],
+  "structured_fields": {
+    "parties": {
+      "plaintiffs": "[{\"name\": \"SYNTHEX INDUSTRIAL PARTNERS INC\", \"role\": \"Plaintiff\", \"source_span\": \"SYNTHEX INDUSTRIAL PARTNERS INC v. NORWOOD FABRICATION GROUP LLC\"}]",
+      "defendants": "[{\"name\": \"NORWOOD FABRICATION GROUP LLC\", \"role\": \"Defendant\", \"source_span\": \"SYNTHEX INDUSTRIAL PARTNERS INC v. NORWOOD FABRICATION GROUP LLC\"}]",
+      "other_parties": []
+    },
+    "key_dates": "[{\"event\": \"Filing Date\", \"date\": march 14 2024\", \"source_span\": \"Filing Date: march 14 2024\"}]",
+    "claims": "[{\"type\": \"BREACH OF contract \"description\": \"\", \"legal_basis\": \"\", \"source_span\": complaint FOR BREACH OF contract FRAUD AND UNJUST ENRICHMENT\"}, {\"type\": \"FRAUD\", \"description\": \"\", \"legal_basis\": \"\", \"source_span\": complaint FOR BREACH OF contract FRAUD AND UNJUST ENRICHMENT\"}, {\"type\": \"UNJUST ENRICHMENT\", \"description\": \"\", \"legal_basis\": \"\", \"source_span\": complaint FOR BREACH OF contract FRAUD AND UNJUST ENRICHMENT\"}]",
+    "procedural_history": "[{\"event\": complaint Filing\", \"date\": march 14 2024\", \"source_span\": \"Filing Date: march 14 2024\"}]",
+    "evidence_items": [],
+    "relief_sought": "[{\"party\": plaintiff \"relief\": damages \"amount\": \"$680,000.00 compensatory plus punitive\", \"source_span\": damages $680,000.00 compensatory plus punitive\"}]",
+    "_cascade_meta": {
+      "confidence_map": {
+        "parties.plaintiffs": 0.925,
+        "parties.defendants": 0.92,
+        "parties.other_parties": 0.0,
+        "key_dates": 0.9,
+        "claims": 0.91,
+        "procedural_history": 0.74,
+        "evidence_items": 0.0,
+        "relief_sought": 0.716
+      },
+      "resolution_methods": {
+        "parties.plaintiffs": "source_anchor",
+        "parties.defendants": "source_anchor",
+        "parties.other_parties": "manual_review",
+        "key_dates": "majority_vote",
+        "claims": "source_anchor",
+        "procedural_history": "source_anchor",
+        "evidence_items": "manual_review",
+        "relief_sought": "source_anchor"
+      },
+      "corpus_corrections": [
+        {
+          "field": "parties.plaintiffs",
+          "original": "\"plaintiff\",",
+          "corrected": "plaintiff",
+          "confidence": 0.8571428571428571
+        },
+        {
+          "field": "parties.defendants",
+          "original": "\"defendant\",",
+          "corrected": "defendant",
+          "confidence": 0.8571428571428571
+        },
+        {
+          "field": "key_dates",
+          "original": "\"March",
+          "corrected": "march",
+          "confidence": 0.9090909090909091
+        },
+        {
+          "field": "key_dates",
+          "original": "March",
+          "corrected": "march",
+          "confidence": 1.0
+        },
+        {
+          "field": "claims",
+          "original": "CONTRACT\",",
+          "corrected": "contract",
+          "confidence": 0.8888888888888888
+        },
+        {
+          "field": "claims",
+          "original": "\"COMPLAINT",
+          "corrected": "complaint",
+          "confidence": 0.9473684210526315
+        },
+        {
+          "field": "claims",
+          "original": "CONTRACT",
+          "corrected": "contract",
+          "confidence": 1.0
+        },
+        {
+          "field": "claims",
+          "original": "\"COMPLAINT",
+          "corrected": "complaint",
+          "confidence": 0.9473684210526315
+        },
+        {
+          "field": "claims",
+          "original": "CONTRACT",
+          "corrected": "contract",
+          "confidence": 1.0
+        },
+        {
+          "field": "claims",
+          "original": "\"COMPLAINT",
+          "corrected": "complaint",
+          "confidence": 0.9473684210526315
+        },
+        {
+          "field": "claims",
+          "original": "CONTRACT",
+          "corrected": "contract",
+          "confidence": 1.0
+        },
+        {
+          "field": "relief_sought",
+          "original": "\"plaintiff\",",
+          "corrected": "plaintiff",
+          "confidence": 0.8571428571428571
+        },
+        {
+          "field": "relief_sought",
+          "original": "\"Damages\",",
+          "corrected": "damages",
+          "confidence": 0.8235294117647058
+        },
+        {
+          "field": "relief_sought",
+          "original": "\"Damages:",
+          "corrected": "damages",
+          "confidence": 0.875
+        },
+        {
+          "field": "parties.plaintiffs",
+          "original": "\"Plaintiff\",",
+          "corrected": "plaintiff",
+          "confidence": 0.8571428571428571
+        },
+        {
+          "field": "parties.defendants",
+          "original": "\"Defendant\",",
+          "corrected": "defendant",
+          "confidence": 0.8571428571428571
+        },
+        {
+          "field": "key_dates",
+          "original": "\"March",
+          "corrected": "march",
+          "confidence": 0.9090909090909091
+        },
+        {
+          "field": "key_dates",
+          "original": "March",
+          "corrected": "march",
+          "confidence": 1.0
+        },
+        {
+          "field": "claims",
+          "original": "Contract\",",
+          "corrected": "contract",
+          "confidence": 0.8888888888888888
+        },
+        {
+          "field": "claims",
+          "original": "Contract\",",
+          "corrected": "contract",
+          "confidence": 0.8888888888888888
+        },
+        {
+          "field": "claims",
+          "original": "\"COMPLAINT",
+          "corrected": "complaint",
+          "confidence": 0.9473684210526315
+        },
+        {
+          "field": "claims",
+          "original": "CONTRACT\"},",
+          "corrected": "contract",
+          "confidence": 0.8421052631578947
+        },
+        {
+          "field": "claims",
+          "original": "\"COMPLAINT",
+          "corrected": "complaint",
+          "confidence": 0.9473684210526315
+        },
+        {
+          "field": "claims",
+          "original": "CONTRACT",
+          "corrected": "contract",
+          "confidence": 1.0
+        },
+        {
+          "field": "claims",
+          "original": "\"COMPLAINT",
+          "corrected": "complaint",
+          "confidence": 0.9473684210526315
+        },
+        {
+          "field": "claims",
+          "original": "CONTRACT",
+          "corrected": "contract",
+          "confidence": 1.0
+        },
+        {
+          "field": "procedural_history",
+          "original": "\"Complaint",
+          "corrected": "complaint",
+          "confidence": 0.9473684210526315
+        },
+        {
+          "field": "procedural_history",
+          "original": "\"March",
+          "corrected": "march",
+          "confidence": 0.9090909090909091
+        },
+        {
+          "field": "procedural_history",
+          "original": "March",
+          "corrected": "march",
+          "confidence": 1.0
+        },
+        {
+          "field": "relief_sought",
+          "original": "Damages\",",
+          "corrected": "damages",
+          "confidence": 0.875
+        },
+        {
+          "field": "relief_sought",
+          "original": "\"Damages:",
+          "corrected": "damages",
+          "confidence": 0.875
+        }
+      ],
+      "unresolved_fields": [
+        "parties.other_parties",
+        "evidence_items"
+      ],
+      "passes_executed": 3
+    }
+  },
+  "chunks": [
+    {
+      "id": "chunk_b8666c69",
+      "text": "IN THE DISTRICT COURT OF CALDWELL COUNTY STATE OF THORNFIELD Case No.: CV-2024-08847 SYNTHEX INDUSTRIAL PARTNERS INC v. NORWOOD FABRICATION GROUP LLC COMPLAINT FOR BREACH OF CONTRACT FRAUD AND UNJUST ENRICHMENT Filing Date: March 14 2024 Damages: $680,000.00 compensatory plus punitive Attorneys: Kavanaugh & Ashworth LLP",
+      "document_id": "doc_6802495c90ea",
+      "page_number": 1,
+      "char_start": 0,
+      "char_end": 321
+    }
+  ],
+  "full_text": "IN THE DISTRICT COURT OF CALDWELL COUNTY STATE OF THORNFIELD Case No.: CV-2024-08847 SYNTHEX INDUSTRIAL PARTNERS INC v. NORWOOD FABRICATION GROUP LLC COMPLAINT FOR BREACH OF CONTRACT FRAUD AND UNJUST ENRICHMENT Filing Date: March 14 2024 Damages: $680,000.00 compensatory plus punitive Attorneys: Kavanaugh & Ashworth LLP",
+  "ocr_used": false,
+  "confidence": 0.95,
+  "page_count": 1,
+  "processing_errors": []
+}

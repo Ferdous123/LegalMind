@@ -1,8 +1,7 @@
 """Exemplar retriever — finds relevant past corrections for prompt injection.
 
-Uses BM25 keyword search over the active correction JSONL files. No
-embedding model or vector store required — same keyword-match pattern
-as the evidence searcher and TRACE's query_by_field.
+Uses BM25 keyword search over the active correction JSONL files to find
+semantically similar past corrections for few-shot prompt injection.
 """
 
 import logging

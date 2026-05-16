@@ -1,0 +1,250 @@
+{
+  "id": "doc_3e27ad443cca",
+  "filename": "doc_3_property_deed.pdf",
+  "upload_timestamp": "2026-05-16T01:09:45.888302+00:00",
+  "pages": [
+    {
+      "page_number": 1,
+      "text": "GENERAL WARRANTY DEED Grantor: Bertram H. Lockwood and Dorothy M. Lockwood Grantee: Fidelity Meridian Trust Consideration: $420,000.00 Property: Lot 14 Block 7 Cedarbrook Estates Second Filing Caldwell County Thornfield Address: 1407 Cedarbrook Lane Caldwell City TX 77031 Executed: September 4 2024 Filed: September 9 2024 Instrument No.: 2024-0394817",
+      "confidence": 0.95,
+      "ocr_used": false,
+      "ocr_error": ""
+    }
+  ],
+  "structured_fields": {
+    "property_description": {
+      "legal_description": "Lot 14 Block 7 Cedarbrook Estates",
+      "address": "1407 Cedarbrook Lane Caldwell City TX 77031",
+      "parcel_number": "",
+      "jurisdiction": "Caldwell County"
+    },
+    "chain_of_title": "[{\"grantor\": \"Bertram H. Lockwood and Dorothy M. Lockwood\", \"grantee\": \"Fidelity Meridian Trust\", \"date\": \"September 4 2024\", \"instrument_type\": \"GENERAL WARRANTY DEED\", \"recording_info\": \"Filed: September 9 2024 Instrument No.: 2024-0394817\", \"source_span\": \"Grantor: Bertram H. Lockwood and Dorothy M. Lockwood Grantee: Fidelity Meridian Trust ... Executed: September 4 2024 Filed: September 9 2024 Instrument No.: 2024-0394817\"}]",
+    "encumbrances": [],
+    "defects": [],
+    "current_owner": {
+      "name": "Fidelity Meridian trustee",
+      "source_span": "grantee Fidelity Meridian trustee"
+    },
+    "_cascade_meta": {
+      "confidence_map": {
+        "property_description.legal_description": 0.9,
+        "property_description.address": 1.0,
+        "property_description.parcel_number": 0.0,
+        "property_description.jurisdiction": 0.9,
+        "chain_of_title": 0.925,
+        "encumbrances": 0.0,
+        "defects": 0.0,
+        "current_owner.name": 0.9,
+        "current_owner.source_span": 0.9
+      },
+      "resolution_methods": {
+        "property_description.legal_description": "majority_vote",
+        "property_description.address": "source_anchor",
+        "property_description.parcel_number": "manual_review",
+        "property_description.jurisdiction": "majority_vote",
+        "chain_of_title": "source_anchor",
+        "encumbrances": "manual_review",
+        "defects": "manual_review",
+        "current_owner.name": "majority_vote",
+        "current_owner.source_span": "majority_vote"
+      },
+      "corpus_corrections": [
+        {
+          "field": "property_description.legal_description",
+          "original": "Lot",
+          "corrected": "lot",
+          "confidence": 1.0
+        },
+        {
+          "field": "property_description.address",
+          "original": "TX",
+          "corrected": "tax",
+          "confidence": 0.8
+        },
+        {
+          "field": "chain_of_title",
+          "original": "\"grantee\":",
+          "corrected": "grantee",
+          "confidence": 0.8235294117647058
+        },
+        {
+          "field": "chain_of_title",
+          "original": "WARRANTY",
+          "corrected": "warrant",
+          "confidence": 0.9333333333333333
+        },
+        {
+          "field": "chain_of_title",
+          "original": "DEED\",",
+          "corrected": "deed",
+          "confidence": 0.8
+        },
+        {
+          "field": "chain_of_title",
+          "original": "\"Filed:",
+          "corrected": "filed",
+          "confidence": 0.8333333333333334
+        },
+        {
+          "field": "chain_of_title",
+          "original": "\"Grantor:",
+          "corrected": "grantor",
+          "confidence": 0.875
+        },
+        {
+          "field": "chain_of_title",
+          "original": "Grantee:",
+          "corrected": "grantee",
+          "confidence": 0.9333333333333333
+        },
+        {
+          "field": "chain_of_title",
+          "original": "Trust",
+          "corrected": "trustee",
+          "confidence": 0.8333333333333334
+        },
+        {
+          "field": "chain_of_title",
+          "original": "Executed:",
+          "corrected": "executed",
+          "confidence": 0.9411764705882353
+        },
+        {
+          "field": "chain_of_title",
+          "original": "Filed:",
+          "corrected": "filed",
+          "confidence": 0.9090909090909091
+        },
+        {
+          "field": "current_owner.name",
+          "original": "Trust",
+          "corrected": "trustee",
+          "confidence": 0.8333333333333334
+        },
+        {
+          "field": "current_owner.source_span",
+          "original": "Grantee:",
+          "corrected": "grantee",
+          "confidence": 0.9333333333333333
+        },
+        {
+          "field": "current_owner.source_span",
+          "original": "Trust",
+          "corrected": "trustee",
+          "confidence": 0.8333333333333334
+        },
+        {
+          "field": "property_description.legal_description",
+          "original": "Lot",
+          "corrected": "lot",
+          "confidence": 1.0
+        },
+        {
+          "field": "chain_of_title",
+          "original": "\"grantee\":",
+          "corrected": "grantee",
+          "confidence": 0.8235294117647058
+        },
+        {
+          "field": "chain_of_title",
+          "original": "WARRANTY",
+          "corrected": "warrant",
+          "confidence": 0.9333333333333333
+        },
+        {
+          "field": "chain_of_title",
+          "original": "DEED\",",
+          "corrected": "deed",
+          "confidence": 0.8
+        },
+        {
+          "field": "chain_of_title",
+          "original": "Filed:",
+          "corrected": "filed",
+          "confidence": 0.9090909090909091
+        },
+        {
+          "field": "chain_of_title",
+          "original": "WARRANTY",
+          "corrected": "warrant",
+          "confidence": 0.9333333333333333
+        },
+        {
+          "field": "chain_of_title",
+          "original": "DEED",
+          "corrected": "deed",
+          "confidence": 1.0
+        },
+        {
+          "field": "chain_of_title",
+          "original": "Grantor:",
+          "corrected": "grantor",
+          "confidence": 0.9333333333333333
+        },
+        {
+          "field": "chain_of_title",
+          "original": "Grantee:",
+          "corrected": "grantee",
+          "confidence": 0.9333333333333333
+        },
+        {
+          "field": "chain_of_title",
+          "original": "Trust",
+          "corrected": "trustee",
+          "confidence": 0.8333333333333334
+        },
+        {
+          "field": "chain_of_title",
+          "original": "Executed:",
+          "corrected": "executed",
+          "confidence": 0.9411764705882353
+        },
+        {
+          "field": "chain_of_title",
+          "original": "Filed:",
+          "corrected": "filed",
+          "confidence": 0.9090909090909091
+        },
+        {
+          "field": "current_owner.name",
+          "original": "Trust",
+          "corrected": "trustee",
+          "confidence": 0.8333333333333334
+        },
+        {
+          "field": "current_owner.source_span",
+          "original": "Grantee:",
+          "corrected": "grantee",
+          "confidence": 0.9333333333333333
+        },
+        {
+          "field": "current_owner.source_span",
+          "original": "Trust",
+          "corrected": "trustee",
+          "confidence": 0.8333333333333334
+        }
+      ],
+      "unresolved_fields": [
+        "property_description.parcel_number",
+        "encumbrances",
+        "defects"
+      ],
+      "passes_executed": 3
+    }
+  },
+  "chunks": [
+    {
+      "id": "chunk_de4748b6",
+      "text": "GENERAL WARRANTY DEED Grantor: Bertram H. Lockwood and Dorothy M. Lockwood Grantee: Fidelity Meridian Trust Consideration: $420,000.00 Property: Lot 14 Block 7 Cedarbrook Estates Second Filing Caldwell County Thornfield Address: 1407 Cedarbrook Lane Caldwell City TX 77031 Executed: September 4 2024 Filed: September 9 2024 Instrument No.: 2024-0394817",
+      "document_id": "doc_3e27ad443cca",
+      "page_number": 1,
+      "char_start": 0,
+      "char_end": 352
+    }
+  ],
+  "full_text": "GENERAL WARRANTY DEED Grantor: Bertram H. Lockwood and Dorothy M. Lockwood Grantee: Fidelity Meridian Trust Consideration: $420,000.00 Property: Lot 14 Block 7 Cedarbrook Estates Second Filing Caldwell County Thornfield Address: 1407 Cedarbrook Lane Caldwell City TX 77031 Executed: September 4 2024 Filed: September 9 2024 Instrument No.: 2024-0394817",
+  "ocr_used": false,
+  "confidence": 0.95,
+  "page_count": 1,
+  "processing_errors": []
+}

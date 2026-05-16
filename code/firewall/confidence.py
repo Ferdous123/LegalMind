@@ -117,10 +117,21 @@ class ConfidenceScorer:
             "low_confidence_count": sum(1 for r in results.values() if r["level"] in ("LOW", "UNSUPPORTED")),
         }
 
+    # Internal pipeline metadata keys never represent operator-visible claims
+    # and verifying them against source text just adds noise (e.g. checking
+    # whether the string "0.9" or "manual_review" appears in a lease).
+    _SKIP_KEYS = {"_cascade_meta", "_meta", "_debug", "_internal"}
+
     def _flatten_fields(self, fields: dict, prefix: str = "") -> list[tuple]:
-        """Recursively flatten nested field dict into (name, value) pairs."""
+        """Recursively flatten nested field dict into (name, value) pairs.
+
+        Skips top-level internal metadata keys (_cascade_meta etc.) so the
+        firewall only verifies operator-meaningful extracted fields.
+        """
         items = []
         for key, value in fields.items():
+            if not prefix and key in self._SKIP_KEYS:
+                continue
             full_key = f"{prefix}.{key}" if prefix else key
             if isinstance(value, dict) and not any(k in value for k in ("value", "name", "source_span")):
                 items.extend(self._flatten_fields(value, full_key))

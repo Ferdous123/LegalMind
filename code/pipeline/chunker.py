@@ -45,7 +45,8 @@ class TextChunker:
         self._chunk_size_chars = chunk_size * APPROX_CHARS_PER_TOKEN
         self._overlap_chars = overlap * APPROX_CHARS_PER_TOKEN
 
-    def chunk(self, text: str, document_id: str) -> list[TextChunk]:
+    def chunk(self, text: str, document_id: str,
+              page_spans: list[tuple[int, int, int]] | None = None) -> list[TextChunk]:
         """Split text into chunks with semantic boundary detection.
 
         Strategy:
@@ -53,6 +54,17 @@ class TextChunker:
         2. If paragraph > chunk_size, split by sentences
         3. Merge small paragraphs into chunks up to chunk_size
         4. Add overlap between chunks
+
+        Args:
+            text: The full document text.
+            document_id: Owning document ID.
+            page_spans: Optional list of (page_number, char_start, char_end)
+                tuples describing where each source page sits inside `text`.
+                When provided, each chunk's page_number is resolved from the
+                page whose char range contains the chunk's start — the real
+                page, not the char_start//3000 estimate. Built by the
+                ingester from doc.pages so PDF citations open the correct
+                page image.
         """
         if not text.strip():
             return []
@@ -121,11 +133,33 @@ class TextChunker:
                 current_text.strip(), document_id, current_start
             ))
 
-        # Assign page numbers (heuristic: ~3000 chars per page)
-        for chunk in chunks:
-            chunk.page_number = max(1, chunk.char_start // 3000 + 1)
+        # Assign page numbers. If the ingester gave us real page spans, map
+        # each chunk to the page whose char range contains its start. Else
+        # fall back to the rough ~3000-chars-per-page heuristic (txt files,
+        # or callers that don't supply spans).
+        if page_spans:
+            for chunk in chunks:
+                chunk.page_number = self._resolve_page(chunk.char_start, page_spans)
+        else:
+            for chunk in chunks:
+                chunk.page_number = max(1, chunk.char_start // 3000 + 1)
 
         return chunks
+
+    @staticmethod
+    def _resolve_page(char_start: int, page_spans: list[tuple[int, int, int]]) -> int:
+        """Return the page_number whose [start, end) range contains char_start.
+
+        Falls back to the nearest preceding page if the position lands in a
+        page separator gap, or page 1 if before all spans.
+        """
+        resolved = page_spans[0][0] if page_spans else 1
+        for page_number, start, end in page_spans:
+            if start <= char_start < end:
+                return page_number
+            if char_start >= start:
+                resolved = page_number
+        return resolved
 
     def _make_chunk(self, text: str, document_id: str, char_start: int) -> TextChunk:
         return TextChunk(

@@ -1,0 +1,442 @@
+{
+  "id": "doc_5c37be7a9a3b",
+  "filename": "img_1_level_1.png",
+  "upload_timestamp": "2026-05-16T02:25:00.522785+00:00",
+  "pages": [
+    {
+      "page_number": 1,
+      "text": ": RESIDENTIAL LEASE AGREEMENT\n\nThis Residential Lease Agreement (\"Agreement\") is entered into as of the 1st day of March, 2024, by and between:\n\nLANDLORD: Hargrove Property Holdings LLC, a limited liability company organised under the laws of the State of Thornfield, with its principal place of business at 4400 Willowmere Drive, Suite 200, Thornfield, TX 77022 (\"Landlord\");\n\nAND\n\nTENANT: Marcus Delacroix-Webb, an individual residing at 814 Cedarbrook Lane, Apartment 3B, Thornfield, TX 77019 (\"Tenant\").\n\n1. PREMISES\nLandlord hereby leases to Tenant the residential premises located at 214 Finchley Court, Apartment 7, Thornfield, TX 77031 (the \"Premises\"), consisting of a two-bedroom, one-bathroom apartment of approximately 875 square feet.\n\n2. TERM\nThe lease term shall commence on March 1, 2024 and shall terminate on February 28, 2025 (the \"Lease Term\"), unless sooner terminated or extended in accordance with this Agreement.\n\n3. RENT\nTenant agrees to pay Landlord the sum of One Thousand Four Hundred Dollars ($1,400.00) per month (\"Monthly Rent\") as rent for the Premises, due and payable on or before the first (1st) day of each calendar month during the Lease Term. Rent shall be paid by electronic transfer to Hargrove Property Holdings LLC, Account No. ending in 7742, Routing No. 111000025.\n\n4. SECURITY DEPOSIT\nUpon execution of this Agreement, Tenant shall deposit with Landlord the sum of Two Thousand Eight Hundred Dollars ($2,800.00) (\"Security Deposit\"), equivalent to two months' rent, as security for Tenant's faithful performance of all obligations under this Agreement.\n\n5. PERMITTED USE\nThe Premises shall be used solely as a private residential dwelling for Tenant and Tenant's immediate family. No commercial activity of any kind shall be conducted on the Premises without the prior written consent of Landlord.\n\n6. UTILITIES AND SERVICES\nTenant shall be responsible for payment of the following utilities: electricity, natural gas, internet, and cable television. Landlord shall be responsible for water, sewer, and trash collection services.\n\n7. MAINTENANCE AND REPAIRS\nTenant shall maintain the Premises in a clean and sanitary condition and shall promptly notify Landlord of any damage or defect. Landlord shall be responsible for structural repairs and maintenance of major systems (HVAC, plumbing, electrical) provided that such damage is not caused by Tenant's negligence or misuse.\n\n8. PETS\nNo pets of any kind are permitted on the Premises without prior written consent of Landlord. Unauthorized animals shall be grounds for termination of this Agreement.\n\n9. RENEWAL\nUnless either party provides written notice of non-renewal at least thirty (30) days prior to the expiration of the Lease Term, this Agreement shall automatically convert to a month-to-month tenancy at the same Monthly Rent.\n\n10. GOVERNING LAW",
+      "confidence": 0.9,
+      "ocr_used": true,
+      "ocr_error": ""
+    }
+  ],
+  "structured_fields": {
+    "parties": {
+      "plaintiffs": [],
+      "defendants": [],
+      "other_parties": "[{\"name\": \"Hargrove property holdings LLC\", \"role\": \"Landlord\", \"source_span\": \"LANDLORD: Hargrove property holdings LLC, a limited liability company organised under the bylaws of the State of thornfield with its principal place of business at 4400 Willowmere Drive, Suite 200, thornfield tax 77022 (\\\"Landlord\\\");\"}, {\"name\": marcus delacroix-webb \"role\": tenant \"source_span\": tenant marcus delacroix-webb an individual residing at 814 Cedarbrook Lane, Apartment 3B, thornfield tax 77019 (\\\"Tenant\\\").\"}]"
+    },
+    "key_dates": "[{\"event\": agreement Entry Date\", \"date\": march 1, 2024\", \"source_span\": \"This Residential lease agreement (\\\"Agreement\\\") is entered into as of the 1st day of march 2024\"}, {\"event\": lease Commencement Date\", \"date\": march 1, 2024\", \"source_span\": \"The lease term shall commence on march 1, 2024\"}, {\"event\": lease Termination Date\", \"date\": february 28, 2025\", \"source_span\": \"and shall terminated on february 28, 2025 (the lease Term\\\"), unless sooner terminated or extended in accordance with this agreement",
+    "claims": [],
+    "procedural_history": [],
+    "evidence_items": [],
+    "relief_sought": [],
+    "_cascade_meta": {
+      "confidence_map": {
+        "parties.plaintiffs": 0.0,
+        "parties.defendants": 0.0,
+        "parties.other_parties": 0.9,
+        "key_dates": 0.951,
+        "claims": 0.0,
+        "procedural_history": 0.0,
+        "evidence_items": 0.0,
+        "relief_sought": 0.0
+      },
+      "resolution_methods": {
+        "parties.plaintiffs": "manual_review",
+        "parties.defendants": "manual_review",
+        "parties.other_parties": "majority_vote",
+        "key_dates": "source_anchor",
+        "claims": "manual_review",
+        "procedural_history": "manual_review",
+        "evidence_items": "manual_review",
+        "relief_sought": "manual_review"
+      },
+      "corpus_corrections": [
+        {
+          "field": "parties.other_parties",
+          "original": "Property",
+          "corrected": "property",
+          "confidence": 1.0
+        },
+        {
+          "field": "parties.other_parties",
+          "original": "Holdings",
+          "corrected": "holdings",
+          "confidence": 1.0
+        },
+        {
+          "field": "parties.other_parties",
+          "original": "Property",
+          "corrected": "property",
+          "confidence": 1.0
+        },
+        {
+          "field": "parties.other_parties",
+          "original": "Holdings",
+          "corrected": "holdings",
+          "confidence": 1.0
+        },
+        {
+          "field": "parties.other_parties",
+          "original": "laws",
+          "corrected": "bylaws",
+          "confidence": 0.8
+        },
+        {
+          "field": "parties.other_parties",
+          "original": "Thornfield,",
+          "corrected": "thornfield",
+          "confidence": 0.9523809523809523
+        },
+        {
+          "field": "parties.other_parties",
+          "original": "Thornfield,",
+          "corrected": "thornfield",
+          "confidence": 0.9523809523809523
+        },
+        {
+          "field": "parties.other_parties",
+          "original": "TX",
+          "corrected": "tax",
+          "confidence": 0.8
+        },
+        {
+          "field": "parties.other_parties",
+          "original": "\"Marcus",
+          "corrected": "marcus",
+          "confidence": 0.9230769230769231
+        },
+        {
+          "field": "parties.other_parties",
+          "original": "Delacroix-Webb\",",
+          "corrected": "delacroix-webb",
+          "confidence": 0.9333333333333333
+        },
+        {
+          "field": "parties.other_parties",
+          "original": "\"Tenant\",",
+          "corrected": "tenant",
+          "confidence": 0.8
+        },
+        {
+          "field": "parties.other_parties",
+          "original": "\"TENANT:",
+          "corrected": "tenant",
+          "confidence": 0.8571428571428571
+        },
+        {
+          "field": "parties.other_parties",
+          "original": "Marcus",
+          "corrected": "marcus",
+          "confidence": 1.0
+        },
+        {
+          "field": "parties.other_parties",
+          "original": "Delacroix-Webb,",
+          "corrected": "delacroix-webb",
+          "confidence": 0.9655172413793104
+        },
+        {
+          "field": "parties.other_parties",
+          "original": "Thornfield,",
+          "corrected": "thornfield",
+          "confidence": 0.9523809523809523
+        },
+        {
+          "field": "parties.other_parties",
+          "original": "TX",
+          "corrected": "tax",
+          "confidence": 0.8
+        },
+        {
+          "field": "key_dates",
+          "original": "Agreement\",",
+          "corrected": "agreement",
+          "confidence": 0.9
+        },
+        {
+          "field": "key_dates",
+          "original": "\"March",
+          "corrected": "march",
+          "confidence": 0.9090909090909091
+        },
+        {
+          "field": "key_dates",
+          "original": "Lease",
+          "corrected": "lease",
+          "confidence": 1.0
+        },
+        {
+          "field": "key_dates",
+          "original": "Agreement",
+          "corrected": "agreement",
+          "confidence": 1.0
+        },
+        {
+          "field": "key_dates",
+          "original": "March,",
+          "corrected": "march",
+          "confidence": 0.9090909090909091
+        },
+        {
+          "field": "key_dates",
+          "original": "\"Lease",
+          "corrected": "lease",
+          "confidence": 0.9090909090909091
+        },
+        {
+          "field": "key_dates",
+          "original": "\"March",
+          "corrected": "march",
+          "confidence": 0.9090909090909091
+        },
+        {
+          "field": "key_dates",
+          "original": "March",
+          "corrected": "march",
+          "confidence": 1.0
+        },
+        {
+          "field": "key_dates",
+          "original": "\"Lease",
+          "corrected": "lease",
+          "confidence": 0.9090909090909091
+        },
+        {
+          "field": "key_dates",
+          "original": "\"February",
+          "corrected": "february",
+          "confidence": 0.9411764705882353
+        },
+        {
+          "field": "key_dates",
+          "original": "March",
+          "corrected": "march",
+          "confidence": 1.0
+        },
+        {
+          "field": "key_dates",
+          "original": "terminate",
+          "corrected": "terminated",
+          "confidence": 0.9473684210526315
+        },
+        {
+          "field": "key_dates",
+          "original": "February",
+          "corrected": "february",
+          "confidence": 1.0
+        },
+        {
+          "field": "key_dates",
+          "original": "\\\"Lease",
+          "corrected": "lease",
+          "confidence": 0.8333333333333334
+        },
+        {
+          "field": "parties.other_parties",
+          "original": "Property",
+          "corrected": "property",
+          "confidence": 1.0
+        },
+        {
+          "field": "parties.other_parties",
+          "original": "Holdings",
+          "corrected": "holdings",
+          "confidence": 1.0
+        },
+        {
+          "field": "parties.other_parties",
+          "original": "Property",
+          "corrected": "property",
+          "confidence": 1.0
+        },
+        {
+          "field": "parties.other_parties",
+          "original": "Holdings",
+          "corrected": "holdings",
+          "confidence": 1.0
+        },
+        {
+          "field": "parties.other_parties",
+          "original": "laws",
+          "corrected": "bylaws",
+          "confidence": 0.8
+        },
+        {
+          "field": "parties.other_parties",
+          "original": "Thornfield,",
+          "corrected": "thornfield",
+          "confidence": 0.9523809523809523
+        },
+        {
+          "field": "parties.other_parties",
+          "original": "Thornfield,",
+          "corrected": "thornfield",
+          "confidence": 0.9523809523809523
+        },
+        {
+          "field": "parties.other_parties",
+          "original": "TX",
+          "corrected": "tax",
+          "confidence": 0.8
+        },
+        {
+          "field": "parties.other_parties",
+          "original": "\"Marcus",
+          "corrected": "marcus",
+          "confidence": 0.9230769230769231
+        },
+        {
+          "field": "parties.other_parties",
+          "original": "Delacroix-Webb\",",
+          "corrected": "delacroix-webb",
+          "confidence": 0.9333333333333333
+        },
+        {
+          "field": "parties.other_parties",
+          "original": "\"Tenant\",",
+          "corrected": "tenant",
+          "confidence": 0.8
+        },
+        {
+          "field": "parties.other_parties",
+          "original": "\"TENANT:",
+          "corrected": "tenant",
+          "confidence": 0.8571428571428571
+        },
+        {
+          "field": "parties.other_parties",
+          "original": "Marcus",
+          "corrected": "marcus",
+          "confidence": 1.0
+        },
+        {
+          "field": "parties.other_parties",
+          "original": "Delacroix-Webb,",
+          "corrected": "delacroix-webb",
+          "confidence": 0.9655172413793104
+        },
+        {
+          "field": "parties.other_parties",
+          "original": "Thornfield,",
+          "corrected": "thornfield",
+          "confidence": 0.9523809523809523
+        },
+        {
+          "field": "parties.other_parties",
+          "original": "TX",
+          "corrected": "tax",
+          "confidence": 0.8
+        },
+        {
+          "field": "key_dates",
+          "original": "\"Agreement",
+          "corrected": "agreement",
+          "confidence": 0.9473684210526315
+        },
+        {
+          "field": "key_dates",
+          "original": "\"March",
+          "corrected": "march",
+          "confidence": 0.9090909090909091
+        },
+        {
+          "field": "key_dates",
+          "original": "Lease",
+          "corrected": "lease",
+          "confidence": 1.0
+        },
+        {
+          "field": "key_dates",
+          "original": "Agreement",
+          "corrected": "agreement",
+          "confidence": 1.0
+        },
+        {
+          "field": "key_dates",
+          "original": "March,",
+          "corrected": "march",
+          "confidence": 0.9090909090909091
+        },
+        {
+          "field": "key_dates",
+          "original": "\"Lease",
+          "corrected": "lease",
+          "confidence": 0.9090909090909091
+        },
+        {
+          "field": "key_dates",
+          "original": "\"March",
+          "corrected": "march",
+          "confidence": 0.9090909090909091
+        },
+        {
+          "field": "key_dates",
+          "original": "March",
+          "corrected": "march",
+          "confidence": 1.0
+        },
+        {
+          "field": "key_dates",
+          "original": "\"Lease",
+          "corrected": "lease",
+          "confidence": 0.9090909090909091
+        },
+        {
+          "field": "key_dates",
+          "original": "\"February",
+          "corrected": "february",
+          "confidence": 0.9411764705882353
+        },
+        {
+          "field": "key_dates",
+          "original": "terminate",
+          "corrected": "terminated",
+          "confidence": 0.9473684210526315
+        },
+        {
+          "field": "key_dates",
+          "original": "February",
+          "corrected": "february",
+          "confidence": 1.0
+        },
+        {
+          "field": "key_dates",
+          "original": "\\\"Lease",
+          "corrected": "lease",
+          "confidence": 0.8333333333333334
+        },
+        {
+          "field": "key_dates",
+          "original": "Agreement.\"}]",
+          "corrected": "agreement",
+          "confidence": 0.8181818181818182
+        }
+      ],
+      "unresolved_fields": [
+        "parties.plaintiffs",
+        "parties.defendants",
+        "claims",
+        "procedural_history",
+        "evidence_items",
+        "relief_sought"
+      ],
+      "passes_executed": 3
+    }
+  },
+  "chunks": [
+    {
+      "id": "chunk_4e4a62af",
+      "text": ": RESIDENTIAL LEASE AGREEMENT\n\nThis Residential Lease Agreement (\"Agreement\") is entered into as of the 1st day of March, 2024, by and between:\n\nLANDLORD: Hargrove Property Holdings LLC, a limited liability company organised under the laws of the State of Thornfield, with its principal place of business at 4400 Willowmere Drive, Suite 200, Thornfield, TX 77022 (\"Landlord\");\n\nAND\n\nTENANT: Marcus Delacroix-Webb, an individual residing at 814 Cedarbrook Lane, Apartment 3B, Thornfield, TX 77019 (\"Tenant\").\n\n1. PREMISES\nLandlord hereby leases to Tenant the residential premises located at 214 Finchley Court, Apartment 7, Thornfield, TX 77031 (the \"Premises\"), consisting of a two-bedroom, one-bathroom apartment of approximately 875 square feet.\n\n2. TERM\nThe lease term shall commence on March 1, 2024 and shall terminate on February 28, 2025 (the \"Lease Term\"), unless sooner terminated or extended in accordance with this Agreement.\n\n3. RENT\nTenant agrees to pay Landlord the sum of One Thousand Four Hundred Dollars ($1,400.00) per month (\"Monthly Rent\") as rent for the Premises, due and payable on or before the first (1st) day of each calendar month during the Lease Term. Rent shall be paid by electronic transfer to Hargrove Property Holdings LLC, Account No. ending in 7742, Routing No. 111000025.\n\n4. SECURITY DEPOSIT\nUpon execution of this Agreement, Tenant shall deposit with Landlord the sum of Two Thousand Eight Hundred Dollars ($2,800.00) (\"Security Deposit\"), equivalent to two months' rent, as security for Tenant's faithful performance of all obligations under this Agreement.\n\n5. PERMITTED USE\nThe Premises shall be used solely as a private residential dwelling for Tenant and Tenant's immediate family. No commercial activity of any kind shall be conducted on the Premises without the prior written consent of Landlord.",
+      "document_id": "doc_5c37be7a9a3b",
+      "page_number": 1,
+      "char_start": 0,
+      "char_end": 1842
+    },
+    {
+      "id": "chunk_debb5252",
+      "text": "greement.\n\n5. PERMITTED USE\nThe Premises shall be used solely as a private residential dwelling for Tenant and Tenant's immediate family. No commercial activity of any kind shall be conducted on the Premises without the prior written consent of Landlord.\n\n6. UTILITIES AND SERVICES\nTenant shall be responsible for payment of the following utilities: electricity, natural gas, internet, and cable television. Landlord shall be responsible for water, sewer, and trash collection services.\n\n7. MAINTENANCE AND REPAIRS\nTenant shall maintain the Premises in a clean and sanitary condition and shall promptly notify Landlord of any damage or defect. Landlord shall be responsible for structural repairs and maintenance of major systems (HVAC, plumbing, electrical) provided that such damage is not caused by Tenant's negligence or misuse.\n\n8. PETS\nNo pets of any kind are permitted on the Premises without prior written consent of Landlord. Unauthorized animals shall be grounds for termination of this Agreement.\n\n9. RENEWAL\nUnless either party provides written notice of non-renewal at least thirty (30) days prior to the expiration of the Lease Term, this Agreement shall automatically convert to a month-to-month tenancy at the same Monthly Rent.\n\n10. GOVERNING LAW",
+      "document_id": "doc_5c37be7a9a3b",
+      "page_number": 1,
+      "char_start": 1588,
+      "char_end": 2851
+    }
+  ],
+  "full_text": ": RESIDENTIAL LEASE AGREEMENT\n\nThis Residential Lease Agreement (\"Agreement\") is entered into as of the 1st day of March, 2024, by and between:\n\nLANDLORD: Hargrove Property Holdings LLC, a limited liability company organised under the laws of the State of Thornfield, with its principal place of business at 4400 Willowmere Drive, Suite 200, Thornfield, TX 77022 (\"Landlord\");\n\nAND\n\nTENANT: Marcus Delacroix-Webb, an individual residing at 814 Cedarbrook Lane, Apartment 3B, Thornfield, TX 77019 (\"Tenant\").\n\n1. PREMISES\nLandlord hereby leases to Tenant the residential premises located at 214 Finchley Court, Apartment 7, Thornfield, TX 77031 (the \"Premises\"), consisting of a two-bedroom, one-bathroom apartment of approximately 875 square feet.\n\n2. TERM\nThe lease term shall commence on March 1, 2024 and shall terminate on February 28, 2025 (the \"Lease Term\"), unless sooner terminated or extended in accordance with this Agreement.\n\n3. RENT\nTenant agrees to pay Landlord the sum of One Thousand Four Hundred Dollars ($1,400.00) per month (\"Monthly Rent\") as rent for the Premises, due and payable on or before the first (1st) day of each calendar month during the Lease Term. Rent shall be paid by electronic transfer to Hargrove Property Holdings LLC, Account No. ending in 7742, Routing No. 111000025.\n\n4. SECURITY DEPOSIT\nUpon execution of this Agreement, Tenant shall deposit with Landlord the sum of Two Thousand Eight Hundred Dollars ($2,800.00) (\"Security Deposit\"), equivalent to two months' rent, as security for Tenant's faithful performance of all obligations under this Agreement.\n\n5. PERMITTED USE\nThe Premises shall be used solely as a private residential dwelling for Tenant and Tenant's immediate family. No commercial activity of any kind shall be conducted on the Premises without the prior written consent of Landlord.\n\n6. UTILITIES AND SERVICES\nTenant shall be responsible for payment of the following utilities: electricity, natural gas, internet, and cable television. Landlord shall be responsible for water, sewer, and trash collection services.\n\n7. MAINTENANCE AND REPAIRS\nTenant shall maintain the Premises in a clean and sanitary condition and shall promptly notify Landlord of any damage or defect. Landlord shall be responsible for structural repairs and maintenance of major systems (HVAC, plumbing, electrical) provided that such damage is not caused by Tenant's negligence or misuse.\n\n8. PETS\nNo pets of any kind are permitted on the Premises without prior written consent of Landlord. Unauthorized animals shall be grounds for termination of this Agreement.\n\n9. RENEWAL\nUnless either party provides written notice of non-renewal at least thirty (30) days prior to the expiration of the Lease Term, this Agreement shall automatically convert to a month-to-month tenancy at the same Monthly Rent.\n\n10. GOVERNING LAW",
+  "ocr_used": true,
+  "confidence": 0.9,
+  "page_count": 1,
+  "processing_errors": []
+}

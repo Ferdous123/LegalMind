@@ -1,4 +1,4 @@
-"""ModelManager singleton — TRACE-style dict-based model registry.
+"""ModelManager singleton — dict-based model registry with analytical VRAM tracking.
 
 VRAM tracking is analytical: starts at 0, incremented on load, decremented on
 unload.  A threading lock on load() prevents concurrent loads of the same model

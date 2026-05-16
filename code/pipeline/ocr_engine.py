@@ -1,8 +1,7 @@
 """OCR engine — uses LightOnOCR-1B for optical character recognition.
 
-Per TRACE D-000057: LightOnOCR is an image-only OCR model — no text prompt.
-Uses base64 data URI (not file:// URL). Model called directly via ModelManager
-with TRACE-aligned message format.
+LightOnOCR is an image-only OCR model — no text prompt required.
+Uses base64 data URI for multimodal input. Model called directly via ModelManager.
 """
 
 import base64
@@ -31,8 +30,8 @@ def _image_to_data_uri(image_path: str) -> str:
 class OCREngine:
     """LightOnOCR-1B based OCR for scanned legal documents.
 
-    Follows TRACE approach: image-only messages, base64 data URI,
-    no text prompt (LightOnOCR is trained without text instructions).
+    Uses image-only messages with base64 data URI encoding.
+    No text prompt required (LightOnOCR is trained without text instructions).
     """
 
     def __init__(self):
@@ -43,7 +42,6 @@ class OCREngine:
 
         Sends image as base64 data URI with empty system message.
         No text prompt — LightOnOCR is an image-only OCR model.
-        Per TRACE pattern: load() returns the handle, call it directly.
         """
         handle = self._mgr.load("ocr")
 

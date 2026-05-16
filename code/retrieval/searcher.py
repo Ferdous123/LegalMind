@@ -1,9 +1,8 @@
-"""Evidence searcher — BM25 keyword retrieval over processed document chunks.
+"""Evidence searcher — hybrid semantic + BM25 retrieval over document chunks.
 
-No embedding model or vector store. Chunks are loaded directly from the
-processed document JSON (data/processed/<doc_id>.json) and ranked with
-BM25. This follows the same model-free retrieval pattern as TRACE's
-query_by_field: pure keyword matching, foolproof, no GPU required.
+Primary: ChromaDB semantic search using sentence-transformer embeddings.
+Fallback: BM25 keyword retrieval from processed document JSON files.
+Results from both methods are fused using Reciprocal Rank Fusion (RRF).
 """
 
 import json
@@ -21,31 +20,25 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class EvidenceChunk:
-    """A retrieved evidence chunk with BM25 relevance score."""
+    """A retrieved evidence chunk with relevance score."""
     chunk_id: str
     text: str
     document_id: str
     page_number: int
     char_start: int
     char_end: int
-    similarity_score: float  # BM25 score normalised to [0, 1]
+    similarity_score: float
 
 
 # ---------------------------------------------------------------------------
-# Minimal BM25 implementation (no external library required)
+# BM25 implementation (fallback when ChromaDB unavailable)
 # ---------------------------------------------------------------------------
 
 def _tokenise(text: str) -> list[str]:
-    """Lowercase, split on non-alphanumeric, drop empty tokens."""
     return [t for t in re.split(r"\W+", text.lower()) if t]
 
 
 class _BM25:
-    """BM25 Okapi over a corpus of token lists.
-
-    Parameters follow the standard defaults: k1=1.5, b=0.75.
-    """
-
     def __init__(self, corpus: list[list[str]], k1: float = 1.5, b: float = 0.75):
         self.k1 = k1
         self.b = b
@@ -73,14 +66,13 @@ class _BM25:
         return score
 
     def rank(self, query_tokens: list[str]) -> list[tuple[int, float]]:
-        """Return (index, score) pairs sorted descending by score."""
         scores = [(i, self.score(query_tokens, i)) for i in range(self.N)]
         scores.sort(key=lambda x: x[1], reverse=True)
         return scores
 
 
 # ---------------------------------------------------------------------------
-# Field-to-query expansions (same as TRACE's query_by_field vocabulary)
+# Field-to-query expansions (legal vocabulary for field-specific retrieval)
 # ---------------------------------------------------------------------------
 
 _FIELD_QUERIES: dict[str, str] = {
@@ -101,15 +93,15 @@ _FIELD_QUERIES: dict[str, str] = {
 
 
 class EvidenceSearcher:
-    """Retrieves relevant document chunks using BM25 keyword ranking.
+    """Hybrid retrieval: semantic search (ChromaDB) + BM25 keyword matching.
 
-    Chunks are loaded from data/processed/<doc_id>.json on each search
-    (lightweight JSON read). No embedding model or vector store required.
+    Uses Reciprocal Rank Fusion to merge results from both methods.
+    Falls back to BM25-only if ChromaDB/embeddings are unavailable.
     """
 
     def search(self, query: str, doc_ids: Optional[list[str]] = None,
                top_k: int = 5) -> list[EvidenceChunk]:
-        """Search for relevant evidence chunks via BM25.
+        """Search for relevant evidence chunks using hybrid retrieval.
 
         Args:
             query: Natural language query string.
@@ -117,11 +109,85 @@ class EvidenceSearcher:
             top_k: Maximum number of chunks to return.
 
         Returns:
-            List of EvidenceChunk sorted by BM25 score (highest first).
+            List of EvidenceChunk sorted by relevance (highest first).
         """
+        semantic_results = self._semantic_search(query, doc_ids, top_k * 2)
+        bm25_results = self._bm25_search(query, doc_ids, top_k * 2)
+
+        if semantic_results and bm25_results:
+            fused = self._reciprocal_rank_fusion(semantic_results, bm25_results, top_k)
+            logger.info("Hybrid search '%s': %d semantic + %d BM25 → %d fused",
+                        query[:40], len(semantic_results), len(bm25_results), len(fused))
+            return fused
+        elif semantic_results:
+            return semantic_results[:top_k]
+        elif bm25_results:
+            return bm25_results[:top_k]
+        return []
+
+    def search_by_field(self, field_name: str, doc_ids: Optional[list[str]] = None,
+                        top_k: int = 3) -> list[EvidenceChunk]:
+        """Search for evidence relevant to a specific legal field."""
+        query = _FIELD_QUERIES.get(field_name, field_name.replace("_", " "))
+        return self.search(query, doc_ids=doc_ids, top_k=top_k)
+
+    # ------------------------------------------------------------------
+    # Semantic search via ChromaDB
+    # ------------------------------------------------------------------
+
+    def _semantic_search(self, query: str, doc_ids: Optional[list[str]],
+                         top_k: int) -> list[EvidenceChunk]:
+        """Query ChromaDB for semantically similar chunks."""
+        try:
+            from code.retrieval.indexer import _get_collection
+            collection = _get_collection()
+            if collection is None:
+                return []
+
+            where_filter = None
+            if doc_ids and len(doc_ids) == 1:
+                where_filter = {"document_id": doc_ids[0]}
+            elif doc_ids and len(doc_ids) > 1:
+                where_filter = {"document_id": {"$in": doc_ids}}
+
+            results = collection.query(
+                query_texts=[query],
+                n_results=top_k,
+                where=where_filter,
+                include=["documents", "metadatas", "distances"],
+            )
+
+            chunks = []
+            if results and results["ids"] and results["ids"][0]:
+                for i, chunk_id in enumerate(results["ids"][0]):
+                    text = results["documents"][0][i] if results["documents"] else ""
+                    meta = results["metadatas"][0][i] if results["metadatas"] else {}
+                    distance = results["distances"][0][i] if results["distances"] else 1.0
+                    similarity = max(0.0, 1.0 - distance)
+
+                    chunks.append(EvidenceChunk(
+                        chunk_id=chunk_id,
+                        text=text,
+                        document_id=meta.get("document_id", ""),
+                        page_number=meta.get("page_number", 0),
+                        char_start=meta.get("char_start", 0),
+                        char_end=meta.get("char_end", 0),
+                        similarity_score=similarity,
+                    ))
+            return chunks
+        except Exception as exc:
+            logger.warning("Semantic search failed: %s — falling back to BM25", exc)
+            return []
+
+    # ------------------------------------------------------------------
+    # BM25 keyword search (fallback)
+    # ------------------------------------------------------------------
+
+    def _bm25_search(self, query: str, doc_ids: Optional[list[str]],
+                     top_k: int) -> list[EvidenceChunk]:
+        """BM25 keyword search over stored chunks."""
         chunks = self._load_chunks(doc_ids)
         if not chunks:
-            logger.warning("No chunks found for doc_ids=%s", doc_ids)
             return []
 
         corpus = [_tokenise(c["text"]) for c in chunks]
@@ -129,31 +195,48 @@ class EvidenceSearcher:
         query_tokens = _tokenise(query)
 
         if not query_tokens:
-            # No meaningful query terms — return first top_k chunks
             return [self._to_evidence(chunks[i], 0.0) for i in range(min(top_k, len(chunks)))]
 
         ranked = bm25.rank(query_tokens)
-        # Normalise scores to [0, 1]
         max_score = ranked[0][1] if ranked and ranked[0][1] > 0 else 1.0
 
         results = []
         for idx, raw_score in ranked[:top_k]:
             norm_score = raw_score / max_score if max_score > 0 else 0.0
             results.append(self._to_evidence(chunks[idx], norm_score))
-
-        logger.info("BM25 search '%s': %d chunks searched, %d returned",
-                    query[:60], len(chunks), len(results))
         return results
 
-    def search_by_field(self, field_name: str, doc_ids: Optional[list[str]] = None,
-                        top_k: int = 3) -> list[EvidenceChunk]:
-        """Search for evidence relevant to a specific legal field.
+    # ------------------------------------------------------------------
+    # Reciprocal Rank Fusion
+    # ------------------------------------------------------------------
 
-        Expands the field name to a keyword query using the legal vocabulary
-        table, then delegates to search().
-        """
-        query = _FIELD_QUERIES.get(field_name, field_name.replace("_", " "))
-        return self.search(query, doc_ids=doc_ids, top_k=top_k)
+    def _reciprocal_rank_fusion(self, semantic: list[EvidenceChunk],
+                                bm25: list[EvidenceChunk],
+                                top_k: int, k: int = 60) -> list[EvidenceChunk]:
+        """Fuse results from semantic and BM25 using RRF scoring."""
+        scores: dict[str, float] = {}
+        chunk_map: dict[str, EvidenceChunk] = {}
+
+        for rank, chunk in enumerate(semantic):
+            key = chunk.chunk_id or chunk.text[:80]
+            scores[key] = scores.get(key, 0.0) + 1.0 / (k + rank + 1)
+            chunk_map[key] = chunk
+
+        for rank, chunk in enumerate(bm25):
+            key = chunk.chunk_id or chunk.text[:80]
+            scores[key] = scores.get(key, 0.0) + 1.0 / (k + rank + 1)
+            if key not in chunk_map:
+                chunk_map[key] = chunk
+
+        sorted_keys = sorted(scores.keys(), key=lambda x: scores[x], reverse=True)
+
+        results = []
+        for key in sorted_keys[:top_k]:
+            chunk = chunk_map[key]
+            chunk.similarity_score = scores[key]
+            results.append(chunk)
+
+        return results
 
     # ------------------------------------------------------------------
     # Internal helpers

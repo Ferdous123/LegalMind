@@ -1,0 +1,473 @@
+{
+  "id": "doc_97f5fff8b776",
+  "filename": "img_2_level_3.png",
+  "upload_timestamp": "2026-05-16T02:37:08.422912+00:00",
+  "pages": [
+    {
+      "page_number": 1,
+      "text": ":# IN THE DISTRICT COURT OF CALDWELL COUNTY STATE OF THORNFIELD CIVIL DIVISION\n\n---\n\n**SYNTHEX INDUSTRIAL PARTNERS, INC.,**\na Thornfield corporation,\n\nPlaintiff,\n\nv.\n\n**NORWOOD FABRICATION GROUP LLC,**\na Delaware limited liability company,\nand GERALD P. NORWOOD, individually,\n\nDefendants.\n\n---\n\n**COMPLAINT FOR BREACH OF CONTRACT, FRAUD, AND UNJUST ENRICHMENT**\n\nPlaintiff Synthex Industrial Partners, Inc. (\"Synthex\" or \"Plaintiff\"), by and through its undersigned counsel, Kavanaugh & Ashworth LLP, hereby files this Complaint against Defendants Norwood Fabrication Group LLC (\"Norwood\") and Gerald P. Norwood (\"Norwood Individual\") (collectively \"Defendants\"), and in support thereof alleges as follows:\n\n---\n\n**PARTIES**\n\n1. Plaintiff Synthex Industrial Partners, Inc. is a corporation incorporated and existing under the laws of the State of Thornfield, with its principal place of business at 9900 Commerce Parkway, Caldwell City, TX 77045.\n\n2. Defendant Norwood Fabrication Group LLC is a limited liability company organised under the laws of the State of Delaware, registered to do business in Thornfield, with its registered agent at 302 Industrial Loop, Caldwell City, TX 77046.\n\n3. Defendant Gerald P. Norwood is an individual and the sole managing member of Norwood Fabrication Group LLC, residing at 512 Ridgecrest Drive, Caldwell City, TX 77048.\n\n---\n\n**JURISDICTION AND VENUE**\n\n4. This Court has subject matter jurisdiction pursuant to Thornfield Civil Practice Code Section 14.001, as the amount in controversy exceeds $75,000.00 exclusive of interest and costs.\n\n5. Venue is proper in Caldwell County pursuant to Thornfield Civil Practice Code Section 15.002(a)(1), as Defendants' principal place of business is located in Caldwell County and the events giving rise to this action occurred in Caldwell County.\n\n---\n\n**FACTUAL BACKGROUND**\n\n6. On or about January 15, 2023, Synthex and Norwood entered into a Manufacturing Services Agreement (\"MSA\") under which Norwood agreed to fabricate and deliver 3,500 custom industrial valve assemblies to Synthex at a total contract price of $840,000.00, with delivery to occur in four equal quarterly instalments beginning April 1, 2023.\n\n7. Synthex paid Norwood an initial deposit of $210,000.00 on January 20, 2023, representing 25% of the total contract price, as required by Section 4.1 of the MSA.",
+      "confidence": 0.9,
+      "ocr_used": true,
+      "ocr_error": ""
+    }
+  ],
+  "structured_fields": {
+    "parties": {
+      "plaintiffs": "[{\"name\": \"SYNTHEX INDUSTRIAL PARTNERS, INC.\", \"role\": plaintiff \"source_span\": plaintiff Synthex Industrial Partners, Inc. (\\\"Synthex\\\" or \\\"Plaintiff\\\")\"}]",
+      "defendants": "[{\"name\": \"NORWOOD FABRICATION GROUP LLC\", \"role\": defendant \"source_span\": defendant Norwood Fabrication Group LLC (\\\"Norwood\\\")\"}, {\"name\": \"GERALD P. NORWOOD\", \"role\": defendant \"source_span\": \"and GERALD P. NORWOOD, individually, Defendants.\"}]",
+      "other_parties": []
+    },
+    "key_dates": "[{\"event\": \"Agreement entered into\", \"date\": \"January 15, 2023\", \"source_span\": \"On or about January 15, 2023, Synthex and Norwood entered into a Manufacturing Services Agreement (\\\"MSA\\\").\"}, {\"event\": \"Initial deposit paid\", \"date\": \"January 20, 2023\", \"source_span\": \"Synthex paid Norwood an initial deposit of $210,000.00 on January 20, 2023.\"}]",
+    "claims": "[{\"type\": \"Breach of Contract\", \"description\": \"Defendants failed to perform obligations under the Manufacturing Services Agreement.\", \"legal_basis\": \"Complaint for Breach of Contract, Fraud, and Unjust Enrichment\", \"source_span\": \"COMPLAINT FOR BREACH OF CONTRACT, FRAUD, AND UNJUST ENRICHMENT\"}]",
+    "procedural_history": "[{\"event\": \"Filing of complaint \"date\": \"Not specified\", \"source_span\": hereby filed this complaint against defendant Norwood Fabrication Group LLC (\\\"Norwood\\\") and Gerald P. Norwood (\\\"Norwood Individual\\\")\"}]",
+    "evidence_items": "[{\"type\": contract \"description\": \"Manufacturing service fees agreement (\\\"MSA\\\")\", \"source_span\": \"Manufacturing service fees agreement (\\\"MSA\\\")\"}, {\"type\": \"Payment Record\", \"description\": \"Initial deposit payment of $210,000.00\", \"source_span\": \"Synthex paid Norwood an initial deposit of $210,000.00 on January 20, 2023\"}]",
+    "relief_sought": "[{\"party\": \"Synthex Industrial Partners, Inc.\", \"relief\": \"Damages/Remedies released to Breach of contract Fraud, and Unjust Enrichment\", \"amount\": \"Not specified (but jurisdiction is based on amount in controversy exceeding $75,000.00)\", \"source_span\": \"This Court has subject matter jurisdiction pursuant to thornfield Civil Practice Code inspection 14.001, as the amount in controversy exceeds $75,000.00 exclusive of interest and costs.\"}]",
+    "_cascade_meta": {
+      "confidence_map": {
+        "parties.plaintiffs": 0.919,
+        "parties.defendants": 0.917,
+        "parties.other_parties": 0.0,
+        "key_dates": 0.942,
+        "claims": 0.919,
+        "procedural_history": 0.935,
+        "evidence_items": 0.914,
+        "relief_sought": 0.945
+      },
+      "resolution_methods": {
+        "parties.plaintiffs": "source_anchor",
+        "parties.defendants": "source_anchor",
+        "parties.other_parties": "manual_review",
+        "key_dates": "source_anchor",
+        "claims": "source_anchor",
+        "procedural_history": "source_anchor",
+        "evidence_items": "source_anchor",
+        "relief_sought": "source_anchor"
+      },
+      "corpus_corrections": [
+        {
+          "field": "parties.plaintiffs",
+          "original": "\"Plaintiff\",",
+          "corrected": "plaintiff",
+          "confidence": 0.8571428571428571
+        },
+        {
+          "field": "parties.plaintiffs",
+          "original": "\"Plaintiff",
+          "corrected": "plaintiff",
+          "confidence": 0.9473684210526315
+        },
+        {
+          "field": "parties.defendants",
+          "original": "\"Defendant\",",
+          "corrected": "defendant",
+          "confidence": 0.8571428571428571
+        },
+        {
+          "field": "parties.defendants",
+          "original": "\"Defendants",
+          "corrected": "defendant",
+          "confidence": 0.9
+        },
+        {
+          "field": "parties.defendants",
+          "original": "\"Defendant\",",
+          "corrected": "defendant",
+          "confidence": 0.8571428571428571
+        },
+        {
+          "field": "key_dates",
+          "original": "\"Contract",
+          "corrected": "contract",
+          "confidence": 0.9411764705882353
+        },
+        {
+          "field": "key_dates",
+          "original": "Services",
+          "corrected": "service fees",
+          "confidence": 0.8
+        },
+        {
+          "field": "key_dates",
+          "original": "Agreement",
+          "corrected": "agreement",
+          "confidence": 1.0
+        },
+        {
+          "field": "claims",
+          "original": "Contract\",",
+          "corrected": "contract",
+          "confidence": 0.8888888888888888
+        },
+        {
+          "field": "claims",
+          "original": "\"Defendants",
+          "corrected": "defendant",
+          "confidence": 0.9
+        },
+        {
+          "field": "claims",
+          "original": "failed",
+          "corrected": "filed",
+          "confidence": 0.9090909090909091
+        },
+        {
+          "field": "claims",
+          "original": "Services",
+          "corrected": "service fees",
+          "confidence": 0.8
+        },
+        {
+          "field": "claims",
+          "original": "Agreement.\",",
+          "corrected": "agreement",
+          "confidence": 0.8571428571428571
+        },
+        {
+          "field": "claims",
+          "original": "\"Complaint",
+          "corrected": "complaint",
+          "confidence": 0.9473684210526315
+        },
+        {
+          "field": "claims",
+          "original": "Contract,",
+          "corrected": "contract",
+          "confidence": 0.9411764705882353
+        },
+        {
+          "field": "claims",
+          "original": "\"COMPLAINT",
+          "corrected": "complaint",
+          "confidence": 0.9473684210526315
+        },
+        {
+          "field": "claims",
+          "original": "CONTRACT,",
+          "corrected": "contract",
+          "confidence": 0.9411764705882353
+        },
+        {
+          "field": "claims",
+          "original": "\"Defendants",
+          "corrected": "defendant",
+          "confidence": 0.9
+        },
+        {
+          "field": "claims",
+          "original": "related",
+          "corrected": "released",
+          "confidence": 0.8
+        },
+        {
+          "field": "claims",
+          "original": "contract.\",",
+          "corrected": "contract",
+          "confidence": 0.8421052631578947
+        },
+        {
+          "field": "claims",
+          "original": "\"Complaint",
+          "corrected": "complaint",
+          "confidence": 0.9473684210526315
+        },
+        {
+          "field": "claims",
+          "original": "Contract,",
+          "corrected": "contract",
+          "confidence": 0.9411764705882353
+        },
+        {
+          "field": "claims",
+          "original": "\"COMPLAINT",
+          "corrected": "complaint",
+          "confidence": 0.9473684210526315
+        },
+        {
+          "field": "claims",
+          "original": "CONTRACT,",
+          "corrected": "contract",
+          "confidence": 0.9411764705882353
+        },
+        {
+          "field": "claims",
+          "original": "\"Defendants",
+          "corrected": "defendant",
+          "confidence": 0.9
+        },
+        {
+          "field": "claims",
+          "original": "retained",
+          "corrected": "retainer",
+          "confidence": 0.875
+        },
+        {
+          "field": "claims",
+          "original": "\"Complaint",
+          "corrected": "complaint",
+          "confidence": 0.9473684210526315
+        },
+        {
+          "field": "claims",
+          "original": "Contract,",
+          "corrected": "contract",
+          "confidence": 0.9411764705882353
+        },
+        {
+          "field": "claims",
+          "original": "\"COMPLAINT",
+          "corrected": "complaint",
+          "confidence": 0.9473684210526315
+        },
+        {
+          "field": "claims",
+          "original": "CONTRACT,",
+          "corrected": "contract",
+          "confidence": 0.9411764705882353
+        },
+        {
+          "field": "parties.plaintiffs",
+          "original": "\"Plaintiff\",",
+          "corrected": "plaintiff",
+          "confidence": 0.8571428571428571
+        },
+        {
+          "field": "parties.defendants",
+          "original": "\"Defendant\",",
+          "corrected": "defendant",
+          "confidence": 0.8571428571428571
+        },
+        {
+          "field": "parties.defendants",
+          "original": "\"Defendant\",",
+          "corrected": "defendant",
+          "confidence": 0.8571428571428571
+        },
+        {
+          "field": "key_dates",
+          "original": "Services",
+          "corrected": "service fees",
+          "confidence": 0.8
+        },
+        {
+          "field": "key_dates",
+          "original": "Agreement",
+          "corrected": "agreement",
+          "confidence": 1.0
+        },
+        {
+          "field": "key_dates",
+          "original": "Services",
+          "corrected": "service fees",
+          "confidence": 0.8
+        },
+        {
+          "field": "key_dates",
+          "original": "Agreement",
+          "corrected": "agreement",
+          "confidence": 1.0
+        },
+        {
+          "field": "key_dates",
+          "original": "delivery",
+          "corrected": "delivered",
+          "confidence": 0.8235294117647058
+        },
+        {
+          "field": "key_dates",
+          "original": "delivery",
+          "corrected": "delivered",
+          "confidence": 0.8235294117647058
+        },
+        {
+          "field": "claims",
+          "original": "Contract\",",
+          "corrected": "contract",
+          "confidence": 0.8888888888888888
+        },
+        {
+          "field": "claims",
+          "original": "Services",
+          "corrected": "service fees",
+          "confidence": 0.8
+        },
+        {
+          "field": "claims",
+          "original": "Agreement",
+          "corrected": "agreement",
+          "confidence": 1.0
+        },
+        {
+          "field": "claims",
+          "original": "\"Contract",
+          "corrected": "contract",
+          "confidence": 0.9411764705882353
+        },
+        {
+          "field": "claims",
+          "original": "\"COMPLAINT",
+          "corrected": "complaint",
+          "confidence": 0.9473684210526315
+        },
+        {
+          "field": "claims",
+          "original": "CONTRACT,",
+          "corrected": "contract",
+          "confidence": 0.9411764705882353
+        },
+        {
+          "field": "claims",
+          "original": "Defendants.\",",
+          "corrected": "defendant",
+          "confidence": 0.8181818181818182
+        },
+        {
+          "field": "claims",
+          "original": "\"COMPLAINT",
+          "corrected": "complaint",
+          "confidence": 0.9473684210526315
+        },
+        {
+          "field": "claims",
+          "original": "CONTRACT,",
+          "corrected": "contract",
+          "confidence": 0.9411764705882353
+        },
+        {
+          "field": "claims",
+          "original": "Defendants",
+          "corrected": "defendant",
+          "confidence": 0.9473684210526315
+        },
+        {
+          "field": "claims",
+          "original": "Plaintiff.\",",
+          "corrected": "plaintiff",
+          "confidence": 0.8571428571428571
+        },
+        {
+          "field": "claims",
+          "original": "\"COMPLAINT",
+          "corrected": "complaint",
+          "confidence": 0.9473684210526315
+        },
+        {
+          "field": "claims",
+          "original": "CONTRACT,",
+          "corrected": "contract",
+          "confidence": 0.9411764705882353
+        },
+        {
+          "field": "procedural_history",
+          "original": "Complaint\",",
+          "corrected": "complaint",
+          "confidence": 0.9
+        },
+        {
+          "field": "procedural_history",
+          "original": "\"hereby",
+          "corrected": "hereby",
+          "confidence": 0.9230769230769231
+        },
+        {
+          "field": "procedural_history",
+          "original": "files",
+          "corrected": "filed",
+          "confidence": 0.8
+        },
+        {
+          "field": "procedural_history",
+          "original": "Complaint",
+          "corrected": "complaint",
+          "confidence": 1.0
+        },
+        {
+          "field": "procedural_history",
+          "original": "Defendants",
+          "corrected": "defendant",
+          "confidence": 0.9473684210526315
+        },
+        {
+          "field": "evidence_items",
+          "original": "\"Contract\",",
+          "corrected": "contract",
+          "confidence": 0.8421052631578947
+        },
+        {
+          "field": "evidence_items",
+          "original": "Services",
+          "corrected": "service fees",
+          "confidence": 0.8
+        },
+        {
+          "field": "evidence_items",
+          "original": "Agreement",
+          "corrected": "agreement",
+          "confidence": 1.0
+        },
+        {
+          "field": "evidence_items",
+          "original": "Services",
+          "corrected": "service fees",
+          "confidence": 0.8
+        },
+        {
+          "field": "evidence_items",
+          "original": "Agreement",
+          "corrected": "agreement",
+          "confidence": 1.0
+        },
+        {
+          "field": "relief_sought",
+          "original": "related",
+          "corrected": "released",
+          "confidence": 0.8
+        },
+        {
+          "field": "relief_sought",
+          "original": "Contract,",
+          "corrected": "contract",
+          "confidence": 0.9411764705882353
+        },
+        {
+          "field": "relief_sought",
+          "original": "Thornfield",
+          "corrected": "thornfield",
+          "confidence": 1.0
+        },
+        {
+          "field": "relief_sought",
+          "original": "Section",
+          "corrected": "inspection",
+          "confidence": 0.8235294117647058
+        }
+      ],
+      "unresolved_fields": [
+        "parties.other_parties"
+      ],
+      "passes_executed": 3
+    }
+  },
+  "chunks": [
+    {
+      "id": "chunk_1f4e7710",
+      "text": ":# IN THE DISTRICT COURT OF CALDWELL COUNTY STATE OF THORNFIELD CIVIL DIVISION\n\n---\n\n**SYNTHEX INDUSTRIAL PARTNERS, INC.,**\na Thornfield corporation,\n\nPlaintiff,\n\nv.\n\n**NORWOOD FABRICATION GROUP LLC,**\na Delaware limited liability company,\nand GERALD P. NORWOOD, individually,\n\nDefendants.\n\n---\n\n**COMPLAINT FOR BREACH OF CONTRACT, FRAUD, AND UNJUST ENRICHMENT**\n\nPlaintiff Synthex Industrial Partners, Inc. (\"Synthex\" or \"Plaintiff\"), by and through its undersigned counsel, Kavanaugh & Ashworth LLP, hereby files this Complaint against Defendants Norwood Fabrication Group LLC (\"Norwood\") and Gerald P. Norwood (\"Norwood Individual\") (collectively \"Defendants\"), and in support thereof alleges as follows:\n\n---\n\n**PARTIES**\n\n1. Plaintiff Synthex Industrial Partners, Inc. is a corporation incorporated and existing under the laws of the State of Thornfield, with its principal place of business at 9900 Commerce Parkway, Caldwell City, TX 77045.\n\n2. Defendant Norwood Fabrication Group LLC is a limited liability company organised under the laws of the State of Delaware, registered to do business in Thornfield, with its registered agent at 302 Industrial Loop, Caldwell City, TX 77046.\n\n3. Defendant Gerald P. Norwood is an individual and the sole managing member of Norwood Fabrication Group LLC, residing at 512 Ridgecrest Drive, Caldwell City, TX 77048.\n\n---\n\n**JURISDICTION AND VENUE**\n\n4. This Court has subject matter jurisdiction pursuant to Thornfield Civil Practice Code Section 14.001, as the amount in controversy exceeds $75,000.00 exclusive of interest and costs.\n\n5. Venue is proper in Caldwell County pursuant to Thornfield Civil Practice Code Section 15.002(a)(1), as Defendants' principal place of business is located in Caldwell County and the events giving rise to this action occurred in Caldwell County.\n\n---\n\n**FACTUAL BACKGROUND**",
+      "document_id": "doc_97f5fff8b776",
+      "page_number": 1,
+      "char_start": 0,
+      "char_end": 1857
+    },
+    {
+      "id": "chunk_5be4733e",
+      "text": "Caldwell County pursuant to Thornfield Civil Practice Code Section 15.002(a)(1), as Defendants' principal place of business is located in Caldwell County and the events giving rise to this action occurred in Caldwell County.\n\n---\n\n**FACTUAL BACKGROUND**\n\n6. On or about January 15, 2023, Synthex and Norwood entered into a Manufacturing Services Agreement (\"MSA\") under which Norwood agreed to fabricate and deliver 3,500 custom industrial valve assemblies to Synthex at a total contract price of $840,000.00, with delivery to occur in four equal quarterly instalments beginning April 1, 2023.\n\n7. Synthex paid Norwood an initial deposit of $210,000.00 on January 20, 2023, representing 25% of the total contract price, as required by Section 4.1 of the MSA.",
+      "document_id": "doc_97f5fff8b776",
+      "page_number": 1,
+      "char_start": 1603,
+      "char_end": 2361
+    }
+  ],
+  "full_text": ":# IN THE DISTRICT COURT OF CALDWELL COUNTY STATE OF THORNFIELD CIVIL DIVISION\n\n---\n\n**SYNTHEX INDUSTRIAL PARTNERS, INC.,**\na Thornfield corporation,\n\nPlaintiff,\n\nv.\n\n**NORWOOD FABRICATION GROUP LLC,**\na Delaware limited liability company,\nand GERALD P. NORWOOD, individually,\n\nDefendants.\n\n---\n\n**COMPLAINT FOR BREACH OF CONTRACT, FRAUD, AND UNJUST ENRICHMENT**\n\nPlaintiff Synthex Industrial Partners, Inc. (\"Synthex\" or \"Plaintiff\"), by and through its undersigned counsel, Kavanaugh & Ashworth LLP, hereby files this Complaint against Defendants Norwood Fabrication Group LLC (\"Norwood\") and Gerald P. Norwood (\"Norwood Individual\") (collectively \"Defendants\"), and in support thereof alleges as follows:\n\n---\n\n**PARTIES**\n\n1. Plaintiff Synthex Industrial Partners, Inc. is a corporation incorporated and existing under the laws of the State of Thornfield, with its principal place of business at 9900 Commerce Parkway, Caldwell City, TX 77045.\n\n2. Defendant Norwood Fabrication Group LLC is a limited liability company organised under the laws of the State of Delaware, registered to do business in Thornfield, with its registered agent at 302 Industrial Loop, Caldwell City, TX 77046.\n\n3. Defendant Gerald P. Norwood is an individual and the sole managing member of Norwood Fabrication Group LLC, residing at 512 Ridgecrest Drive, Caldwell City, TX 77048.\n\n---\n\n**JURISDICTION AND VENUE**\n\n4. This Court has subject matter jurisdiction pursuant to Thornfield Civil Practice Code Section 14.001, as the amount in controversy exceeds $75,000.00 exclusive of interest and costs.\n\n5. Venue is proper in Caldwell County pursuant to Thornfield Civil Practice Code Section 15.002(a)(1), as Defendants' principal place of business is located in Caldwell County and the events giving rise to this action occurred in Caldwell County.\n\n---\n\n**FACTUAL BACKGROUND**\n\n6. On or about January 15, 2023, Synthex and Norwood entered into a Manufacturing Services Agreement (\"MSA\") under which Norwood agreed to fabricate and deliver 3,500 custom industrial valve assemblies to Synthex at a total contract price of $840,000.00, with delivery to occur in four equal quarterly instalments beginning April 1, 2023.\n\n7. Synthex paid Norwood an initial deposit of $210,000.00 on January 20, 2023, representing 25% of the total contract price, as required by Section 4.1 of the MSA.",
+  "ocr_used": true,
+  "confidence": 0.9,
+  "page_count": 1,
+  "processing_errors": []
+}
