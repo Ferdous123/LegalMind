@@ -1,5 +1,24 @@
 # LegalMind
 
+## Live demo
+
+**<https://huggingface.co/spaces/ferdus/LegalMind>**
+
+The Space hosts the results of a **pilot run** of the full pipeline: 8
+documents (5 text PDFs and 3 scanned images, covering all four draft
+types) that were ingested, OCR'd, extracted, retrieved, drafted, and
+verified locally on a GPU machine before deployment. Their generated
+drafts, `[E1]`-style citations, per-claim verification, operator
+corrections, and learned rules are all in place — you can browse the
+entire workflow end-to-end through the UI without any setup.
+
+The deployed runtime is CPU-only, so new ingestion / draft generation /
+rule extraction are not available in the Space; those endpoints return a
+clear 503. To run the live pipeline against your own documents, clone
+the repository and follow the setup instructions below.
+
+---
+
 LegalMind is an internal document-intelligence pipeline for a law firm. It
 takes messy legal documents — scanned pages, low-resolution PDFs,
 typed text — pulls structured data out of them, retrieves the relevant
