@@ -1,0 +1,26 @@
+# Don't ship dev artifacts, secrets, or GPU-only data into the Spaces image.
+.venv/
+venv/
+env/
+__pycache__/
+*.pyc
+.git/
+.gitignore
+.claude/
+CLAUDE.md
+HANDOFF.md
+NEXT_SESSION.md
+.mcp.json
+.env
+.env.local
+*.gguf
+data/chroma/
+data/chromadb/
+data/palace/
+data/queue_state.json
+logs/
+.pytest_cache/
+.coverage
+htmlcov/
+*.bak
+*.expbak

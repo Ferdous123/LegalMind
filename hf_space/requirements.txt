@@ -1,0 +1,14 @@
+# Minimal CPU-only deps for the read-only Spaces demo.
+# Deliberately excludes llama-cpp-python, torch, sentence-transformers,
+# chromadb — none of those are needed to browse populated data.
+
+fastapi>=0.111
+uvicorn[standard]>=0.30
+jinja2>=3.1
+python-multipart>=0.0.9
+sse-starlette>=2.1
+pyyaml>=6.0
+requests>=2.32
+pdfplumber>=0.11
+pypdfium2>=4.30
+pillow>=10.0
