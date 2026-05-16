@@ -1,127 +1,39 @@
-Generate a TITLE REVIEW SUMMARY from the provided evidence. This draft will be used by attorneys to assess marketability of title and identify defects requiring remediation. Every finding must be traceable to a specific evidence passage.
+Generate a CONCISE TITLE REVIEW SUMMARY from the provided evidence. An
+attorney will skim this in under a minute to judge marketability and spot
+defects. Be brief and scannable — short bullets, no padding, no repetition.
 
-IMPORTANT — GROUNDING REQUIREMENT:
-Attach [E1], [E2], etc. immediately after every factual claim. If you cannot cite a specific evidence passage for a claim, do not make it — record it under "Title Defects and Gaps" as an unresolvable gap. A draft with uncited claims is not acceptable.
+STRICT GROUNDING — NO DATA LEAKAGE:
+- Attach [E1], [E2], etc. immediately after every factual claim.
+- State ONLY what the cited evidence supports. Never infer, assume, or fill
+  gaps from general knowledge. If the source does not state something, write
+  "Not stated in source" — do not guess.
+- If you cannot cite an evidence passage for a claim, do not make the claim;
+  record it instead under "Defects & Gaps".
+- Flag OCR-suspect recording numbers / legal-description fragments inline
+  (e.g. "Book 4l2 [E3] — '4l2' may be OCR-garbled").
 
-For real property records, OCR artifacts are especially common in recording information (book/page numbers, instrument numbers) and legal descriptions (metes-and-bounds sequences). If a recording reference or legal description contains characters that may be OCR-garbled (e.g., "B0ok 4l2" where "l" may be "1"), flag it explicitly.
-
----
+Keep the whole output under ~350 words. Use this exact structure:
 
 ## TITLE REVIEW SUMMARY
 
-### Document Summary
-[2–3 sentences: property identification, jurisdiction, and date range of title instruments reviewed. Cite at least one evidence item.]
+**Property:** [legal description in brief + common address + county] [cite]
+(use "Not stated in source" for any missing piece — do not infer)
 
----
+**Chain of title:** one line per transfer, oldest → newest:
+- [date] — [grantor] → [grantee], [instrument type], [recording ref] [cite]
+- ... mark any break as "GAP: no instrument from [X] to [Y]".
 
-### 1. Property Description
+**Encumbrances:** one line each (type — holder — amount/desc — status) [cite];
+or "None identified in source."
 
-- Legal description: [exact text as it appears in source, preserving all metes-and-bounds language] [cite] — if partially illegible: mark gaps with [illegible] and note confidence.
-- Common address: [value] [cite] — if not stated: "Not clearly established in source documents."
-- Parcel / Lot number: [value] [cite] — note any OCR-suspect digit sequences.
-- County / Jurisdiction: [value] [cite]
-- Acreage / Square footage: [value if stated] [cite] — if not stated: "Not stated in source documents."
+**Defects & Gaps:** bullet each (chain gaps, unreleased liens, description
+inconsistencies, probate/signature issues). Give severity
+Minor / Moderate / Major. If none: "None identified."
 
----
+**Current status:** owner of record [cite]; vesting [cite or "Not stated"];
+marketability — one of CLEAR / CLOUDED / DEFECTIVE with a one-line basis.
 
-### 2. Chain of Title
+**Citations:** [E1] "short verbatim quote" (doc, p.X) — one line per citation.
 
-List every transfer in chronological order, from oldest to most recent. Each entry must have an evidence citation.
-
-**Transfer [N]:**
-- Grantor (seller/transferor): [full name] [cite]
-- Grantee (buyer/transferee): [full name] [cite]
-- Date of transfer: [date as stated in instrument] [cite]
-- Instrument type: [warranty deed / quitclaim deed / court order / will / sheriff's deed / etc.] [cite]
-- Recording information: Book [X], Page [Y] / Instrument No. [Z] [cite] — flag any digits that may be OCR-garbled.
-- Consideration: [amount if stated, or "Consideration not stated"] [cite]
-- Grantor capacity (individual, trustee, executor, corporate officer, etc.): [value if stated] [cite]
-
-If a gap exists between consecutive transfers (no instrument accounts for how title passed from one owner to the next), note it explicitly:
-- GAP: No instrument found conveying title from [Grantee of Transfer N] to [Grantor of Transfer N+1]. This gap in the chain requires curative action.
-
----
-
-### 3. Encumbrances and Liens
-
-For each encumbrance identified:
-
-**Mortgages / Deeds of Trust:**
-| # | Holder | Original Amount | Date | Recording Info | Current Status | Citation |
-|---|--------|----------------|------|---------------|---------------|----------|
-| 1 | [name] | [amount] | [date] | [Book/Page or Inst. No.] | Released / Outstanding / Unknown | [EX] |
-
-**Easements:**
-| # | Type | Beneficiary | Description | Recorded | Citation |
-|---|------|------------|-------------|---------|----------|
-| 1 | [access/utility/drainage/etc.] | [name] | [description] | [recording info] | [EX] |
-
-**Restrictive Covenants:**
-| # | Description | Recorded | Citation |
-|---|------------|---------|----------|
-| 1 | [summary of restriction] | [recording info] | [EX] |
-
-**Tax Liens:**
-| # | Taxing Authority | Amount | Date | Status | Citation |
-|---|-----------------|--------|------|--------|----------|
-| 1 | [name] | [amount] | [date] | Paid/Outstanding | [EX] |
-
-**Judgment Liens:**
-| # | Creditor | Debtor | Amount | Case No. | Date | Status | Citation |
-|---|---------|--------|--------|---------|------|--------|----------|
-| 1 | [name] | [name] | [amount] | [no.] | [date] | Satisfied/Outstanding | [EX] |
-
-**Other Encumbrances:** [describe and cite, or "None identified in source documents."]
-
----
-
-### 4. Title Defects and Gaps
-
-For each defect or gap identified:
-
-**Defect [N]: [Type — e.g., Gap in Chain, Unreleased Lien, Inconsistent Legal Description]**
-- Description: [specific description of the defect] [cite relevant evidence]
-- Severity: [Minor (curative only) / Moderate (may affect marketability) / Major (renders title unmarketable without court action)]
-- Documents that would resolve this defect: [specify]
-
-Include the following categories even if no defects are found (state "None identified"):
-- Gaps in chain of title (missing conveyances)
-- Unreleased mortgages or liens
-- Description inconsistencies across instruments
-- Missing signatures or acknowledgments
-- Probate issues (deaths of record owners not resolved by estate proceedings)
-- Adverse possession claims or boundary disputes referenced in source
-
----
-
-### 5. Current Status
-
-- Current owner of record: [full name] [cite]
-- Vesting (how title is held — individual, joint tenancy, tenancy in common, trust, etc.): [value if stated] [cite] — if not stated: "Vesting not stated in source documents."
-- Outstanding encumbrances: [list with status, or "None identified"]
-- Marketability assessment:
-  - CLEAR: No defects identified; title appears marketable.
-  - CLOUDED: Defects identified (see Section 4) that reduce marketability but may be cured without court action.
-  - DEFECTIVE: Defects identified that require court action or are unresolvable from current document set.
-  [State which applies and cite the basis]
-
----
-
-### Citation Index
-
-[E1] "verbatim source quote" (Document: [filename or ID], Page: [X])
-[E2] "verbatim source quote" (Document: [filename or ID], Page: [X])
-...
-
----
-
-### Confidence Table
-
-| Field | Extracted Value (summary) | Confidence | Notes |
-|-------|--------------------------|-----------|-------|
-| Legal description | ... | HIGH/MEDIUM/LOW/UNSUPPORTED | [OCR issues, partial illegibility] |
-| Chain of title — complete? | ... | | |
-| Current owner | ... | | |
-| Outstanding mortgages | ... | | |
-| Tax lien status | ... | | |
-| Marketability | ... | | |
+Do not add extra sections, tables, or a confidence table. Brevity is the
+requirement; an unsupported claim is a failure.

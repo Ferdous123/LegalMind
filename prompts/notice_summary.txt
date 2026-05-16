@@ -1,116 +1,35 @@
-Generate a NOTICE-RELATED SUMMARY from the provided evidence. This draft will be used by attorneys to identify required response actions and their deadlines. Missed deadlines can result in waiver of rights or default judgment — accuracy and completeness are critical.
+Generate a CONCISE NOTICE-RELATED SUMMARY from the provided evidence. An
+attorney will skim this to identify required actions and deadlines. Missed
+deadlines waive rights — accuracy beats length. Be brief and scannable.
 
-IMPORTANT — GROUNDING REQUIREMENT:
-Attach [E1], [E2], etc. immediately after every factual claim. If you cannot cite a specific evidence passage for a deadline, consequence, or demand, do not assert it — record it as "Not clearly established in source documents." A draft with uncited claims is not acceptable.
+STRICT GROUNDING — NO DATA LEAKAGE:
+- Attach [E1], [E2], etc. immediately after every factual claim.
+- State ONLY what the cited evidence supports. Never infer a deadline,
+  consequence, or demand. If not in the source, write "Not stated in source".
+- If you cannot cite a passage for a deadline/consequence/demand, do not
+  assert it.
+- Deadlines are highest priority: quote the date exactly as written. If a
+  date has OCR-suspect characters, append "[verify against original]".
 
-DEADLINE HANDLING: Dates and cure periods are the highest-priority fields. If a deadline appears in the source but contains OCR-suspect characters (ambiguous digits, broken date formats), flag it prominently with [LOW confidence — verify against original document before relying on this date].
+Keep the whole output under ~300 words. Use this exact structure:
 
----
+## NOTICE SUMMARY
 
-## NOTICE-RELATED SUMMARY
+**Summary:** 2 sentences — notice type, issuer, recipient, subject [cite].
 
-### Document Summary
-[2–3 sentences: notice type, issuing party, receiving party, and the core demand or triggering event. Cite at least one evidence item.]
+**Deadlines & required actions:** one line each —
+action — due date (exact) — consequence of missing it [cite].
+Order by earliest deadline first. This is the most important section.
 
----
+**Demands / requirements:** one line each — what is required [cite].
 
-### PRIORITY ACTION ITEMS
-[Place this section first so it is immediately visible. List all required actions in deadline order, most urgent first.]
+**Consequences of non-response:** brief [cite], or "Not stated in source".
 
-| Priority | Action Required | Deadline | Consequence if Missed | Confidence | Citation |
-|----------|----------------|----------|----------------------|-----------|----------|
-| 1 (URGENT) | [action] | [date] | [consequence] | HIGH/MEDIUM/LOW | [EX] |
-| 2 | ... | | | | |
+**Gaps:** bullets — anything material the notice does not specify (e.g.
+ambiguous deadline). If none: "None identified."
 
-If no deadlines are identified: "No deadlines identified in source documents — verify notice type and applicable law."
+**Citations:** [E1] "short verbatim quote" (doc, p.X) — one line each, only
+those actually used.
 
----
-
-### 1. Notice Identification
-
-- Notice type: [demand / default / termination / cure / compliance / cease-and-desist / other] [cite]
-- Issuing party (sender): [full legal name and role — e.g., landlord, lender, regulatory agency] [cite]
-- Receiving party (recipient): [full legal name and role] [cite]
-- Date issued / dated: [value] [cite] — if partially illegible: "[illegible]/[month]/[year] — verify against original [E3]"
-- Date of service / delivery (if stated): [value] [cite] — if not stated: "Date of service not stated in source documents."
-- Reference / case / account number: [value] [cite] — if not stated: "Not stated in source documents."
-
----
-
-### 2. Critical Deadlines
-
-For each deadline identified:
-
-**Deadline [N]:**
-- Action required: [specific action — pay, cure, vacate, respond, produce documents, etc.] [cite]
-- Due date: [exact date as stated in source] [cite]
-- Confidence in date: [HIGH / MEDIUM / LOW — note any OCR digit ambiguity or inconsistency across pages]
-- Cure period stated: [e.g., "30 days from date of notice"] [cite] — if not stated: "No cure period stated."
-- Consequence of non-compliance: [exactly as stated in source] [cite] — if not stated: "Consequence not stated in source documents."
-- Extension possibility: [as stated in source] [cite] — if not stated: "No extension provision stated in source documents."
-
----
-
-### 3. Requirements and Demands
-
-- Specific actions demanded: [itemized list, each with citation]
-  1. [action] [cite]
-  2. [action] [cite]
-- Monetary amounts due: [amount, account/invoice reference] [cite] — if not stated: "No monetary demand stated in source documents."
-- Documents or information requested: [list or "None stated"] [cite if present]
-- Conditions for full resolution: [what the receiving party must do to fully satisfy the notice] [cite] — if not stated: "Conditions for resolution not stated in source documents."
-
----
-
-### 4. Legal Basis
-
-- Statutory authority cited in notice: [exact citation as it appears in source — statute, section, code] [cite] — if not stated: "No statutory authority cited in source documents."
-- Contractual provisions referenced: [section numbers, agreement name, date] [cite] — if not stated: "No contractual provisions cited in source documents."
-- Regulatory requirements mentioned: [regulation name and section] [cite] — if not stated: "Not stated in source documents."
-
----
-
-### 5. Compliance Checklist
-
-| Requirement | Status | Deadline | Consequence | Citation |
-|------------|--------|----------|-------------|----------|
-| [requirement description] | Pending / Complete / Overdue | [date] | [consequence] | [EX] |
-
-Status definitions:
-- Pending: Deadline is in the future and action has not been completed per available evidence.
-- Complete: Evidence in the document set confirms the requirement was satisfied.
-- Overdue: Deadline has passed with no evidence of compliance in the document set.
-- Unknown: Insufficient information to determine status.
-
----
-
-### 6. Risk Assessment
-
-Based solely on content of the provided documents:
-
-- Immediate risks if no action is taken: [list each risk] [cite supporting basis]
-- Available defenses or objections apparent from documents: [list or "No defenses apparent from provided documents"] [cite if present]
-- Inconsistencies or irregularities in the notice itself: [e.g., wrong address, incorrect account number, missing statutory language] [cite] — or "None identified."
-- Recommended next steps based on document content: [list specific steps — do not give legal advice, summarize what the documents indicate is required]
-
----
-
-### Citation Index
-
-[E1] "verbatim source quote" (Document: [filename or ID], Page: [X])
-[E2] "verbatim source quote" (Document: [filename or ID], Page: [X])
-...
-
----
-
-### Confidence Table
-
-| Field | Extracted Value (summary) | Confidence | Notes |
-|-------|--------------------------|-----------|-------|
-| Notice type | ... | HIGH/MEDIUM/LOW/UNSUPPORTED | |
-| Issuing party | ... | | |
-| Receiving party | ... | | |
-| Date issued | ... | | |
-| Primary deadline | ... | | [FLAG if OCR-suspect digits] |
-| Consequence of non-compliance | ... | | |
-| Legal basis | ... | | |
+No extra sections, no confidence table. A fabricated or padded deadline is a
+serious failure; omit rather than guess.

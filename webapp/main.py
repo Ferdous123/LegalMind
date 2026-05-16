@@ -414,6 +414,26 @@ async def page_draft(request: Request, doc_id: str, draft_id: Optional[str] = No
                 verification_summary = draft.get("firewall_summary", {})
     except Exception as exc:
         logger.warning("Draft page load failed: %s", exc)
+
+    # All drafts available for this document, newest first — powers the
+    # draft switcher in the viewer so a doc with several draft types can be
+    # browsed instead of only the auto-picked one.
+    available_drafts = []
+    try:
+        for p in sorted(
+            PROCESSED_DIR.glob(f"draft_{doc_id}_*.json"),
+            key=lambda x: x.stat().st_mtime, reverse=True,
+        ):
+            dtype = p.stem.replace(f"draft_{doc_id}_", "")
+            available_drafts.append({
+                "draft_id": p.stem,                       # e.g. draft_doc_x_case_fact_summary
+                "draft_type": dtype,
+                "label": get_draft_label(dtype),
+                "is_active": bool(draft) and draft.get("draft_type") == dtype,
+            })
+    except Exception as exc:
+        logger.warning("available_drafts build failed: %s", exc)
+
     return templates.TemplateResponse(request, "drafts.html", {
         "active_page": "documents",
         "panels": PANELS, "active_panel": "library",
@@ -421,6 +441,7 @@ async def page_draft(request: Request, doc_id: str, draft_id: Optional[str] = No
         "draft_type_label": draft_type_label, "citations": citations,
         "verification_summary": verification_summary,
         "draft_types": get_supported_types(),
+        "available_drafts": available_drafts,
     })
 
 
@@ -1155,6 +1176,67 @@ async def get_draft(draft_id: str) -> dict:
         return json.loads(path.read_text(encoding="utf-8"))
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc)) from exc
+
+
+@app.post("/api/v1/drafts/{draft_id}/override")
+async def operator_override_claim(draft_id: str, body: dict) -> dict:
+    """Operator manual-verify: flip one uncertain/unsupported claim to
+    'verified' with source recorded as 'operator override'. Recomputes the
+    firewall summary and persists. This is the human-in-the-loop escape
+    hatch for claims the automatic grounding check scored conservatively."""
+    if not draft_id.startswith("draft_"):
+        draft_id = f"draft_{draft_id}"
+    path = PROCESSED_DIR / f"{draft_id}.json"
+    if not path.exists():
+        raise HTTPException(status_code=404, detail="Draft not found")
+
+    field_path = (body or {}).get("field_path", "")
+    if not field_path:
+        raise HTTPException(status_code=422, detail="field_path required")
+
+    try:
+        draft = json.loads(path.read_text(encoding="utf-8"))
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+
+    results = draft.get("firewall_results", [])
+    target = next((r for r in results if r.get("field_path") == field_path), None)
+    if target is None:
+        raise HTTPException(status_code=404, detail=f"Claim not found: {field_path}")
+
+    target["status"] = "verified"
+    target["confidence_level"] = "OPERATOR"
+    target["confidence_score"] = 1.0
+    reasons = target.get("reasons") or []
+    if "operator override" not in reasons:
+        reasons.append("operator override")
+    target["reasons"] = reasons
+    target["operator_override"] = True
+
+    # Recompute the summary from the (now-updated) results
+    total = len(results)
+    verified = sum(1 for r in results if r.get("status") == "verified")
+    uncertain = sum(1 for r in results if r.get("status") == "uncertain")
+    unsupported = sum(1 for r in results if r.get("status") == "unsupported")
+    manual_review = sum(1 for r in results if r.get("status") == "manual_review")
+    avg_conf = (
+        sum(r.get("confidence_score", 0.0) for r in results) / total
+        if total else 0.0
+    )
+    summary = {
+        "total": total, "verified": verified, "uncertain": uncertain,
+        "unsupported": unsupported, "manual_review": manual_review,
+        "overall_confidence": avg_conf,
+    }
+    draft["firewall_summary"] = summary
+
+    try:
+        path.write_text(json.dumps(draft, default=str), encoding="utf-8")
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Save failed: {exc}") from exc
+
+    return {"ok": True, "field_path": field_path,
+            "firewall_summary": summary}
 
 
 # ---------------------------------------------------------------------------

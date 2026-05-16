@@ -28,6 +28,25 @@
         </span>
       </div>
 
+      <!-- Draft switcher: all drafts generated for this document -->
+      {% if available_drafts and available_drafts | length > 1 %}
+      <div>
+        <p class="text-xs font-semibold text-body-muted uppercase tracking-wide mb-2">
+          Drafts ({{ available_drafts | length }})
+        </p>
+        <div class="flex flex-col gap-1">
+          {% for ad in available_drafts %}
+          <a href="/documents/{{ doc_id }}/draft?draft_id={{ ad.draft_id }}"
+             class="text-xs px-2 py-1.5 rounded border transition-colors
+                    {% if ad.is_active %}border-gold/50 bg-gold/10 text-gold font-medium
+                    {% else %}border-ink-700 text-body-secondary hover:border-gold/30 hover:text-body-primary{% endif %}">
+            {% if ad.is_active %}&#9656; {% endif %}{{ ad.label }}
+          </a>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
       <!-- Generation timestamp -->
       <div>
         <p class="text-xs font-semibold text-body-muted uppercase tracking-wide mb-1">Generated</p>
@@ -71,20 +90,20 @@
           <button type="button" class="badge badge-ok vbadge" data-vstatus="verified"
                   style="cursor:pointer;border:1px solid transparent;">
             <span class="w-1.5 h-1.5 rounded-full bg-signal-ok inline-block"></span>
-            {{ verification_summary.verified | default(0) }} verified
+            <span class="vcount" data-vc="verified">{{ verification_summary.verified | default(0) }}</span>&nbsp;verified
           </button>
           <button type="button" class="badge badge-warn vbadge" data-vstatus="uncertain"
                   style="cursor:pointer;border:1px solid transparent;">
             <span class="w-1.5 h-1.5 rounded-full bg-signal-warn inline-block"></span>
-            {{ verification_summary.uncertain | default(0) }} uncertain
+            <span class="vcount" data-vc="uncertain">{{ verification_summary.uncertain | default(0) }}</span>&nbsp;uncertain
           </button>
           <button type="button" class="badge badge-fail vbadge" data-vstatus="unsupported"
                   style="cursor:pointer;border:1px solid transparent;">
             <span class="w-1.5 h-1.5 rounded-full bg-signal-fail inline-block"></span>
-            {{ verification_summary.unsupported | default(0) }} unsupported
+            <span class="vcount" data-vc="unsupported">{{ verification_summary.unsupported | default(0) }}</span>&nbsp;unsupported
           </button>
         </div>
-        <p class="text-[10px] text-body-muted mt-1.5">Click a badge to list those claims.</p>
+        <p class="text-[10px] text-body-muted mt-1.5">Click a badge to list those claims. Uncertain / unsupported claims can be operator-verified.</p>
 
         <!-- Per-claim breakdown (populated by JS from draft.firewall_results) -->
         <div id="vbreakdown" class="hidden mt-3 space-y-2 max-h-[40vh] overflow-y-auto"></div>
@@ -535,6 +554,48 @@
             : st === 'uncertain' ? 'var(--signal-warn)' : 'var(--signal-fail)';
 
         let activeStatus = null;
+        const draftId = (document.getElementById('draft-content') || {}).dataset
+            ? document.getElementById('draft-content').dataset.draftId : '';
+
+        function refreshCounts() {
+            const c = { verified: 0, uncertain: 0, unsupported: 0 };
+            results.forEach(r => { if (c[r.status] !== undefined) c[r.status]++; });
+            document.querySelectorAll('.vcount').forEach(el => {
+                const k = el.dataset.vc;
+                if (c[k] !== undefined) el.textContent = c[k];
+            });
+        }
+
+        async function overrideClaim(fieldPath, btnEl) {
+            if (!draftId) { showToast('Draft id unavailable', 'error'); return; }
+            btnEl.disabled = true;
+            btnEl.textContent = 'Verifying…';
+            try {
+                const res = await fetch('/api/v1/drafts/' + encodeURIComponent(draftId)
+                    + '/override', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ field_path: fieldPath }),
+                });
+                const d = await res.json();
+                if (!res.ok) throw new Error(d.detail || 'HTTP ' + res.status);
+                // Update local model: mark this claim verified (operator override)
+                const row = results.find(r => r.field_path === fieldPath);
+                if (row) {
+                    row.status = 'verified';
+                    row.confidence_level = 'OPERATOR';
+                    row.reasons = (row.reasons || []).concat(['operator override']);
+                }
+                refreshCounts();
+                render(activeStatus);
+                showToast('Claim verified by operator override.', 'ok');
+            } catch (e) {
+                btnEl.disabled = false;
+                btnEl.textContent = 'Verify (override)';
+                showToast('Override failed: ' + e.message, 'error');
+            }
+        }
+        window._vOverride = overrideClaim;
 
         function render(status) {
             const rows = results.filter(r => r.status === status);
@@ -543,9 +604,10 @@
                     + esc(status) + ' claims.</p>';
                 return;
             }
-            box.innerHTML = rows.map(r => {
+            box.innerHTML = rows.map((r, i) => {
                 const sim = (typeof r.similarity === 'number')
                     ? ' · sim ' + r.similarity.toFixed(2) : '';
+                const isOverride = (r.reasons || []).indexOf('operator override') !== -1;
                 const reasons = (r.reasons && r.reasons.length)
                     ? '<div class="text-[10px] text-body-muted mt-1">'
                       + esc(r.reasons.join('; ')) + '</div>' : '';
@@ -553,14 +615,28 @@
                     ? '<div class="text-[10px] text-body-secondary mt-1 italic '
                       + 'border-l-2 pl-2" style="border-color:rgb('+colorFor(r.status)+'/.5);">'
                       + esc(String(r.evidence_snippet).slice(0,160)) + '</div>' : '';
+                // Operator-override button on anything not already verified
+                const fpAttr = esc(r.field_path).replace(/'/g, "\\'");
+                const overrideBtn = (status !== 'verified')
+                    ? '<button type="button" class="text-[10px] px-2 py-0.5 rounded '
+                      + 'border border-signal-ok/50 text-signal-ok hover:bg-signal-ok/10 '
+                      + 'transition-colors shrink-0" '
+                      + 'onclick="_vOverride(\'' + fpAttr + '\', this)">'
+                      + 'Verify (override)</button>'
+                    : (isOverride
+                        ? '<span class="text-[10px] px-2 py-0.5 rounded badge-ok shrink-0">'
+                          + 'operator-verified</span>'
+                        : '');
                 return '<div class="rounded-md p-2 border" '
                     + 'style="background:rgb(var(--ink-800)/.5);border-color:rgb('
                     + colorFor(r.status) + '/.3);">'
                     + '<div class="flex items-center justify-between gap-2">'
                     + '<span class="text-[11px] font-mono text-body-primary">'
                     + esc(r.field_path) + '</span>'
+                    + '<div class="flex items-center gap-2 shrink-0">'
                     + '<span class="text-[10px]" style="color:rgb('+colorFor(r.status)+');">'
-                    + esc(r.confidence_level || '') + sim + '</span></div>'
+                    + esc(r.confidence_level || '') + sim + '</span>'
+                    + overrideBtn + '</div></div>'
                     + reasons + snip + '</div>';
             }).join('');
         }
@@ -589,16 +665,16 @@
     //      for .txt docs (no page image exists). ----
     let _modalCtx = { docId: '', start: 0, end: 0 };
 
+    // Deterministic: explicitly fetch the page image; decide image-vs-text
+    // from the actual HTTP response instead of relying on <img onerror>
+    // (which is flaky on 404-with-JSON-body and under cache).
     window.openPageModal = function(btn) {
-        const docId  = btn.dataset.docId;
+        const docId   = btn.dataset.docId;
         const pageNum = btn.dataset.pageNum;
         if (!docId || pageNum === '' || pageNum === undefined) return;
 
-        _modalCtx = {
-            docId: docId,
-            start: parseInt(btn.dataset.charStart || '0', 10) || 0,
-            end: parseInt(btn.dataset.charEnd || '0', 10) || 0,
-        };
+        const start = parseInt(btn.dataset.charStart || '0', 10) || 0;
+        const end   = parseInt(btn.dataset.charEnd   || '0', 10) || 0;
 
         const backdrop = document.getElementById('page-modal-backdrop');
         const img      = document.getElementById('page-modal-img');
@@ -607,59 +683,68 @@
         const textBox  = document.getElementById('page-modal-text');
         const title    = document.getElementById('page-modal-title');
 
-        img.classList.add('hidden');
+        img.classList.add('hidden'); img.src = '';
         error.classList.add('hidden');
-        textBox.classList.add('hidden');
-        textBox.innerHTML = '';
+        textBox.classList.add('hidden'); textBox.innerHTML = '';
         loading.classList.remove('hidden');
+        loading.textContent = 'Loading source…';
         title.textContent = 'Source — page ' + pageNum;
-
         backdrop.classList.remove('hidden');
         document.body.style.overflow = 'hidden';
 
-        img.src = '/api/v1/documents/' + encodeURIComponent(docId) + '/pages/' + encodeURIComponent(pageNum);
+        const esc = s => String(s == null ? '' : s)
+            .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+        const showText = () => {
+            loading.textContent = 'Loading source text…';
+            fetch('/api/v1/documents/' + encodeURIComponent(docId)
+                  + '/text-span?start=' + start + '&end=' + end)
+              .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+              .then(d => {
+                  loading.classList.add('hidden');
+                  title.textContent = 'Source — ' + (d.filename || docId);
+                  textBox.innerHTML =
+                      (d.truncated_before ? '<span class="text-body-muted">…</span>' : '')
+                      + esc(d.before)
+                      + '<mark style="background:rgb(var(--gold)/.30);'
+                      + 'color:rgb(var(--body-primary));padding:1px 2px;'
+                      + 'border-radius:2px;">' + esc(d.span) + '</mark>'
+                      + esc(d.after)
+                      + (d.truncated_after ? '<span class="text-body-muted">…</span>' : '');
+                  textBox.classList.remove('hidden');
+                  const mk = textBox.querySelector('mark');
+                  if (mk) mk.scrollIntoView({ block: 'center' });
+              })
+              .catch(() => {
+                  loading.classList.add('hidden');
+                  error.textContent = 'Source view unavailable for this document.';
+                  error.classList.remove('hidden');
+              });
+        };
+
+        // Try the page image first; fall back to text on any non-image result.
+        fetch('/api/v1/documents/' + encodeURIComponent(docId)
+              + '/pages/' + encodeURIComponent(pageNum))
+          .then(r => {
+              const ct = (r.headers.get('content-type') || '');
+              if (r.ok && ct.indexOf('image') === 0) return r.blob();
+              return null;  // 404 / JSON / anything non-image → text fallback
+          })
+          .then(blob => {
+              if (blob) {
+                  loading.classList.add('hidden');
+                  img.src = URL.createObjectURL(blob);
+                  img.classList.remove('hidden');
+              } else {
+                  showText();
+              }
+          })
+          .catch(showText);
     };
 
-    window.onPageImgLoad = function() {
-        document.getElementById('page-modal-loading').classList.add('hidden');
-        document.getElementById('page-modal-img').classList.remove('hidden');
-    };
-
-    // Image 404 (e.g. .txt doc) → fall back to the highlighted text span.
-    window.onPageImgError = function() {
-        const loading = document.getElementById('page-modal-loading');
-        const textBox = document.getElementById('page-modal-text');
-        const error   = document.getElementById('page-modal-error');
-        const title   = document.getElementById('page-modal-title');
-
-        loading.textContent = 'Loading source text…';
-        const url = '/api/v1/documents/' + encodeURIComponent(_modalCtx.docId)
-                  + '/text-span?start=' + _modalCtx.start + '&end=' + _modalCtx.end;
-
-        fetch(url).then(r => {
-            if (!r.ok) throw new Error('HTTP ' + r.status);
-            return r.json();
-        }).then(d => {
-            loading.classList.add('hidden');
-            const esc = s => String(s == null ? '' : s)
-                .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-            title.textContent = 'Source — ' + (d.filename || _modalCtx.docId);
-            textBox.innerHTML =
-                (d.truncated_before ? '<span class="text-body-muted">…</span>' : '')
-                + esc(d.before)
-                + '<mark style="background:rgb(var(--gold)/.30);color:rgb(var(--body-primary));'
-                + 'padding:1px 2px;border-radius:2px;">' + esc(d.span) + '</mark>'
-                + esc(d.after)
-                + (d.truncated_after ? '<span class="text-body-muted">…</span>' : '');
-            textBox.classList.remove('hidden');
-            // Scroll the highlight into view
-            const mk = textBox.querySelector('mark');
-            if (mk) mk.scrollIntoView({ block: 'center' });
-        }).catch(() => {
-            loading.classList.add('hidden');
-            error.classList.remove('hidden');
-        });
-    };
+    // Inline handlers kept as harmless no-ops (logic moved to openPageModal).
+    window.onPageImgLoad  = function() {};
+    window.onPageImgError = function() {};
 
     window.closePageModal = function(e) {
         if (e && e.target !== document.getElementById('page-modal-backdrop')) return;
